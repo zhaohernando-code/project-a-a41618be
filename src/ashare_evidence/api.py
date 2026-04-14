@@ -1,12 +1,26 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+import os
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+from ashare_evidence.dashboard import (
+    bootstrap_dashboard_demo,
+    get_glossary_entries,
+    get_stock_dashboard,
+    list_candidate_recommendations,
+)
 from ashare_evidence.db import get_database_url, get_session_factory, init_database
-from ashare_evidence.schemas import LatestRecommendationResponse, RecommendationTraceResponse
+from ashare_evidence.schemas import (
+    CandidateListResponse,
+    DashboardBootstrapResponse,
+    LatestRecommendationResponse,
+    RecommendationTraceResponse,
+    StockDashboardResponse,
+)
 from ashare_evidence.services import bootstrap_demo_data, get_latest_recommendation_summary, get_recommendation_trace
 
 
@@ -27,6 +41,18 @@ def create_app(database_url: str | None = None) -> FastAPI:
         version="0.1.0",
         summary="Evidence-first market/news/model/recommendation data layer.",
     )
+    cors_origins = [
+        origin.strip()
+        for origin in os.getenv("ASHARE_CORS_ALLOW_ORIGINS", "*").split(",")
+        if origin.strip()
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins or ["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -39,12 +65,34 @@ def create_app(database_url: str | None = None) -> FastAPI:
     ) -> dict[str, object]:
         return bootstrap_demo_data(session, symbol)
 
+    @app.post("/bootstrap/dashboard-demo", response_model=DashboardBootstrapResponse)
+    def bootstrap_dashboard_demo_route(session: Session = Depends(get_session)) -> dict[str, object]:
+        return bootstrap_dashboard_demo(session)
+
     @app.get("/stocks/{symbol}/recommendations/latest", response_model=LatestRecommendationResponse)
     def latest_recommendation(symbol: str, session: Session = Depends(get_session)) -> dict[str, object]:
         payload = get_latest_recommendation_summary(session, symbol)
         if payload is None:
             raise HTTPException(status_code=404, detail=f"No recommendation found for {symbol}.")
         return payload
+
+    @app.get("/stocks/{symbol}/dashboard", response_model=StockDashboardResponse)
+    def stock_dashboard(symbol: str, session: Session = Depends(get_session)) -> dict[str, object]:
+        try:
+            return get_stock_dashboard(session, symbol)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/dashboard/candidates", response_model=CandidateListResponse)
+    def dashboard_candidates(
+        limit: int = Query(default=8, ge=1, le=20),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        return list_candidate_recommendations(session, limit=limit)
+
+    @app.get("/dashboard/glossary")
+    def dashboard_glossary() -> list[dict[str, str]]:
+        return get_glossary_entries()
 
     @app.get("/recommendations/{recommendation_id}/trace", response_model=RecommendationTraceResponse)
     def recommendation_trace(recommendation_id: int, session: Session = Depends(get_session)) -> dict[str, object]:
