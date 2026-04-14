@@ -81,7 +81,7 @@
 - 3. [COMPLETED] 证据化数据底座
 - 4. [COMPLETED] 信号建模与建议引擎
 - 5. [COMPLETED] 用户看板与解释闭环
-- 6. [PENDING] 分离式模拟交易与内测准入
+- 6. [COMPLETED] 分离式模拟交易与内测准入
 
 Current step: 分离式模拟交易与内测准入
 Last completed milestone: 用户看板与解释闭环

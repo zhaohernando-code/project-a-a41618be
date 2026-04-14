@@ -869,14 +869,12 @@ def _news_records(config: ScenarioConfig) -> tuple[list[dict[str, Any]], list[di
 def _simulation_artifacts(
     *,
     config: ScenarioConfig,
+    market_bars: list[dict[str, Any]],
     generated_at: datetime,
     recommendation_key: str,
     latest_close: float,
     direction: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    if direction not in {"buy", "reduce"}:
-        return [], [], []
-
     symbol_token = config.ticker.lower()
     trade_token = generated_at.strftime("%Y%m%d")
     side = "buy" if direction == "buy" else "sell"
@@ -884,6 +882,12 @@ def _simulation_artifacts(
     market_fill = round(latest_close * (1.002 if direction == "buy" else 0.997), 2)
     manual_quantity = 100 if latest_close >= 100 else 500
     auto_quantity = manual_quantity * 2
+    seed_bar = market_bars[-11] if len(market_bars) >= 11 else market_bars[0]
+    seed_at = seed_bar["observed_at"]
+    seed_token = seed_at.strftime("%Y%m%d")
+    seed_limit = round(float(seed_bar["close_price"]) * 1.001, 2)
+    seed_manual_quantity = 100 if float(seed_bar["close_price"]) >= 100 else 300
+    seed_auto_quantity = seed_manual_quantity * 2
 
     paper_portfolios = [
         with_lineage(
@@ -893,9 +897,13 @@ def _simulation_artifacts(
                 "mode": "manual",
                 "benchmark_symbol": "000300.SH",
                 "base_currency": "CNY",
-                "cash_balance": 500000.0,
+                "cash_balance": 900000.0,
                 "status": "active",
-                "portfolio_payload": {"purpose": "manual-paper-trade"},
+                "portfolio_payload": {
+                    "purpose": "manual-paper-trade",
+                    "starting_cash": 900000.0,
+                    "separation_policy": "independent-ledger",
+                },
             },
             payload_key="portfolio_payload",
             source_uri="simulation://portfolio/manual-sandbox",
@@ -908,9 +916,13 @@ def _simulation_artifacts(
                 "mode": "auto_model",
                 "benchmark_symbol": "000300.SH",
                 "base_currency": "CNY",
-                "cash_balance": 800000.0,
+                "cash_balance": 1800000.0,
                 "status": "active",
-                "portfolio_payload": {"purpose": "auto-model-portfolio"},
+                "portfolio_payload": {
+                    "purpose": "auto-model-portfolio",
+                    "starting_cash": 1800000.0,
+                    "separation_policy": "independent-ledger",
+                },
             },
             payload_key="portfolio_payload",
             source_uri="simulation://portfolio/auto-wave",
@@ -918,6 +930,46 @@ def _simulation_artifacts(
         ),
     ]
     paper_orders = [
+        with_lineage(
+            {
+                "order_key": f"order-manual-seed-{symbol_token}-{seed_token}",
+                "portfolio_key": "portfolio-manual-sandbox",
+                "stock_symbol": config.symbol,
+                "recommendation_key": None,
+                "order_source": "manual",
+                "side": "buy",
+                "requested_at": seed_at,
+                "quantity": seed_manual_quantity,
+                "order_type": "limit",
+                "limit_price": seed_limit,
+                "status": "filled",
+                "notes": "历史种子仓位，用于组合收益和回撤计算。",
+                "order_payload": {"execution_mode": "manual", "intent": "historical_seed"},
+            },
+            payload_key="order_payload",
+            source_uri=f"simulation://order/manual/seed/{symbol_token}/{seed_token}",
+            license_tag="internal-derived",
+        ),
+        with_lineage(
+            {
+                "order_key": f"order-auto-seed-{symbol_token}-{seed_token}",
+                "portfolio_key": "portfolio-auto-wave",
+                "stock_symbol": config.symbol,
+                "recommendation_key": None,
+                "order_source": "model",
+                "side": "buy",
+                "requested_at": seed_at,
+                "quantity": seed_auto_quantity,
+                "order_type": "market",
+                "limit_price": None,
+                "status": "filled",
+                "notes": "模型组合历史种子仓位，用于验证自动持仓纪律。",
+                "order_payload": {"execution_mode": "auto_model", "intent": "historical_seed"},
+            },
+            payload_key="order_payload",
+            source_uri=f"simulation://order/auto/seed/{symbol_token}/{seed_token}",
+            license_tag="internal-derived",
+        ),
         with_lineage(
             {
                 "order_key": f"order-manual-{symbol_token}-{trade_token}",
@@ -959,7 +1011,43 @@ def _simulation_artifacts(
             license_tag="internal-derived",
         ),
     ]
+    if direction not in {"buy", "reduce"}:
+        paper_orders = paper_orders[:2]
     paper_fills = [
+        with_lineage(
+            {
+                "fill_key": f"fill-manual-seed-{symbol_token}-{seed_token}",
+                "order_key": f"order-manual-seed-{symbol_token}-{seed_token}",
+                "stock_symbol": config.symbol,
+                "filled_at": seed_at,
+                "price": seed_limit,
+                "quantity": seed_manual_quantity,
+                "fee": round(seed_limit * seed_manual_quantity * 0.0005, 2),
+                "tax": 0.0,
+                "slippage_bps": 2.9,
+                "fill_payload": {"matching_rule": "t+1-paper", "intent": "historical_seed"},
+            },
+            payload_key="fill_payload",
+            source_uri=f"simulation://fill/manual/seed/{symbol_token}/{seed_token}",
+            license_tag="internal-derived",
+        ),
+        with_lineage(
+            {
+                "fill_key": f"fill-auto-seed-{symbol_token}-{seed_token}",
+                "order_key": f"order-auto-seed-{symbol_token}-{seed_token}",
+                "stock_symbol": config.symbol,
+                "filled_at": seed_at,
+                "price": round(seed_limit * 1.001, 2),
+                "quantity": seed_auto_quantity,
+                "fee": round(seed_limit * 1.001 * seed_auto_quantity * 0.0005, 2),
+                "tax": 0.0,
+                "slippage_bps": 3.6,
+                "fill_payload": {"matching_rule": "t+1-paper", "intent": "historical_seed"},
+            },
+            payload_key="fill_payload",
+            source_uri=f"simulation://fill/auto/seed/{symbol_token}/{seed_token}",
+            license_tag="internal-derived",
+        ),
         with_lineage(
             {
                 "fill_key": f"fill-manual-{symbol_token}-{trade_token}",
@@ -995,6 +1083,8 @@ def _simulation_artifacts(
             license_tag="internal-derived",
         ),
     ]
+    if direction not in {"buy", "reduce"}:
+        paper_fills = paper_fills[:2]
     return paper_portfolios, paper_orders, paper_fills
 
 
@@ -1048,6 +1138,7 @@ def build_dashboard_bundle(symbol: str, *, snapshot: str = "latest") -> Evidence
     )
     paper_portfolios, paper_orders, paper_fills = _simulation_artifacts(
         config=config,
+        market_bars=market_bars,
         generated_at=generated_at,
         recommendation_key=signal_artifacts.recommendation["recommendation_key"],
         latest_close=float(market_bars[-1]["close_price"]),

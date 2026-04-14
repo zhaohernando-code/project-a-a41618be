@@ -383,7 +383,11 @@ def ingest_bundle(session: Session, bundle: EvidenceBundle) -> Recommendation:
             {
                 "portfolio_id": portfolios_by_key[order_record["portfolio_key"]].id,
                 "stock_id": stock.id,
-                "recommendation_id": recommendation.id,
+                "recommendation_id": (
+                    recommendation.id
+                    if order_record.get("recommendation_key") == bundle.recommendation["recommendation_key"]
+                    else None
+                ),
                 "order_source": order_record["order_source"],
                 "side": order_record["side"],
                 "requested_at": order_record["requested_at"],

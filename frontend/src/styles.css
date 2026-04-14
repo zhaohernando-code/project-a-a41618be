@@ -491,9 +491,127 @@ textarea {
   text-align: center;
 }
 
+.access-gate {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  margin: 18px auto 0;
+}
+
+.access-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .empty-state h2,
 .loading-panel {
   margin-top: 0;
+}
+
+.operations-page,
+.portfolio-stack,
+.replay-list,
+.schedule-list,
+.threshold-list,
+.holding-list,
+.rule-list,
+.metric-list {
+  display: grid;
+  gap: 18px;
+}
+
+.portfolio-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.mini-panel {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(16, 35, 60, 0.04);
+  border: 1px solid var(--line);
+}
+
+.mini-panel h4 {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+}
+
+.nav-sparkline {
+  height: 180px;
+  margin-top: 16px;
+}
+
+.nav-line,
+.nav-benchmark-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.nav-line {
+  stroke: var(--brand);
+}
+
+.nav-benchmark-line {
+  stroke: rgba(16, 35, 60, 0.35);
+  stroke-dasharray: 8 6;
+}
+
+.holding-card,
+.rule-card,
+.replay-card,
+.schedule-card,
+.threshold-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.holding-top,
+.rule-top,
+.replay-top,
+.schedule-top,
+.threshold-top,
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.holding-card p,
+.holding-card small,
+.rule-card p,
+.replay-card p,
+.schedule-card p,
+.schedule-card small,
+.threshold-card p,
+.threshold-card small {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.inline-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.metric-list {
+  gap: 10px;
+}
+
+.metric-row {
+  align-items: center;
 }
 
 @keyframes rise-in {
@@ -511,7 +629,8 @@ textarea {
   .hero-strip,
   .page-grid,
   .split-grid,
-  .stock-hero {
+  .stock-hero,
+  .portfolio-detail-grid {
     grid-template-columns: 1fr;
   }
 
@@ -541,7 +660,8 @@ textarea {
   }
 
   .candidate-list,
-  .factor-list {
+  .factor-list,
+  .portfolio-detail-grid {
     grid-template-columns: 1fr;
   }
 

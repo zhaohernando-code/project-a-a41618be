@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -201,3 +201,168 @@ class StockDashboardResponse(RecommendationTraceResponse):
     glossary: list[GlossaryEntryView] = Field(default_factory=list)
     risk_panel: RiskPanelView
     follow_up: FollowUpView
+
+
+class TradingRuleCheckView(BaseModel):
+    code: str
+    title: str
+    status: str
+    detail: str
+
+
+class PortfolioHoldingView(BaseModel):
+    symbol: str
+    name: str
+    quantity: int
+    avg_cost: float
+    last_price: float
+    market_value: float
+    unrealized_pnl: float
+    realized_pnl: float
+    total_pnl: float
+    portfolio_weight: float
+    pnl_contribution: float
+
+
+class PortfolioAttributionView(BaseModel):
+    label: str
+    amount: float
+    contribution_pct: float
+    detail: str
+
+
+class PortfolioNavPointView(BaseModel):
+    trade_date: date
+    nav: float
+    benchmark_nav: float
+    drawdown: float
+    exposure: float
+
+
+class PortfolioOrderAuditView(BaseModel):
+    order_key: str
+    symbol: str
+    stock_name: str
+    order_source: str
+    side: str
+    requested_at: datetime
+    status: str
+    quantity: int
+    order_type: str
+    avg_fill_price: float | None = None
+    gross_amount: float
+    checks: list[TradingRuleCheckView] = Field(default_factory=list)
+
+
+class PortfolioSummaryView(BaseModel):
+    portfolio_key: str
+    name: str
+    mode: str
+    mode_label: str
+    strategy_summary: str
+    benchmark_symbol: str | None = None
+    status: str
+    starting_cash: float
+    available_cash: float
+    market_value: float
+    net_asset_value: float
+    invested_ratio: float
+    total_return: float
+    benchmark_return: float
+    excess_return: float
+    realized_pnl: float
+    unrealized_pnl: float
+    fee_total: float
+    tax_total: float
+    max_drawdown: float
+    current_drawdown: float
+    order_count: int
+    active_position_count: int
+    rule_pass_rate: float
+    recommendation_hit_rate: float
+    alerts: list[str] = Field(default_factory=list)
+    rules: list[TradingRuleCheckView] = Field(default_factory=list)
+    holdings: list[PortfolioHoldingView] = Field(default_factory=list)
+    attribution: list[PortfolioAttributionView] = Field(default_factory=list)
+    nav_history: list[PortfolioNavPointView] = Field(default_factory=list)
+    recent_orders: list[PortfolioOrderAuditView] = Field(default_factory=list)
+
+
+class RecommendationReplayView(BaseModel):
+    recommendation_id: int
+    symbol: str
+    stock_name: str
+    direction: str
+    generated_at: datetime
+    review_window_days: int
+    stock_return: float
+    benchmark_return: float
+    excess_return: float
+    max_favorable_excursion: float
+    max_adverse_excursion: float
+    hit_status: str
+    summary: str
+    followed_by_portfolios: list[str] = Field(default_factory=list)
+
+
+class OperationsOverviewView(BaseModel):
+    generated_at: datetime
+    beta_readiness: str
+    manual_portfolio_count: int
+    auto_portfolio_count: int
+    recommendation_replay_hit_rate: float
+    rule_pass_rate: float
+
+
+class AccessControlView(BaseModel):
+    beta_phase: str
+    auth_mode: str
+    required_header: str
+    allowlist_slots: int
+    active_users: int
+    roles: list[str] = Field(default_factory=list)
+    session_ttl_minutes: int
+    audit_log_retention_days: int
+    export_policy: str
+    alerts: list[str] = Field(default_factory=list)
+
+
+class RefreshScheduleView(BaseModel):
+    scope: str
+    cadence_minutes: int
+    market_delay_minutes: int
+    stale_after_minutes: int
+    trigger: str
+
+
+class RefreshPolicyView(BaseModel):
+    market_timezone: str
+    cache_ttl_seconds: int
+    manual_refresh_cooldown_minutes: int
+    schedules: list[RefreshScheduleView] = Field(default_factory=list)
+
+
+class PerformanceThresholdView(BaseModel):
+    metric: str
+    unit: str
+    target: float
+    observed: float
+    status: str
+    note: str
+
+
+class LaunchGateView(BaseModel):
+    gate: str
+    threshold: str
+    current_value: str
+    status: str
+
+
+class OperationsDashboardResponse(BaseModel):
+    overview: OperationsOverviewView
+    portfolios: list[PortfolioSummaryView] = Field(default_factory=list)
+    recommendation_replay: list[RecommendationReplayView] = Field(default_factory=list)
+    access_control: AccessControlView
+    refresh_policy: RefreshPolicyView
+    performance_thresholds: list[PerformanceThresholdView] = Field(default_factory=list)
+    launch_gates: list[LaunchGateView] = Field(default_factory=list)

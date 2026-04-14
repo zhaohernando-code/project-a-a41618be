@@ -196,3 +196,168 @@ export interface StockDashboardResponse {
   risk_panel: RiskPanelView;
   follow_up: FollowUpView;
 }
+
+export interface TradingRuleCheckView {
+  code: string;
+  title: string;
+  status: string;
+  detail: string;
+}
+
+export interface PortfolioHoldingView {
+  symbol: string;
+  name: string;
+  quantity: number;
+  avg_cost: number;
+  last_price: number;
+  market_value: number;
+  unrealized_pnl: number;
+  realized_pnl: number;
+  total_pnl: number;
+  portfolio_weight: number;
+  pnl_contribution: number;
+}
+
+export interface PortfolioAttributionView {
+  label: string;
+  amount: number;
+  contribution_pct: number;
+  detail: string;
+}
+
+export interface PortfolioNavPointView {
+  trade_date: string;
+  nav: number;
+  benchmark_nav: number;
+  drawdown: number;
+  exposure: number;
+}
+
+export interface PortfolioOrderAuditView {
+  order_key: string;
+  symbol: string;
+  stock_name: string;
+  order_source: string;
+  side: string;
+  requested_at: string;
+  status: string;
+  quantity: number;
+  order_type: string;
+  avg_fill_price?: number | null;
+  gross_amount: number;
+  checks: TradingRuleCheckView[];
+}
+
+export interface PortfolioSummaryView {
+  portfolio_key: string;
+  name: string;
+  mode: string;
+  mode_label: string;
+  strategy_summary: string;
+  benchmark_symbol?: string | null;
+  status: string;
+  starting_cash: number;
+  available_cash: number;
+  market_value: number;
+  net_asset_value: number;
+  invested_ratio: number;
+  total_return: number;
+  benchmark_return: number;
+  excess_return: number;
+  realized_pnl: number;
+  unrealized_pnl: number;
+  fee_total: number;
+  tax_total: number;
+  max_drawdown: number;
+  current_drawdown: number;
+  order_count: number;
+  active_position_count: number;
+  rule_pass_rate: number;
+  recommendation_hit_rate: number;
+  alerts: string[];
+  rules: TradingRuleCheckView[];
+  holdings: PortfolioHoldingView[];
+  attribution: PortfolioAttributionView[];
+  nav_history: PortfolioNavPointView[];
+  recent_orders: PortfolioOrderAuditView[];
+}
+
+export interface RecommendationReplayView {
+  recommendation_id: number;
+  symbol: string;
+  stock_name: string;
+  direction: string;
+  generated_at: string;
+  review_window_days: number;
+  stock_return: number;
+  benchmark_return: number;
+  excess_return: number;
+  max_favorable_excursion: number;
+  max_adverse_excursion: number;
+  hit_status: string;
+  summary: string;
+  followed_by_portfolios: string[];
+}
+
+export interface OperationsOverviewView {
+  generated_at: string;
+  beta_readiness: string;
+  manual_portfolio_count: number;
+  auto_portfolio_count: number;
+  recommendation_replay_hit_rate: number;
+  rule_pass_rate: number;
+}
+
+export interface AccessControlView {
+  beta_phase: string;
+  auth_mode: string;
+  required_header: string;
+  allowlist_slots: number;
+  active_users: number;
+  roles: string[];
+  session_ttl_minutes: number;
+  audit_log_retention_days: number;
+  export_policy: string;
+  alerts: string[];
+}
+
+export interface RefreshScheduleView {
+  scope: string;
+  cadence_minutes: number;
+  market_delay_minutes: number;
+  stale_after_minutes: number;
+  trigger: string;
+}
+
+export interface RefreshPolicyView {
+  market_timezone: string;
+  cache_ttl_seconds: number;
+  manual_refresh_cooldown_minutes: number;
+  schedules: RefreshScheduleView[];
+}
+
+export interface PerformanceThresholdView {
+  metric: string;
+  unit: string;
+  target: number;
+  observed: number;
+  status: string;
+  note: string;
+}
+
+export interface LaunchGateView {
+  gate: string;
+  threshold: string;
+  current_value: string;
+  status: string;
+}
+
+export interface OperationsDashboardResponse {
+  overview: OperationsOverviewView;
+  portfolios: PortfolioSummaryView[];
+  recommendation_replay: RecommendationReplayView[];
+  access_control: AccessControlView;
+  refresh_policy: RefreshPolicyView;
+  performance_thresholds: PerformanceThresholdView[];
+  launch_gates: LaunchGateView[];
+}

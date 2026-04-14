@@ -6,6 +6,7 @@ from typing import Any
 
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.dashboard import bootstrap_dashboard_demo, get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
+from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.services import bootstrap_demo_data, get_latest_recommendation_summary, get_recommendation_trace
 
 
@@ -41,6 +42,10 @@ def build_parser() -> argparse.ArgumentParser:
     stock_dashboard = subparsers.add_parser("stock-dashboard", help="Show the user-facing dashboard payload for a stock.")
     stock_dashboard.add_argument("--database-url", default=None)
     stock_dashboard.add_argument("--symbol", default="600519.SH")
+
+    operations = subparsers.add_parser("operations", help="Show paper trading, replay, and beta-readiness payload.")
+    operations.add_argument("--database-url", default=None)
+    operations.add_argument("--sample-symbol", default="600519.SH")
 
     trace = subparsers.add_parser("trace", help="Show a full evidence trace for a recommendation ID.")
     trace.add_argument("--database-url", default=None)
@@ -96,6 +101,13 @@ def main(argv: list[str] | None = None) -> int:
         init_database(args.database_url)
         with session_scope(args.database_url) as session:
             payload = get_stock_dashboard(session, args.symbol)
+        _print_json(payload)
+        return 0
+
+    if args.command == "operations":
+        init_database(args.database_url)
+        with session_scope(args.database_url) as session:
+            payload = build_operations_dashboard(session, sample_symbol=args.sample_symbol)
         _print_json(payload)
         return 0
 

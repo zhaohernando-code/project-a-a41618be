@@ -116,3 +116,27 @@
 - Prevention: 后续若任务要求强制提交，需要切换到具备 `.git/worktrees/...` 写权限的仓库环境，或在 canonical repo 中直接执行提交流程。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
+
+## 2026-04-15
+
+- Problem: 第 6 步需要给组合层补历史净值、收益归因和建议命中复盘，但如果把历史 seed 订单也直接挂到当前 recommendation 上，单票 trace 会被旧订单污染，用户无法分清“当前建议触发的订单”和“组合历史仓位”。
+- Resolution: 调整 `ingest_bundle`，只有 `order_record.recommendation_key` 与当前 recommendation 精确匹配时，订单才写入 `recommendation_id`；历史 seed 订单仅用于组合运营面板和回撤/基准演算。
+- Prevention: 以后新增任何模拟交易历史样本时，都要显式区分 recommendation-linked orders 与 portfolio-history orders，禁止默认把同 bundle 内的所有订单都挂到当前 recommendation。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
+
+## 2026-04-15
+
+- Problem: 前端新增“模拟交易与内测”视图时，当前 worktree 里没有 `node_modules`，直接 `npm run build` 会因为找不到本地 `tsc` 而失败。
+- Resolution: 使用本机缓存执行 `npm install --prefer-offline --no-audit --fund=false` 补齐依赖后重新 build，确认 `Vite + React + TypeScript` 前端可以成功产出静态包。
+- Prevention: 以后在新 worktree 验证前端改动前，先确认依赖目录是否已准备好；若网络受限，优先尝试 `--prefer-offline` 走本机缓存。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
+
+## 2026-04-15
+
+- Problem: 并发对同一个 SQLite 文件同时执行 `load-dashboard-demo` 与查询命令时，`create_all()` 之间会发生建表竞态，触发 `table stocks already exists`。
+- Resolution: 本轮验证改为串行初始化和查询，避免把第 6 步的运营面板结果建立在竞态数据库上。
+- Prevention: 后续若要并发验证多个 CLI，使用不同的临时数据库文件，或先单独完成初始化再并发读写。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入

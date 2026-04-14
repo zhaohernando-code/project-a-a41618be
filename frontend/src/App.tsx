@@ -4,11 +4,13 @@ import type {
   CandidateItemView,
   CandidateListResponse,
   GlossaryEntryView,
+  OperationsDashboardResponse,
+  PortfolioNavPointView,
   PricePointView,
   StockDashboardResponse,
 } from "./types";
 
-type ViewMode = "candidates" | "stock";
+type ViewMode = "candidates" | "stock" | "operations";
 
 const numberFormatter = new Intl.NumberFormat("zh-CN", {
   maximumFractionDigits: 2,
@@ -33,6 +35,12 @@ function formatDate(value?: string | null): string {
 function directionTone(direction: string): "positive" | "negative" | "neutral" {
   if (direction === "buy") return "positive";
   if (direction === "reduce" || direction === "risk_alert") return "negative";
+  return "neutral";
+}
+
+function statusTone(status: string): "positive" | "negative" | "neutral" {
+  if (status === "pass" || status === "hit" || status === "closed_beta_ready") return "positive";
+  if (status === "fail" || status === "miss" || status === "hold") return "negative";
   return "neutral";
 }
 
@@ -98,15 +106,46 @@ function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "po
   return <span className={`badge badge-${tone}`}>{children}</span>;
 }
 
+function NavSparkline({ points }: { points: PortfolioNavPointView[] }) {
+  if (points.length === 0) {
+    return <div className="chart-empty">暂无净值轨迹</div>;
+  }
+
+  const width = 760;
+  const height = 180;
+  const navValues = points.map((point) => point.nav);
+  const benchmarkValues = points.map((point) => point.benchmark_nav);
+  const min = Math.min(...navValues, ...benchmarkValues);
+  const max = Math.max(...navValues, ...benchmarkValues);
+  const xStep = points.length > 1 ? width / (points.length - 1) : width;
+  const scaleY = (value: number) =>
+    max === min ? height / 2 : height - ((value - min) / (max - min)) * (height - 36) - 18;
+
+  const navPath = points.map((point, index) => `${index === 0 ? "M" : "L"} ${index * xStep} ${scaleY(point.nav)}`).join(" ");
+  const benchmarkPath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${index * xStep} ${scaleY(point.benchmark_nav)}`)
+    .join(" ");
+
+  return (
+    <svg className="sparkline nav-sparkline" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+      <path className="nav-benchmark-line" d={benchmarkPath} />
+      <path className="nav-line" d={navPath} />
+    </svg>
+  );
+}
+
 function App() {
   const [view, setView] = useState<ViewMode>("candidates");
   const [candidates, setCandidates] = useState<CandidateListResponse | null>(null);
   const [glossary, setGlossary] = useState<GlossaryEntryView[]>([]);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<StockDashboardResponse | null>(null);
+  const [operations, setOperations] = useState<OperationsDashboardResponse | null>(null);
   const [questionDraft, setQuestionDraft] = useState("");
+  const [betaKeyDraft, setBetaKeyDraft] = useState(() => api.getBetaAccessKey());
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [loadingOperations, setLoadingOperations] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -115,34 +154,48 @@ function App() {
     [candidates, selectedSymbol],
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [candidatePayload, glossaryPayload] = await Promise.all([
-          api.getCandidates(),
-          api.getGlossary(),
-        ]);
-        if (cancelled) return;
-        setCandidates(candidatePayload);
-        setGlossary(glossaryPayload);
-        const initialSymbol = candidatePayload.items[0]?.symbol ?? null;
-        setSelectedSymbol(initialSymbol);
-      } catch (loadError) {
-        if (cancelled) return;
-        setError(loadError instanceof Error ? loadError.message : "加载看板失败。");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+  async function loadShellData(): Promise<string | null> {
+    setLoading(true);
+    setError(null);
+    try {
+      const [candidatePayload, glossaryPayload] = await Promise.all([
+        api.getCandidates(),
+        api.getGlossary(),
+      ]);
+      setCandidates(candidatePayload);
+      setGlossary(glossaryPayload);
+      const initialSymbol = candidatePayload.items[0]?.symbol ?? null;
+      setSelectedSymbol((current) => current ?? initialSymbol);
+      return initialSymbol;
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "加载看板失败。");
+      return null;
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
+  }
+
+  async function loadDetailData(symbol: string) {
+    setLoadingDetail(true);
+    setLoadingOperations(true);
+    try {
+      const [stockPayload, operationsPayload] = await Promise.all([
+        api.getStockDashboard(symbol),
+        api.getOperationsDashboard(symbol),
+      ]);
+      setDashboard(stockPayload);
+      setOperations(operationsPayload);
+      setQuestionDraft(stockPayload.follow_up.suggested_questions[0] ?? "");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "加载单票解释页失败。");
+    } finally {
+      setLoadingDetail(false);
+      setLoadingOperations(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadShellData();
   }, []);
 
   useEffect(() => {
@@ -150,44 +203,39 @@ function App() {
     const symbol = selectedSymbol;
     let cancelled = false;
     async function loadDetail() {
-      setLoadingDetail(true);
-      try {
-        const payload = await api.getStockDashboard(symbol);
-        if (cancelled) return;
-        setDashboard(payload);
-        setQuestionDraft(payload.follow_up.suggested_questions[0] ?? "");
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "加载单票解释页失败。");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingDetail(false);
-        }
+      if (cancelled) return;
+      await loadDetailData(symbol);
+      if (cancelled) {
+        setLoadingDetail(false);
+        setLoadingOperations(false);
       }
     }
-    loadDetail();
+    void loadDetail();
     return () => {
       cancelled = true;
     };
   }, [selectedSymbol]);
 
   async function handleBootstrap() {
-    setLoading(true);
     setError(null);
     try {
       await api.bootstrapDemo();
-      const [candidatePayload, glossaryPayload] = await Promise.all([
-        api.getCandidates(),
-        api.getGlossary(),
-      ]);
-      setCandidates(candidatePayload);
-      setGlossary(glossaryPayload);
-      setSelectedSymbol(candidatePayload.items[0]?.symbol ?? null);
+      const initialSymbol = await loadShellData();
+      if (initialSymbol) {
+        await loadDetailData(initialSymbol);
+      }
     } catch (bootstrapError) {
       setError(bootstrapError instanceof Error ? bootstrapError.message : "写入演示数据失败。");
-    } finally {
-      setLoading(false);
+    }
+  }
+
+  async function handleApplyBetaKey() {
+    api.setBetaAccessKey(betaKeyDraft);
+    setError(null);
+    const initialSymbol = await loadShellData();
+    const resolvedSymbol = selectedSymbol ?? initialSymbol;
+    if (resolvedSymbol) {
+      await loadDetailData(resolvedSymbol);
     }
   }
 
@@ -209,6 +257,7 @@ function App() {
   }
 
   const mergedGlossary = dashboard?.glossary?.length ? dashboard.glossary : glossary;
+  const accessDenied = error?.includes("beta access denied") ?? false;
 
   return (
     <div className="app-shell">
@@ -239,15 +288,32 @@ function App() {
         <button className={view === "stock" ? "active" : ""} onClick={() => setView("stock")} disabled={!selectedSymbol}>
           单票分析页
         </button>
+        <button className={view === "operations" ? "active" : ""} onClick={() => setView("operations")}>
+          模拟交易与内测
+        </button>
       </nav>
 
       {error ? (
         <section className="empty-state">
           <h2>还没有可展示的数据</h2>
           <p>{error}</p>
-          <button className="primary-button" onClick={handleBootstrap}>
-            写入演示 watchlist
-          </button>
+          {accessDenied ? (
+            <div className="access-gate">
+              <input
+                className="access-input"
+                value={betaKeyDraft}
+                onChange={(event) => setBetaKeyDraft(event.target.value)}
+                placeholder="输入小范围内测 access key"
+              />
+              <button className="primary-button" onClick={handleApplyBetaKey}>
+                保存并重试
+              </button>
+            </div>
+          ) : (
+            <button className="primary-button" onClick={handleBootstrap}>
+              写入演示 watchlist
+            </button>
+          )}
         </section>
       ) : null}
 
@@ -594,8 +660,301 @@ function App() {
                           ))}
                         </div>
                       ) : (
-                        <p className="summary-copy">当前建议没有自动生成模拟订单，下一步会在分离式模拟交易阶段补齐完整闭环。</p>
+                        <p className="summary-copy">当前建议没有自动生成模拟订单，但组合级收益、回撤和准入治理可在“模拟交易与内测”页统一查看。</p>
                       )}
+                    </article>
+                  </section>
+                </>
+              )}
+            </section>
+          ) : null}
+
+          {view === "operations" ? (
+            <section className="operations-page">
+              {loadingOperations || !operations ? (
+                <div className="loading-panel">正在读取模拟交易闭环与内测治理…</div>
+              ) : (
+                <>
+                  <section className="split-grid">
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Closed Beta</p>
+                          <h2>分离式模拟交易与内测准入</h2>
+                        </div>
+                        <Badge tone={statusTone(operations.overview.beta_readiness)}>{operations.overview.beta_readiness}</Badge>
+                      </div>
+                      <p className="summary-copy">
+                        手动模拟与模型自动持仓已经分账运行，并将收益归因、回撤监控、建议命中复盘和访问治理收敛到同一运营面板。
+                      </p>
+                      <dl className="summary-grid">
+                        <div>
+                          <dt>手动仓数量</dt>
+                          <dd>{operations.overview.manual_portfolio_count}</dd>
+                        </div>
+                        <div>
+                          <dt>自动仓数量</dt>
+                          <dd>{operations.overview.auto_portfolio_count}</dd>
+                        </div>
+                        <div>
+                          <dt>建议复盘命中率</dt>
+                          <dd>{percentFormatter.format(operations.overview.recommendation_replay_hit_rate)}</dd>
+                        </div>
+                        <div>
+                          <dt>规则通过率</dt>
+                          <dd>{percentFormatter.format(operations.overview.rule_pass_rate)}</dd>
+                        </div>
+                      </dl>
+                    </article>
+
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Access</p>
+                          <h3>访问控制与范围</h3>
+                        </div>
+                        <Badge tone={statusTone(operations.access_control.auth_mode === "open_demo" ? "warn" : "pass")}>
+                          {operations.access_control.auth_mode}
+                        </Badge>
+                      </div>
+                      <ul className="flat-list">
+                        <li>Header: {operations.access_control.required_header}</li>
+                        <li>Allowlist 槽位: {operations.access_control.allowlist_slots}</li>
+                        <li>当前活跃用户: {operations.access_control.active_users}</li>
+                        <li>Session TTL: {operations.access_control.session_ttl_minutes} 分钟</li>
+                        <li>审计留档: {operations.access_control.audit_log_retention_days} 天</li>
+                      </ul>
+                      <p className="summary-copy">{operations.access_control.export_policy}</p>
+                    </article>
+                  </section>
+
+                  <section className="portfolio-stack">
+                    {operations.portfolios.map((portfolio) => (
+                      <article key={portfolio.portfolio_key} className="panel portfolio-panel">
+                        <div className="panel-header">
+                          <div>
+                            <p className="panel-label">{portfolio.mode_label}</p>
+                            <h3>{portfolio.name}</h3>
+                          </div>
+                          <div className="stock-badges">
+                            <Badge tone={statusTone(portfolio.total_return >= 0 ? "pass" : "fail")}>
+                              总收益 {percentFormatter.format(portfolio.total_return)}
+                            </Badge>
+                            <Badge tone={statusTone(portfolio.excess_return >= 0 ? "pass" : "warn")}>
+                              超额 {percentFormatter.format(portfolio.excess_return)}
+                            </Badge>
+                            <Badge tone={statusTone(portfolio.max_drawdown > -0.12 ? "pass" : "warn")}>
+                              最大回撤 {percentFormatter.format(portfolio.max_drawdown)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <p className="summary-copy">{portfolio.strategy_summary}</p>
+                        <NavSparkline points={portfolio.nav_history} />
+                        <dl className="summary-grid">
+                          <div>
+                            <dt>净值</dt>
+                            <dd>{numberFormatter.format(portfolio.net_asset_value)}</dd>
+                          </div>
+                          <div>
+                            <dt>基准</dt>
+                            <dd>{portfolio.benchmark_symbol ?? "未配置"} / {percentFormatter.format(portfolio.benchmark_return)}</dd>
+                          </div>
+                          <div>
+                            <dt>可用现金</dt>
+                            <dd>{numberFormatter.format(portfolio.available_cash)}</dd>
+                          </div>
+                          <div>
+                            <dt>仓位</dt>
+                            <dd>{percentFormatter.format(portfolio.invested_ratio)}</dd>
+                          </div>
+                          <div>
+                            <dt>已实现 / 未实现</dt>
+                            <dd>{numberFormatter.format(portfolio.realized_pnl)} / {numberFormatter.format(portfolio.unrealized_pnl)}</dd>
+                          </div>
+                          <div>
+                            <dt>佣金 / 税费</dt>
+                            <dd>{numberFormatter.format(portfolio.fee_total)} / {numberFormatter.format(portfolio.tax_total)}</dd>
+                          </div>
+                        </dl>
+
+                        <section className="portfolio-detail-grid">
+                          <div className="mini-panel">
+                            <h4>收益归因</h4>
+                            <div className="metric-list">
+                              {portfolio.attribution.map((item) => (
+                                <div key={`${portfolio.portfolio_key}-${item.label}`} className="metric-row">
+                                  <span>{item.label}</span>
+                                  <strong>{numberFormatter.format(item.amount)}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mini-panel">
+                            <h4>当前持仓</h4>
+                            <div className="holding-list">
+                              {portfolio.holdings.map((holding) => (
+                                <article key={`${portfolio.portfolio_key}-${holding.symbol}`} className="holding-card">
+                                  <div className="holding-top">
+                                    <strong>{holding.name}</strong>
+                                    <span>{percentFormatter.format(holding.portfolio_weight)}</span>
+                                  </div>
+                                  <p>{holding.symbol} · {holding.quantity} 股 · 成本 {numberFormatter.format(holding.avg_cost)}</p>
+                                  <small>总盈亏 {numberFormatter.format(holding.total_pnl)} / 最新价 {numberFormatter.format(holding.last_price)}</small>
+                                </article>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mini-panel">
+                            <h4>A 股规则检查</h4>
+                            <div className="rule-list">
+                              {portfolio.rules.map((rule) => (
+                                <article key={`${portfolio.portfolio_key}-${rule.code}`} className="rule-card">
+                                  <div className="rule-top">
+                                    <strong>{rule.title}</strong>
+                                    <Badge tone={statusTone(rule.status)}>{rule.status}</Badge>
+                                  </div>
+                                  <p>{rule.detail}</p>
+                                </article>
+                              ))}
+                            </div>
+                          </div>
+                        </section>
+
+                        <section className="portfolio-detail-grid">
+                          <div className="mini-panel">
+                            <h4>最近订单</h4>
+                            <div className="order-list">
+                              {portfolio.recent_orders.map((order) => (
+                                <article key={order.order_key} className="order-card">
+                                  <div className="order-top">
+                                    <strong>{order.stock_name}</strong>
+                                    <Badge tone={order.side === "buy" ? "positive" : "negative"}>{order.side}</Badge>
+                                  </div>
+                                  <p>{formatDate(order.requested_at)} · {order.quantity} 股 · {order.order_type}</p>
+                                  <small>成交均价 {order.avg_fill_price ? numberFormatter.format(order.avg_fill_price) : "--"} / 金额 {numberFormatter.format(order.gross_amount)}</small>
+                                  <div className="inline-badges">
+                                    {order.checks.map((check) => (
+                                      <Badge key={`${order.order_key}-${check.code}`} tone={statusTone(check.status)}>
+                                        {check.title}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </article>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mini-panel">
+                            <h4>当前告警</h4>
+                            {portfolio.alerts.length > 0 ? (
+                              <ul className="flat-list">
+                                {portfolio.alerts.map((alert) => (
+                                  <li key={`${portfolio.portfolio_key}-${alert}`}>{alert}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="summary-copy">当前没有触发额外的仓位或回撤告警。</p>
+                            )}
+                          </div>
+                        </section>
+                      </article>
+                    ))}
+                  </section>
+
+                  <section className="split-grid">
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Replay</p>
+                          <h3>建议命中复盘</h3>
+                        </div>
+                      </div>
+                      <div className="replay-list">
+                        {operations.recommendation_replay.map((item) => (
+                          <article key={`replay-${item.recommendation_id}`} className="replay-card">
+                            <div className="replay-top">
+                              <div>
+                                <strong>{item.stock_name}</strong>
+                                <p>{item.symbol} · {item.review_window_days} 个交易日</p>
+                              </div>
+                              <Badge tone={statusTone(item.hit_status)}>{item.hit_status}</Badge>
+                            </div>
+                            <p>{item.summary}</p>
+                            <div className="chart-meta">
+                              <span>标的 {percentFormatter.format(item.stock_return)}</span>
+                              <span>基准 {percentFormatter.format(item.benchmark_return)}</span>
+                              <span>超额 {percentFormatter.format(item.excess_return)}</span>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </article>
+
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Refresh</p>
+                          <h3>刷新策略</h3>
+                        </div>
+                      </div>
+                      <div className="schedule-list">
+                        {operations.refresh_policy.schedules.map((schedule) => (
+                          <article key={schedule.scope} className="schedule-card">
+                            <div className="schedule-top">
+                              <strong>{schedule.scope}</strong>
+                              <span>{schedule.cadence_minutes} 分钟</span>
+                            </div>
+                            <p>{schedule.trigger}</p>
+                            <small>延迟 {schedule.market_delay_minutes} 分钟 / stale {schedule.stale_after_minutes} 分钟</small>
+                          </article>
+                        ))}
+                      </div>
+                    </article>
+                  </section>
+
+                  <section className="split-grid">
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Performance</p>
+                          <h3>性能阈值</h3>
+                        </div>
+                      </div>
+                      <div className="threshold-list">
+                        {operations.performance_thresholds.map((item) => (
+                          <article key={item.metric} className="threshold-card">
+                            <div className="threshold-top">
+                              <strong>{item.metric}</strong>
+                              <Badge tone={statusTone(item.status)}>{item.status}</Badge>
+                            </div>
+                            <p>{item.note}</p>
+                            <small>目标 {item.target} {item.unit} / 当前 {item.observed} {item.unit}</small>
+                          </article>
+                        ))}
+                      </div>
+                    </article>
+
+                    <article className="panel">
+                      <div className="panel-header">
+                        <div>
+                          <p className="panel-label">Launch Gates</p>
+                          <h3>上线门槛</h3>
+                        </div>
+                      </div>
+                      <div className="threshold-list">
+                        {operations.launch_gates.map((item) => (
+                          <article key={item.gate} className="threshold-card">
+                            <div className="threshold-top">
+                              <strong>{item.gate}</strong>
+                              <Badge tone={statusTone(item.status)}>{item.status}</Badge>
+                            </div>
+                            <p>{item.threshold}</p>
+                            <small>{item.current_value}</small>
+                          </article>
+                        ))}
+                      </div>
                     </article>
                   </section>
                 </>

@@ -364,8 +364,15 @@ def _build_demo_simulation_artifacts(
     symbol: str,
     generated_at: datetime,
     recommendation_key: str,
+    market_bars: list[dict[str, Any]],
     latest_close: float,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    seed_bar = market_bars[-11] if len(market_bars) >= 11 else market_bars[0]
+    seed_at = seed_bar["observed_at"]
+    seed_trade_token = seed_at.strftime("%Y%m%d")
+    seed_price = round(float(seed_bar["close_price"]) * 1.001, 2)
+    seed_manual_quantity = 100
+    seed_auto_quantity = 200
     paper_portfolios = [
         with_lineage(
             {
@@ -374,9 +381,13 @@ def _build_demo_simulation_artifacts(
                 "mode": "manual",
                 "benchmark_symbol": "000300.SH",
                 "base_currency": "CNY",
-                "cash_balance": 500000.0,
+                "cash_balance": 900000.0,
                 "status": "active",
-                "portfolio_payload": {"purpose": "manual-paper-trade"},
+                "portfolio_payload": {
+                    "purpose": "manual-paper-trade",
+                    "starting_cash": 900000.0,
+                    "separation_policy": "independent-ledger",
+                },
             },
             payload_key="portfolio_payload",
             source_uri="simulation://portfolio/manual-sandbox",
@@ -389,9 +400,13 @@ def _build_demo_simulation_artifacts(
                 "mode": "auto_model",
                 "benchmark_symbol": "000300.SH",
                 "base_currency": "CNY",
-                "cash_balance": 800000.0,
+                "cash_balance": 1800000.0,
                 "status": "active",
-                "portfolio_payload": {"purpose": "auto-model-portfolio"},
+                "portfolio_payload": {
+                    "purpose": "auto-model-portfolio",
+                    "starting_cash": 1800000.0,
+                    "separation_policy": "independent-ledger",
+                },
             },
             payload_key="portfolio_payload",
             source_uri="simulation://portfolio/auto-wave",
@@ -402,6 +417,46 @@ def _build_demo_simulation_artifacts(
     manual_limit = round(latest_close * 1.001, 2)
     auto_fill = round(latest_close * 1.002, 2)
     paper_orders = [
+        with_lineage(
+            {
+                "order_key": f"order-manual-seed-600519-{seed_trade_token}",
+                "portfolio_key": "portfolio-manual-sandbox",
+                "stock_symbol": symbol,
+                "recommendation_key": None,
+                "order_source": "manual",
+                "side": "buy",
+                "requested_at": seed_at,
+                "quantity": seed_manual_quantity,
+                "order_type": "limit",
+                "limit_price": seed_price,
+                "status": "filled",
+                "notes": "手动模拟仓的历史建仓样本，用于回撤和归因演算。",
+                "order_payload": {"execution_mode": "manual", "intent": "historical_seed"},
+            },
+            payload_key="order_payload",
+            source_uri=f"simulation://order/manual/seed/600519/{seed_trade_token}",
+            license_tag="internal-derived",
+        ),
+        with_lineage(
+            {
+                "order_key": f"order-auto-seed-600519-{seed_trade_token}",
+                "portfolio_key": "portfolio-auto-wave",
+                "stock_symbol": symbol,
+                "recommendation_key": None,
+                "order_source": "model",
+                "side": "buy",
+                "requested_at": seed_at,
+                "quantity": seed_auto_quantity,
+                "order_type": "market",
+                "limit_price": None,
+                "status": "filled",
+                "notes": "自动组合的历史种子仓位，用于验证组合净值和基准对比。",
+                "order_payload": {"execution_mode": "auto_model", "intent": "historical_seed"},
+            },
+            payload_key="order_payload",
+            source_uri=f"simulation://order/auto/seed/600519/{seed_trade_token}",
+            license_tag="internal-derived",
+        ),
         with_lineage(
             {
                 "order_key": "order-manual-600519-20260414",
@@ -444,6 +499,40 @@ def _build_demo_simulation_artifacts(
         ),
     ]
     paper_fills = [
+        with_lineage(
+            {
+                "fill_key": f"fill-manual-seed-600519-{seed_trade_token}",
+                "order_key": f"order-manual-seed-600519-{seed_trade_token}",
+                "stock_symbol": symbol,
+                "filled_at": seed_at,
+                "price": seed_price,
+                "quantity": seed_manual_quantity,
+                "fee": round(seed_price * seed_manual_quantity * 0.0005, 2),
+                "tax": 0.0,
+                "slippage_bps": 2.8,
+                "fill_payload": {"matching_rule": "t+1-paper", "intent": "historical_seed"},
+            },
+            payload_key="fill_payload",
+            source_uri=f"simulation://fill/manual/seed/600519/{seed_trade_token}",
+            license_tag="internal-derived",
+        ),
+        with_lineage(
+            {
+                "fill_key": f"fill-auto-seed-600519-{seed_trade_token}",
+                "order_key": f"order-auto-seed-600519-{seed_trade_token}",
+                "stock_symbol": symbol,
+                "filled_at": seed_at,
+                "price": round(seed_price * 1.001, 2),
+                "quantity": seed_auto_quantity,
+                "fee": round(seed_price * 1.001 * seed_auto_quantity * 0.0005, 2),
+                "tax": 0.0,
+                "slippage_bps": 3.5,
+                "fill_payload": {"matching_rule": "t+1-paper", "intent": "historical_seed"},
+            },
+            payload_key="fill_payload",
+            source_uri=f"simulation://fill/auto/seed/600519/{seed_trade_token}",
+            license_tag="internal-derived",
+        ),
         with_lineage(
             {
                 "fill_key": "fill-manual-600519-20260414",
@@ -589,6 +678,7 @@ class DemoLowCostRouteProvider:
             symbol=symbol,
             generated_at=generated_at,
             recommendation_key=signal_artifacts.recommendation["recommendation_key"],
+            market_bars=market_bars,
             latest_close=float(market_bars[-1]["close_price"]),
         )
 

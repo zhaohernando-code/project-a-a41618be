@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ashare_evidence.dashboard import bootstrap_dashboard_demo, get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
 from ashare_evidence.db import init_database, session_scope
+from ashare_evidence.operations import build_operations_dashboard
 
 
 class DashboardViewTests(unittest.TestCase):
@@ -52,6 +53,26 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("请回答这个问题", dashboard["follow_up"]["copy_prompt"])
         self.assertTrue(dashboard["risk_panel"]["disclaimer"])
         self.assertGreaterEqual(len(dashboard["evidence"]), 6)
+        self.assertEqual(len(dashboard["simulation_orders"]), 2)
+
+    def test_operations_dashboard_contains_portfolios_replay_and_launch_gates(self) -> None:
+        with session_scope(self.database_url) as session:
+            bootstrap_dashboard_demo(session)
+
+        with session_scope(self.database_url) as session:
+            operations = build_operations_dashboard(session, sample_symbol="600519.SH")
+
+        self.assertEqual(operations["overview"]["manual_portfolio_count"], 1)
+        self.assertEqual(operations["overview"]["auto_portfolio_count"], 1)
+        self.assertEqual(len(operations["portfolios"]), 2)
+        self.assertGreaterEqual(len(operations["recommendation_replay"]), 4)
+        self.assertGreaterEqual(len(operations["launch_gates"]), 5)
+        self.assertTrue(all(portfolio["nav_history"] for portfolio in operations["portfolios"]))
+        self.assertTrue(all(portfolio["recent_orders"] for portfolio in operations["portfolios"]))
+        self.assertTrue(all(portfolio["rules"] for portfolio in operations["portfolios"]))
+        first_gate = {gate["gate"] for gate in operations["launch_gates"]}
+        self.assertIn("分离式模拟交易", first_gate)
+        self.assertIn("A 股规则合规", first_gate)
 
     def test_glossary_entries_cover_key_user_terms(self) -> None:
         glossary = get_glossary_entries()
