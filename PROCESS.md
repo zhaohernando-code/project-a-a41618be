@@ -52,3 +52,11 @@
 - Prevention: Finalization path now records and surfaces publish outcomes to avoid silent drift.
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, source=direct
+
+## 2026-04-14
+
+- Problem: task task-mnysioxi-xi1z1c (证据化数据底座) finished with status failed.
+- Resolution: Task failed during recovery: Task was marked failed after prolonged inactivity without a final summary.
+- Prevention: Finalization path now records and surfaces publish outcomes to avoid silent drift.
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, source=direct

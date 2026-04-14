@@ -34,10 +34,11 @@
 ## Execution Steps
 
 - 1. [COMPLETED] Prepare project scaffold
-- 2. [COMPLETED] 数据与开源基线评估 · decision gate passed with commercial-license gate before external beta
-* 3. [PENDING] 证据化数据底座
+* 2. [WAITING_DECISION] 数据与开源基线评估 · operator decision required
+- 3. [PENDING] 证据化数据底座
 - 4. [PENDING] 信号建模与建议引擎
 - 5. [PENDING] 用户看板与解释闭环
 - 6. [PENDING] 分离式模拟交易与内测准入
 
-Current step: 证据化数据底座
+Current step: 数据与开源基线评估
+Decision status: waiting for operator selection
