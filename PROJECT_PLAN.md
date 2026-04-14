@@ -31,30 +31,48 @@
 - LLM 同时参与解释和因子生成会带来漂移与幻觉风险；如果缺少证据绑定、阈值治理和历史校准，系统会把弱信号包装成高确定性建议。
 - 产品方向偏向更强决策支持，意味着合规表达、责任边界、访问控制、建议留档、日志审计与数据许可要求明显高于普通资讯看板，需要在一期内测阶段提前固化。
 
-## Step 2 Delivery Snapshot
+## Step 3 Delivery Snapshot
 
-2026-04-15 已完成第 2 步“证据化数据底座”的基础实现，当前交付包括：
+2026-04-15 已完成第 3 步“信号建模与建议引擎”的 demo 基线实现，当前交付包括：
 
-- 统一的 `LineageMixin`，把 `license_tag`、`usage_scope`、`redistribution_scope`、`source_uri`、`lineage_hash` 落到行情、新闻、板块、特征、模型、提示词、建议、模拟交易和采集审计记录
-- `FastAPI + SQLAlchemy` 后端骨架，可同时兼容本地 SQLite 和后续 Postgres 部署
-- 面向 `Tushare Pro + 巨潮资讯/交易所披露 + Qlib` 的 provider contract，并用 `DemoLowCostRouteProvider` 完成端到端示例采集链路
-- `recommendation -> recommendation_evidence -> domain artifact` 的跨域证据追溯能力
-- `latest recommendation` 与 `trace` API/CLI，可输出股票、时间、模型版本、提示词版本、原始证据和模拟交易关联记录
-- `unittest` 校验，覆盖 mandatory lineage fields、完整 trace 和模拟交易回溯
+- 新增 `signal_engine`，把价格基线、新闻事件因子、LLM 评估因子和融合评分框架固化为独立计算层
+- `DemoLowCostRouteProvider` 不再写死 recommendation，而是先生成原始行情/新闻证据，再由引擎产出：
+  - `price_baseline_factor`
+  - `news_event_factor`
+  - `llm_assessment_factor`
+  - `fusion_scorecard`
+- 输出 `14/28/56` 天三个 horizon 的 `model_results`，并在 `model_run.metrics_payload` 中保留滚动时间验证摘要、交易成本假设和 LLM 因子历史评估摘要
+- recommendation 现已结构化输出：
+  - 方向
+  - 置信标签与置信表达
+  - 核心驱动
+  - 反向风险
+  - 适用周期
+  - 更新时间
+  - 降级条件
+  - 因子拆解
+  - 验证快照
+- `trace` 现可回溯到行情、新闻、板块归属、四类 factor snapshot、主 horizon 模型结果和模拟交易记录
+- `unittest` 已覆盖：
+  - mandatory lineage fields
+  - recommendation trace
+  - factor snapshot 持久化
+  - 2-8 周 horizon 结果落库
 
 当前仍保留的边界：
 
-- 真实外部数据源尚未在当前沙箱内联网接入，真实 provider 需要在第 3 步前按同一 contract 补齐
-- 目前完成的是“证据化底座”和示例链路，不包含真实滚动训练、因子评估和融合建议权重治理
+- 真实 `Tushare / 巨潮 / Qlib` provider 尚未联网接入，当前滚动验证指标和 LLM 因子评估仍是 demo/offline contract 结构
+- 当前建议引擎已固化融合框架与降级规则，但真实历史训练、walk-forward 回测和线上刷新任务还需在下一轮接真实数据后补齐
+- 当前仓库仍以前后端骨架和 demo 单票为主，尚未进入面向非专业用户的解释页与候选股页面
 
 ## Execution Steps
 
 - 1. [COMPLETED] Prepare project scaffold
 - 2. [COMPLETED] 数据与开源基线评估 · decision gate resolved
 - 3. [COMPLETED] 证据化数据底座
-- 4. [PENDING] 信号建模与建议引擎
+- 4. [COMPLETED] 信号建模与建议引擎
 - 5. [PENDING] 用户看板与解释闭环
 - 6. [PENDING] 分离式模拟交易与内测准入
 
-Current step: 信号建模与建议引擎
-Last completed milestone: 证据化数据底座
+Current step: 用户看板与解释闭环
+Last completed milestone: 信号建模与建议引擎
