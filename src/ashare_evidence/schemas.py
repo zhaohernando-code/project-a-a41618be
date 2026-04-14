@@ -100,3 +100,104 @@ class LatestRecommendationResponse(BaseModel):
 class RecommendationTraceResponse(LatestRecommendationResponse):
     evidence: list[EvidenceArtifactView] = Field(default_factory=list)
     simulation_orders: list[SimulationOrderView] = Field(default_factory=list)
+
+
+class HeroView(BaseModel):
+    latest_close: float
+    day_change_pct: float
+    latest_volume: float
+    turnover_rate: float | None = None
+    high_price: float
+    low_price: float
+    sector_tags: list[str] = Field(default_factory=list)
+    direction_label: str
+    last_updated: datetime
+
+
+class PricePointView(BaseModel):
+    observed_at: datetime
+    close_price: float
+    volume: float
+
+
+class RecentNewsView(BaseModel):
+    headline: str
+    summary: str
+    published_at: datetime
+    impact_direction: str
+    entity_scope: str
+    relevance_score: float
+    source_uri: str
+    license_tag: str
+
+
+class ChangeView(BaseModel):
+    has_previous: bool
+    change_badge: str
+    summary: str
+    reasons: list[str] = Field(default_factory=list)
+    previous_direction: str | None = None
+    previous_confidence_label: str | None = None
+    previous_generated_at: datetime | None = None
+
+
+class GlossaryEntryView(BaseModel):
+    term: str
+    plain_explanation: str
+    why_it_matters: str
+
+
+class RiskPanelView(BaseModel):
+    headline: str
+    items: list[str] = Field(default_factory=list)
+    disclaimer: str
+    change_hint: str
+
+
+class FollowUpView(BaseModel):
+    suggested_questions: list[str] = Field(default_factory=list)
+    copy_prompt: str
+    evidence_packet: list[str] = Field(default_factory=list)
+
+
+class CandidateItemView(BaseModel):
+    rank: int
+    symbol: str
+    name: str
+    sector: str
+    direction: str
+    direction_label: str
+    confidence_label: str
+    confidence_score: float
+    summary: str
+    applicable_period: str
+    generated_at: datetime
+    as_of_data_time: datetime
+    last_close: float | None = None
+    price_return_20d: float
+    why_now: str
+    primary_risk: str | None = None
+    change_summary: str
+    change_badge: str
+    evidence_status: str
+
+
+class CandidateListResponse(BaseModel):
+    generated_at: datetime
+    items: list[CandidateItemView] = Field(default_factory=list)
+
+
+class DashboardBootstrapResponse(BaseModel):
+    symbols: list[str] = Field(default_factory=list)
+    recommendation_count: int
+    candidate_count: int
+
+
+class StockDashboardResponse(RecommendationTraceResponse):
+    hero: HeroView
+    price_chart: list[PricePointView] = Field(default_factory=list)
+    recent_news: list[RecentNewsView] = Field(default_factory=list)
+    change: ChangeView
+    glossary: list[GlossaryEntryView] = Field(default_factory=list)
+    risk_panel: RiskPanelView
+    follow_up: FollowUpView
