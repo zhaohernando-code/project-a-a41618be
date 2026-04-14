@@ -84,3 +84,11 @@
 - Prevention: 后续如果任务要求强制提交，需要先确认当前 worktree 的 `.git` 元数据目录具备写权限，或切换到具备提交权限的仓库环境。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=证据化数据底座
+
+## 2026-04-15
+
+- Problem: 第 3 步如果继续沿用静态 demo recommendation，就无法证明“价格基线 / 新闻因子 / LLM 因子 / 融合评分 / 降级规则”这条链路已经真正落地，后续接真实 provider 时会再次返工。
+- Resolution: 新增 `signal_engine`，把 demo provider 改造成“原始行情和新闻证据 -> 因子快照 -> horizon 模型结果 -> recommendation”的可执行链路，并把 `confidence_expression`、`downgrade_conditions`、`factor_breakdown`、`validation_snapshot` 直接暴露到 API/CLI。
+- Prevention: 后续接入真实 `Tushare / 巨潮 / Qlib` 或真实 LLM 时，必须沿当前 signal engine contract 接入，禁止重新回到在 provider 中手写 recommendation 文本的方式。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=信号建模与建议引擎
