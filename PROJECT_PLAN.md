@@ -31,39 +31,48 @@
 - LLM 同时参与解释和因子生成会带来漂移与幻觉风险；如果缺少证据绑定、阈值治理和历史校准，系统会把弱信号包装成高确定性建议。
 - 产品方向偏向更强决策支持，意味着合规表达、责任边界、访问控制、建议留档、日志审计与数据许可要求明显高于普通资讯看板，需要在一期内测阶段提前固化。
 
-## Step 3 Delivery Snapshot
+## Step 5 Delivery Snapshot
 
-2026-04-15 已完成第 3 步“信号建模与建议引擎”的 demo 基线实现，当前交付包括：
+2026-04-15 已完成第 4 步“用户看板与解释闭环”的 demo 实现，当前交付包括：
 
-- 新增 `signal_engine`，把价格基线、新闻事件因子、LLM 评估因子和融合评分框架固化为独立计算层
-- `DemoLowCostRouteProvider` 不再写死 recommendation，而是先生成原始行情/新闻证据，再由引擎产出：
-  - `price_baseline_factor`
-  - `news_event_factor`
-  - `llm_assessment_factor`
-  - `fusion_scorecard`
-- 输出 `14/28/56` 天三个 horizon 的 `model_results`，并在 `model_run.metrics_payload` 中保留滚动时间验证摘要、交易成本假设和 LLM 因子历史评估摘要
-- recommendation 现已结构化输出：
-  - 方向
-  - 置信标签与置信表达
-  - 核心驱动
-  - 反向风险
-  - 适用周期
-  - 更新时间
-  - 降级条件
-  - 因子拆解
-  - 验证快照
-- `trace` 现可回溯到行情、新闻、板块归属、四类 factor snapshot、主 horizon 模型结果和模拟交易记录
-- `unittest` 已覆盖：
-  - mandatory lineage fields
-  - recommendation trace
-  - factor snapshot 持久化
-  - 2-8 周 horizon 结果落库
+- 新增多股票 dashboard demo watchlist，并为每只股票同时写入“上一版建议 + 当前建议”，用于解释建议为何变化：
+  - `600519.SH`
+  - `300750.SZ`
+  - `601318.SH`
+  - `002594.SZ`
+- 新增面向前端的聚合服务与 API：
+  - `/bootstrap/dashboard-demo`
+  - `/dashboard/candidates`
+  - `/dashboard/glossary`
+  - `/stocks/{symbol}/dashboard`
+- 单票页 payload 现已覆盖：
+  - 延迟行情走势与成交量轨迹
+  - 板块标签和最新更新时间
+  - 建议摘要、方向、置信表达、适用周期
+  - 最近事件、证据回溯、风险提示、变化原因
+  - 术语解释、GPT 追问包、已有关联模拟订单
+- 候选页 payload 现已覆盖：
+  - watchlist 排序结果
+  - 当前方向与置信度
+  - why now / primary risk
+  - change badge / change summary
+  - 20 日趋势与最新价格
+- 新增 `frontend/` 工程，采用 `Vite 4 + React 18 + TypeScript`，可构建为 GitHub Pages 子页面静态站点，并内置：
+  - 候选股推荐页
+  - 单票分析页
+  - 证据回溯卡片
+  - 风险与失效条件
+  - 术语解释
+  - GPT 追问入口
+- 本轮验证已覆盖：
+  - `python3 -m unittest discover -s tests -v`
+  - `cd frontend && npm run build`
 
 当前仍保留的边界：
 
-- 真实 `Tushare / 巨潮 / Qlib` provider 尚未联网接入，当前滚动验证指标和 LLM 因子评估仍是 demo/offline contract 结构
-- 当前建议引擎已固化融合框架与降级规则，但真实历史训练、walk-forward 回测和线上刷新任务还需在下一轮接真实数据后补齐
-- 当前仓库仍以前后端骨架和 demo 单票为主，尚未进入面向非专业用户的解释页与候选股页面
+- 真实 `Tushare / 巨潮 / Qlib` provider 尚未联网接入，当前行情、事件和滚动验证仍为 demo/offline contract
+- GPT 追问入口当前提供的是“带上下文的追问包生成器”，还未接入线上对话服务
+- 分离式模拟交易、访问控制、刷新策略和上线门槛仍待下一步补齐
 
 ## Execution Steps
 
@@ -71,8 +80,8 @@
 - 2. [COMPLETED] 数据与开源基线评估 · decision gate resolved
 - 3. [COMPLETED] 证据化数据底座
 - 4. [COMPLETED] 信号建模与建议引擎
-- 5. [PENDING] 用户看板与解释闭环
+- 5. [COMPLETED] 用户看板与解释闭环
 - 6. [PENDING] 分离式模拟交易与内测准入
 
-Current step: 用户看板与解释闭环
-Last completed milestone: 信号建模与建议引擎
+Current step: 分离式模拟交易与内测准入
+Last completed milestone: 用户看板与解释闭环
