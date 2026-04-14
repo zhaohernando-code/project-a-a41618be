@@ -583,6 +583,18 @@ def _serialize_recommendation(recommendation: Recommendation) -> dict[str, Any]:
     model_version = recommendation.model_version
     registry = model_version.registry
     prompt_version = recommendation.prompt_version
+    payload = recommendation.recommendation_payload or {}
+    validation_snapshot = payload.get("validation_snapshot")
+    if not validation_snapshot and recommendation.model_run is not None:
+        validation_snapshot = recommendation.model_run.metrics_payload
+    factor_breakdown = payload.get("factor_breakdown", {})
+    reverse_risks = payload.get("reverse_risks", recommendation.risk_flags)
+    downgrade_conditions = payload.get("downgrade_conditions", [])
+    confidence_expression = payload.get("confidence_expression", recommendation.confidence_label)
+    applicable_period = payload.get(
+        "applicable_period",
+        f"{recommendation.horizon_min_days // 7}-{recommendation.horizon_max_days // 7} 周",
+    )
 
     return {
         "stock": {
@@ -597,15 +609,22 @@ def _serialize_recommendation(recommendation: Recommendation) -> dict[str, Any]:
             "direction": recommendation.direction,
             "confidence_label": recommendation.confidence_label,
             "confidence_score": recommendation.confidence_score,
+            "confidence_expression": confidence_expression,
             "horizon_min_days": recommendation.horizon_min_days,
             "horizon_max_days": recommendation.horizon_max_days,
+            "applicable_period": applicable_period,
             "summary": recommendation.summary,
             "generated_at": recommendation.generated_at,
+            "updated_at": recommendation.generated_at,
             "as_of_data_time": recommendation.as_of_data_time,
             "evidence_status": recommendation.evidence_status,
             "degrade_reason": recommendation.degrade_reason,
             "core_drivers": recommendation.core_drivers,
             "risk_flags": recommendation.risk_flags,
+            "reverse_risks": reverse_risks,
+            "downgrade_conditions": downgrade_conditions,
+            "factor_breakdown": factor_breakdown,
+            "validation_snapshot": validation_snapshot or {},
             "lineage": _serialize_lineage(recommendation),
         },
         "model": {
@@ -634,6 +653,7 @@ def get_latest_recommendation_summary(session: Session, symbol: str) -> dict[str
             joinedload(Recommendation.stock),
             joinedload(Recommendation.model_version).joinedload(ModelVersion.registry),
             joinedload(Recommendation.prompt_version),
+            joinedload(Recommendation.model_run),
         )
         .order_by(Recommendation.generated_at.desc())
     )
