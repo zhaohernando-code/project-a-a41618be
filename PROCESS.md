@@ -92,3 +92,27 @@
 - Prevention: 后续接入真实 `Tushare / 巨潮 / Qlib` 或真实 LLM 时，必须沿当前 signal engine contract 接入，禁止重新回到在 provider 中手写 recommendation 文本的方式。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=信号建模与建议引擎
+
+## 2026-04-15
+
+- Problem: 如果用户看板阶段仍让前端自行拼接 recommendation、trace、行情、新闻和术语解释，后续一旦 recommendation schema 或风控口径变化，候选页、单票页和 GPT 追问入口会一起返工。
+- Resolution: 新增 `dashboard_demo.py` 和 `dashboard.py`，把多股票 watchlist、上一版/当前版建议、变化原因、风险面板、术语解释和 GPT 追问上下文统一下沉为后端 contract；同时新增 `frontend/` 的 `Vite + React + TypeScript` 工程直接消费这些接口。
+- Prevention: 后续接真实数据或真实 GPT 服务时，继续沿当前 `/dashboard/candidates`、`/stocks/{symbol}/dashboard` 和 `copy_prompt/evidence_packet` 结构扩展，避免把解释逻辑重新散落到前端。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
+
+## 2026-04-15
+
+- Problem: 当前环境里的 `npm` 实际运行在 Node 16，直接使用 `Vite 5` 会触发 engine 不兼容，影响前端 build 验证。
+- Resolution: 将前端工具链调整为 `Vite 4` 兼容组合，并把构建脚本改为 `tsc --noEmit -p tsconfig.app.json && vite build`，避免产生额外的编译输出文件。
+- Prevention: 以后新建前端工程前先确认 `node` 与 `npm` 实际版本，优先选取与当前运行时兼容的 Vite/插件组合。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
+
+## 2026-04-15
+
+- Problem: 本轮已完成代码与验证，但当前 worktree 仍无法创建 `.git/worktrees/.../index.lock`，导致 `git add -A` 直接失败，不能继续执行 commit/push。
+- Resolution: 已保留所有已验证改动，并在交付总结中明确说明版本提交阻塞来自当前 worktree 的 git 元数据写权限，而不是代码验证失败。
+- Prevention: 后续若任务要求强制提交，需要切换到具备 `.git/worktrees/...` 写权限的仓库环境，或在 canonical repo 中直接执行提交流程。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
