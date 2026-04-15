@@ -218,6 +218,21 @@
   - 原因：一期场景是 2-8 周波段，不能只给单一 horizon；当前 recommendation 以 28 天作为主解释窗口，14/56 天保留在 model results 中
 
 ### 对下一步的建议
+
+## 2026-04-15 验收返修记录
+
+### 本轮结论
+- 本轮拒绝验收的根因不是页面样式本身，而是前端对在线 demo API 的硬依赖使 GitHub Pages 部署无法形成最小可用闭环。
+- 在当前约束下，最稳妥的返修方式不是补另一套前端 mock，而是把现有 `dashboard` / `operations` contract 直接导出为前端离线快照，再由页面在在线 API 失败时自动回退。
+- 这种方式能保留现有 schema、推荐解释链路和运营面板 contract，同时给验收方一条不依赖后端存活的实际操作路径。
+
+### 取舍
+- 选择 `离线快照` 而不是临时本地 fake API：
+  - 优点：前后端结构不分叉；离线数据与当前 recommendation contract 保持一致；静态部署直接可用。
+  - 代价：前端构建体积会变大，后续若继续扩 watchlist 或证据规模，需要改成快照懒加载或静态 JSON 分片。
+- 选择 `Ant Design` 重做主界面：
+  - 优点：更容易把候选股、单票和运营闭环压缩成密度更高的操作台，而不是展示型 hero 页面。
+  - 代价：初次构建体积上升，正式公网发布前需要继续做拆包优化。
 - 用真实 `Tushare + 巨潮 + Qlib` 结果替换当前 demo validation payload，保持 `validation_snapshot` 和 `factor_breakdown` 的输出结构不变
 - 在用户看板阶段优先消费 `recommendation.factor_breakdown`、`validation_snapshot` 和 trace evidence，而不是重新发明前端侧拼装逻辑
 - 若后续引入真实 LLM 推理服务，必须沿当前 `prompt_version + llm_assessment_factor + capped weight + downgrade_conditions` 结构接入，避免绕开治理层

@@ -6,6 +6,7 @@ from typing import Any
 
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.dashboard import bootstrap_dashboard_demo, get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
+from ashare_evidence.frontend_snapshot import export_frontend_snapshot
 from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.services import bootstrap_demo_data, get_latest_recommendation_summary, get_recommendation_trace
 
@@ -53,6 +54,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     glossary = subparsers.add_parser("glossary", help="Show the dashboard glossary entries.")
     glossary.add_argument("--database-url", default=None)
+
+    export_snapshot = subparsers.add_parser(
+        "export-frontend-snapshot",
+        help="Export a frontend offline snapshot built from the current dashboard contracts.",
+    )
+    export_snapshot.add_argument("--database-url", default=None)
+    export_snapshot.add_argument("--output", required=True)
 
     return parser
 
@@ -120,6 +128,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "glossary":
         _print_json(get_glossary_entries())
+        return 0
+
+    if args.command == "export-frontend-snapshot":
+        output_path = export_frontend_snapshot(args.output, args.database_url)
+        print(output_path)
         return 0
 
     parser.error(f"Unsupported command: {args.command}")

@@ -140,3 +140,12 @@
 - Prevention: 后续若要并发验证多个 CLI，使用不同的临时数据库文件，或先单独完成初始化再并发读写。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
+
+## 2026-04-15
+
+- Problem: 验收环境里的前端部署虽然能访问，但候选股、单票分析、运营看板和 demo 初始化都硬依赖在线 API；一旦后端不可达，GitHub Pages 页面就失去核心功能，无法形成最小可用闭环。
+- Resolution: 新增 `frontend_snapshot` 导出器，把现有 dashboard contract 直接生成前端离线快照；前端改成“在线 API / 离线快照”双模式，并用 `Ant Design` 重构顶部操作面板与三大主视图。
+- Prevention: 以后所有静态部署前端如果依赖独立后端，都必须提前设计离线降级路径或可演示的内置快照，验收文档里必须给出不依赖隐含环境的实际操作步骤。
+- Note: 本轮仍无法执行 `git add -A`，同样受限于 `.git/worktrees/.../index.lock` 无法创建。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback

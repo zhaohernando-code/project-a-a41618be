@@ -361,3 +361,31 @@ export interface OperationsDashboardResponse {
   performance_thresholds: PerformanceThresholdView[];
   launch_gates: LaunchGateView[];
 }
+
+export type DataMode = "online" | "offline";
+
+export interface DataSourceInfo {
+  mode: DataMode;
+  preferredMode: DataMode;
+  label: string;
+  detail: string;
+  apiBase: string;
+  betaHeaderName: string;
+  betaKeyPresent: boolean;
+  snapshotGeneratedAt: string;
+  fallbackReason?: string | null;
+}
+
+export interface DashboardShellPayload {
+  candidates: CandidateListResponse;
+  glossary: GlossaryEntryView[];
+}
+
+export interface SnapshotPayload {
+  generated_at: string;
+  bootstrap: DashboardBootstrapResponse;
+  candidates: CandidateListResponse;
+  glossary: GlossaryEntryView[];
+  stock_dashboards: Record<string, StockDashboardResponse>;
+  operations_dashboards: Record<string, OperationsDashboardResponse>;
+}

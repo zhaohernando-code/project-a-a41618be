@@ -31,48 +31,32 @@
 - LLM 同时参与解释和因子生成会带来漂移与幻觉风险；如果缺少证据绑定、阈值治理和历史校准，系统会把弱信号包装成高确定性建议。
 - 产品方向偏向更强决策支持，意味着合规表达、责任边界、访问控制、建议留档、日志审计与数据许可要求明显高于普通资讯看板，需要在一期内测阶段提前固化。
 
-## Step 5 Delivery Snapshot
+## Step 7 Delivery Snapshot
 
-2026-04-15 已完成第 4 步“用户看板与解释闭环”的 demo 实现，当前交付包括：
+2026-04-15 已完成“Address acceptance feedback”返修，当前交付包括：
 
-- 新增多股票 dashboard demo watchlist，并为每只股票同时写入“上一版建议 + 当前建议”，用于解释建议为何变化：
-  - `600519.SH`
-  - `300750.SZ`
-  - `601318.SH`
-  - `002594.SZ`
-- 新增面向前端的聚合服务与 API：
-  - `/bootstrap/dashboard-demo`
-  - `/dashboard/candidates`
-  - `/dashboard/glossary`
-  - `/stocks/{symbol}/dashboard`
-- 单票页 payload 现已覆盖：
-  - 延迟行情走势与成交量轨迹
-  - 板块标签和最新更新时间
-  - 建议摘要、方向、置信表达、适用周期
-  - 最近事件、证据回溯、风险提示、变化原因
-  - 术语解释、GPT 追问包、已有关联模拟订单
-- 候选页 payload 现已覆盖：
-  - watchlist 排序结果
-  - 当前方向与置信度
-  - why now / primary risk
-  - change badge / change summary
-  - 20 日趋势与最新价格
-- 新增 `frontend/` 工程，采用 `Vite 4 + React 18 + TypeScript`，可构建为 GitHub Pages 子页面静态站点，并内置：
-  - 候选股推荐页
-  - 单票分析页
-  - 证据回溯卡片
-  - 风险与失效条件
-  - 术语解释
-  - GPT 追问入口
-- 本轮验证已覆盖：
-  - `python3 -m unittest discover -s tests -v`
+- 前端新增“在线 API / 离线快照”双模式数据层：
+  - 默认在无 `VITE_API_BASE_URL` 时直接使用仓库内置离线快照
+  - 在线接口不可用或 access key 缺失时自动回退到离线快照
+  - 候选股、单票分析、运营看板和 demo 初始化在静态部署下均可继续使用
+- 新增 `src/ashare_evidence/frontend_snapshot.py`：
+  - 基于现有 `dashboard` / `operations` contract 导出前端离线快照
+  - 不新开平行伪实现，前端离线数据直接复用当前后端 demo 输出
+- 前端主界面重构为 `Ant Design` 控制台式布局：
+  - 顶部不再使用占位性 hero 文案，改为数据模式、焦点股票、access key 和演示重置的紧凑操作面板
+  - 三个主视图统一收敛为 `候选股 / 单票分析 / 运营看板`
+  - 单票页保留价格、建议、事件、证据、术语、GPT 追问和模拟订单
+  - 运营页保留分离式模拟交易、净值轨迹、收益归因、规则审计、命中复盘和上线门槛
+- 新增验证：
+  - `tests/test_frontend_snapshot.py`
+  - `PYTHONPATH=src python3 -m unittest discover -s tests`
   - `cd frontend && npm run build`
 
 当前仍保留的边界：
 
 - 真实 `Tushare / 巨潮 / Qlib` provider 尚未联网接入，当前行情、事件和滚动验证仍为 demo/offline contract
 - GPT 追问入口当前提供的是“带上下文的追问包生成器”，还未接入线上对话服务
-- 分离式模拟交易、访问控制、刷新策略和上线门槛仍待下一步补齐
+- 前端构建因 `Ant Design + 离线快照` 体积较大，正式公网发布前仍建议进一步拆包或改为快照懒加载
 
 ## Execution Steps
 
@@ -82,6 +66,7 @@
 - 4. [COMPLETED] 信号建模与建议引擎
 - 5. [COMPLETED] 用户看板与解释闭环
 - 6. [COMPLETED] 分离式模拟交易与内测准入
+- 7. [COMPLETED] Address acceptance feedback
 
-Current step: 分离式模拟交易与内测准入
-Last completed milestone: 用户看板与解释闭环
+Current step: Address acceptance feedback
+Last completed milestone: Address acceptance feedback
