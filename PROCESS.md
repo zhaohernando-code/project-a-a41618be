@@ -175,3 +175,13 @@
 - Note: 当前 worktree 仍无法创建 `.git/worktrees/.../index.lock`，本轮变更已完成并验证，但不能在该环境内执行 commit / push。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
+
+## 2026-04-15
+
+- Problem: 顶部 `候选股 / 当前焦点 / 最近刷新` 在返修后仍然偏高，标签与数值上下堆叠导致头部继续占据过多垂直空间。
+- Resolution: 进一步压缩 `workspace-topbar` 的 padding、间距与标题说明字号，并把顶部摘要改成单行横向指标条，收紧标签/数值字号、圆角和内边距。
+- Prevention: 后续顶部摘要默认先用单行指标条验证信息密度；如果一组信息不驱动操作，不再给它独立的大高度卡片。
+- Validation: `cd frontend && npm ci && npm run build`
+- Note: 本轮尝试 `git add` / `git commit` 仍失败，worktree 不能创建 `.git/worktrees/task-mnzvewru-wx9o5x/index.lock`。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
