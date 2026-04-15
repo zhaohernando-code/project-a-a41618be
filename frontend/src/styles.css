@@ -46,65 +46,53 @@ body {
   padding: 24px 0 48px;
 }
 
-.command-header {
+.workspace-topbar {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
-  gap: 18px;
-  align-items: start;
-  padding: 20px 24px;
-  border-radius: 26px;
-  color: #f6f8fb;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+  gap: 20px;
+  margin-bottom: 18px;
+  padding: 18px 22px;
+  border-radius: 24px;
   background:
-    linear-gradient(135deg, rgba(8, 26, 50, 0.98), rgba(18, 57, 97, 0.94)),
-    linear-gradient(135deg, rgba(10, 91, 255, 0.24), transparent);
-  box-shadow: 0 26px 60px rgba(8, 26, 50, 0.18);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.94)),
+    linear-gradient(120deg, rgba(10, 91, 255, 0.06), transparent 55%);
 }
 
-.command-header .ant-typography,
-.command-header .ant-statistic,
-.command-header .ant-statistic-content,
-.command-header .ant-statistic-title {
-  color: inherit;
-}
-
-.command-header .ant-typography {
-  margin-bottom: 0;
-}
-
-.header-kicker {
-  margin-bottom: 6px;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(246, 248, 251, 0.72);
-}
-
-.command-header h1.ant-typography {
-  margin-bottom: 10px;
-  font-size: clamp(2rem, 3vw, 2.7rem);
-  line-height: 1.05;
+.topbar-main h3.ant-typography {
+  margin: 0 0 6px;
+  font-size: clamp(1.5rem, 2vw, 1.9rem);
   letter-spacing: -0.03em;
 }
 
-.command-header p.ant-typography {
-  max-width: 66ch;
-  color: rgba(246, 248, 251, 0.8);
+.topbar-kicker {
+  margin-bottom: 4px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.topbar-note {
+  max-width: 58ch;
+  margin-bottom: 0;
 }
 
 .header-meta {
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
-.header-summary {
+.topbar-stats {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.header-summary .ant-statistic {
-  padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.06);
+.topbar-stats .ant-statistic {
+  min-height: 102px;
+  padding: 14px 16px;
+  border: 1px solid rgba(16, 35, 60, 0.08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(242, 247, 252, 0.92));
 }
 
 .panel-card,
@@ -143,6 +131,10 @@ body {
   margin: 12px 0 0;
 }
 
+.compact-note {
+  min-height: 0;
+}
+
 .deck-actions,
 .prompt-actions {
   display: flex;
@@ -176,6 +168,27 @@ body {
 .panel-stack {
   display: grid;
   gap: 16px;
+}
+
+.watchlist-entry {
+  width: 100%;
+}
+
+.watchlist-meta,
+.watchlist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.watchlist-meta {
+  margin-top: 6px;
+}
+
+.watchlist-actions {
+  margin-top: 6px;
+  margin-left: -14px;
 }
 
 .chart-shell {
@@ -346,11 +359,11 @@ body {
 }
 
 @media (max-width: 1120px) {
-  .command-header {
+  .workspace-topbar {
     grid-template-columns: 1fr;
   }
 
-  .header-summary {
+  .topbar-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -361,16 +374,12 @@ body {
     padding: 16px 0 32px;
   }
 
-  .command-header {
+  .workspace-topbar {
     padding: 18px;
     border-radius: 22px;
   }
 
-  .command-header h1.ant-typography {
-    font-size: 1.9rem;
-  }
-
-  .header-summary {
+  .topbar-stats {
     grid-template-columns: 1fr;
   }
 

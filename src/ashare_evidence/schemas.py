@@ -187,6 +187,45 @@ class CandidateListResponse(BaseModel):
     items: list[CandidateItemView] = Field(default_factory=list)
 
 
+class WatchlistItemView(BaseModel):
+    symbol: str
+    name: str
+    exchange: str
+    ticker: str
+    status: str
+    source_kind: str
+    analysis_status: str
+    added_at: datetime
+    updated_at: datetime
+    last_analyzed_at: datetime | None = None
+    last_error: str | None = None
+    latest_direction: str | None = None
+    latest_confidence_label: str | None = None
+    latest_generated_at: datetime | None = None
+
+
+class WatchlistResponse(BaseModel):
+    generated_at: datetime
+    items: list[WatchlistItemView] = Field(default_factory=list)
+
+
+class WatchlistCreateRequest(BaseModel):
+    symbol: str
+    name: str | None = None
+
+
+class WatchlistMutationResponse(BaseModel):
+    item: WatchlistItemView
+    message: str
+
+
+class WatchlistDeleteResponse(BaseModel):
+    symbol: str
+    removed: bool
+    active_count: int
+    removed_at: datetime
+
+
 class DashboardBootstrapResponse(BaseModel):
     symbols: list[str] = Field(default_factory=list)
     recommendation_count: int

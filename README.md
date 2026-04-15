@@ -14,6 +14,10 @@
   - 前端支持 `在线 API / 离线快照` 两种模式，默认在无 `VITE_API_BASE_URL` 时走离线快照
   - 在线 API 不可用或 access key 缺失时，页面自动回退到离线快照并给出提示
   - `重置演示数据` 按钮在线上不可达时也可恢复内置 demo 快照
+- 新增自选池闭环：
+  - 在线 API 模式支持输入股票代码，把标的加入自选池、移除自选池、重新触发分析
+  - 新增标的后会即时生成上一版/当前版 recommendation、候选排序、单票分析和模拟交易上下文
+  - 固定 demo watchlist 已下沉为可持久化 `watchlist_entries`，不再只能靠前端写死列表
 - 已交付信号层：
   - `price_baseline_factor`
   - `news_event_factor`
@@ -24,7 +28,7 @@
   - 候选股推荐页：按方向、置信度和趋势排序展示 watchlist
   - 单票分析页：价格走势、关键指标、相关新闻、建议摘要和变化原因
   - 解释与追问：术语解释、证据回溯、风险提示、GPT 追问包
-  - UI 重构：顶部改为紧凑操作面板，支持数据模式切换、焦点股票切换、在线 access key 应用和演示数据重置
+  - UI 重构：顶部改为紧凑操作面板，支持数据模式切换、焦点股票切换、自选股新增/移除/重分析、在线 access key 应用和演示数据重置
 - 已交付模拟交易与内测闭环：
   - 分离式模拟交易：`手动模拟仓` 与 `模型自动持仓模拟仓` 独立记账、独立收益归因、独立回撤阈值
   - A 股规则检查：整手约束、T+1 卖出、印花税方向、涨跌停边界
@@ -37,12 +41,15 @@
   - 建议与证据：`prompt_versions`、`recommendations`、`recommendation_evidence`
   - 模拟交易：`paper_portfolios`、`paper_orders`、`paper_fills`
   - 采集审计：`ingestion_runs`
+  - 自选池：`watchlist_entries`
 - 已交付入口：
   - CLI：初始化数据库、写入 demo 数据、写入 dashboard watchlist、查看候选页/单票页 payload、查看完整 trace、导出前端离线快照
   - API：
     - `/health`
     - `/bootstrap/demo`
     - `/bootstrap/dashboard-demo`
+    - `/watchlist`
+    - `/watchlist/{symbol}/refresh`
     - `/dashboard/candidates`
     - `/dashboard/glossary`
     - `/dashboard/operations`
@@ -80,6 +87,8 @@ VITE_API_BASE_URL=http://127.0.0.1:8000 npm run dev
 
 3. 如后端启用 allowlist，再在顶部“内测访问”里填写 access key 并点击 `应用 access key`。
 4. 把“数据模式”切到 `在线 API`，确认页面不再显示离线回退提示。
+5. 在“加入自选”区域输入如 `688981` 或 `300750.SZ`，点击 `加入并分析`。
+6. 确认新股票进入右侧自选池列表，并能在候选股、单票分析中查看新生成的数据；再验证 `重分析` 和 `移除` 按钮可用。
 
 ## 目录
 

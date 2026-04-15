@@ -49,6 +49,25 @@ class BetaAccessApiTests(unittest.TestCase):
         self.assertEqual(allowed.status_code, 200)
         self.assertGreaterEqual(len(allowed.json()["items"]), 1)
 
+        viewer_write = client.post(
+            "/watchlist",
+            headers={"X-Ashare-Beta-Key": "viewer-token"},
+            json={"symbol": "688981", "name": "中芯国际"},
+        )
+        self.assertEqual(viewer_write.status_code, 403)
+
+        operator_write = client.post(
+            "/watchlist",
+            headers={"X-Ashare-Beta-Key": "operator-token"},
+            json={"symbol": "688981", "name": "中芯国际"},
+        )
+        self.assertEqual(operator_write.status_code, 200)
+        self.assertEqual(operator_write.json()["item"]["symbol"], "688981.SH")
+
+        watchlist = client.get("/watchlist", headers={"X-Ashare-Beta-Key": "viewer-token"})
+        self.assertEqual(watchlist.status_code, 200)
+        self.assertIn("688981.SH", {item["symbol"] for item in watchlist.json()["items"]})
+
 
 if __name__ == "__main__":
     unittest.main()

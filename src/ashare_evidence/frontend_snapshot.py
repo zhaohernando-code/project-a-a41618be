@@ -15,6 +15,7 @@ from ashare_evidence.dashboard import (
 from ashare_evidence.dashboard_demo import WATCHLIST_SYMBOLS
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.operations import build_operations_dashboard
+from ashare_evidence.watchlist import list_watchlist_entries
 
 
 def _json_ready(value: Any) -> Any:
@@ -45,6 +46,9 @@ def build_frontend_snapshot(database_url: str | None = None) -> dict[str, Any]:
         with session_scope(resolved_database_url) as session:
             candidates = list_candidate_recommendations(session, limit=8)
 
+        with session_scope(resolved_database_url) as session:
+            watchlist = list_watchlist_entries(session)
+
         stock_dashboards: dict[str, dict[str, Any]] = {}
         operations_dashboards: dict[str, dict[str, Any]] = {}
         for symbol in WATCHLIST_SYMBOLS:
@@ -57,6 +61,7 @@ def build_frontend_snapshot(database_url: str | None = None) -> dict[str, Any]:
             {
             "generated_at": datetime.now().astimezone(),
             "bootstrap": bootstrap,
+            "watchlist": watchlist,
             "candidates": candidates,
             "glossary": get_glossary_entries(),
             "stock_dashboards": stock_dashboards,

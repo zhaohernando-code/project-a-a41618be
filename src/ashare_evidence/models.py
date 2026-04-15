@@ -388,3 +388,20 @@ class IngestionRun(TimestampedMixin, LineageMixin, Base):
     record_count: Mapped[int] = mapped_column(Integer, nullable=False)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     params_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class WatchlistEntry(TimestampedMixin, LineageMixin, Base):
+    __tablename__ = "watchlist_entries"
+    __table_args__ = (UniqueConstraint("symbol", name="uq_watchlist_entry_symbol"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    ticker: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    exchange: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    display_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), default="active", nullable=False, index=True)
+    source_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    analysis_status: Mapped[str] = mapped_column(String(16), default="ready", nullable=False)
+    last_analyzed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    watchlist_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)

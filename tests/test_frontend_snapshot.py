@@ -23,6 +23,7 @@ class FrontendSnapshotTests(unittest.TestCase):
 
         self.assertEqual(set(snapshot["stock_dashboards"]), set(WATCHLIST_SYMBOLS))
         self.assertEqual(set(snapshot["operations_dashboards"]), set(WATCHLIST_SYMBOLS))
+        self.assertEqual({item["symbol"] for item in snapshot["watchlist"]["items"]}, set(WATCHLIST_SYMBOLS))
         self.assertEqual(snapshot["bootstrap"]["candidate_count"], len(WATCHLIST_SYMBOLS))
         json.dumps(snapshot, ensure_ascii=False, default=str)
 
@@ -33,6 +34,7 @@ class FrontendSnapshotTests(unittest.TestCase):
 
         self.assertTrue(output_path.exists())
         payload = json.loads(output_path.read_text(encoding="utf-8"))
+        self.assertIn("watchlist", payload)
         self.assertIn("candidates", payload)
         self.assertIn("stock_dashboards", payload)
 

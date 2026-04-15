@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-15T15:13:03.997086+08:00",
+  "generated_at": "2026-04-15T17:34:47.825142+08:00",
   "bootstrap": {
     "symbols": [
       "600519.SH",
@@ -10,8 +10,77 @@
     "recommendation_count": 8,
     "candidate_count": 4
   },
+  "watchlist": {
+    "generated_at": "2026-04-15T09:34:47.667841+00:00",
+    "items": [
+      {
+        "symbol": "002594.SZ",
+        "name": "比亚迪",
+        "exchange": "SZSE",
+        "ticker": "002594",
+        "status": "active",
+        "source_kind": "default_seed",
+        "analysis_status": "ready",
+        "added_at": "2026-04-15T09:34:47.645490",
+        "updated_at": "2026-04-15T09:34:47.645491",
+        "last_analyzed_at": "2026-04-14T08:05:00",
+        "last_error": null,
+        "latest_direction": "reduce",
+        "latest_confidence_label": "中高",
+        "latest_generated_at": "2026-04-14T08:05:00"
+      },
+      {
+        "symbol": "601318.SH",
+        "name": "中国平安",
+        "exchange": "SSE",
+        "ticker": "601318",
+        "status": "active",
+        "source_kind": "default_seed",
+        "analysis_status": "ready",
+        "added_at": "2026-04-15T09:34:47.585215",
+        "updated_at": "2026-04-15T09:34:47.585217",
+        "last_analyzed_at": "2026-04-14T08:05:00",
+        "last_error": null,
+        "latest_direction": "buy",
+        "latest_confidence_label": "中高",
+        "latest_generated_at": "2026-04-14T08:05:00"
+      },
+      {
+        "symbol": "300750.SZ",
+        "name": "宁德时代",
+        "exchange": "SZSE",
+        "ticker": "300750",
+        "status": "active",
+        "source_kind": "default_seed",
+        "analysis_status": "ready",
+        "added_at": "2026-04-15T09:34:47.519615",
+        "updated_at": "2026-04-15T09:34:47.519616",
+        "last_analyzed_at": "2026-04-14T08:05:00",
+        "last_error": null,
+        "latest_direction": "buy",
+        "latest_confidence_label": "中高",
+        "latest_generated_at": "2026-04-14T08:05:00"
+      },
+      {
+        "symbol": "600519.SH",
+        "name": "贵州茅台",
+        "exchange": "SSE",
+        "ticker": "600519",
+        "status": "active",
+        "source_kind": "default_seed",
+        "analysis_status": "ready",
+        "added_at": "2026-04-15T09:34:47.458823",
+        "updated_at": "2026-04-15T09:34:47.458823",
+        "last_analyzed_at": "2026-04-14T08:05:00",
+        "last_error": null,
+        "latest_direction": "buy",
+        "latest_confidence_label": "中高",
+        "latest_generated_at": "2026-04-14T08:05:00"
+      }
+    ]
+  },
   "candidates": {
-    "generated_at": "2026-04-15T15:13:03.875333+08:00",
+    "generated_at": "2026-04-15T17:34:47.666680+08:00",
     "items": [
       {
         "symbol": "600519.SH",
@@ -3620,7 +3689,7 @@
   "operations_dashboards": {
     "600519.SH": {
       "overview": {
-        "generated_at": "2026-04-15T15:13:03.933121+08:00",
+        "generated_at": "2026-04-15T17:34:47.741577+08:00",
         "beta_readiness": "closed_beta_ready",
         "manual_portfolio_count": 1,
         "auto_portfolio_count": 1,
@@ -4906,7 +4975,7 @@
           "metric": "候选页构建延迟",
           "unit": "ms",
           "target": 180.0,
-          "observed": 22.7,
+          "observed": 8.0,
           "status": "pass",
           "note": "目标是 watchlist 小样本内测下的单次构建耗时。"
         },
@@ -4914,7 +4983,7 @@
           "metric": "单票解释页构建延迟",
           "unit": "ms",
           "target": 250.0,
-          "observed": 4.1,
+          "observed": 4.6,
           "status": "pass",
           "note": "包含行情、新闻、证据 trace 和 GPT 追问包拼装。"
         },
@@ -4922,7 +4991,7 @@
           "metric": "模拟交易运营面板构建延迟",
           "unit": "ms",
           "target": 320.0,
-          "observed": 43.3,
+          "observed": 53.8,
           "status": "pass",
           "note": "包含组合收益、归因、回撤、复盘和准入治理聚合。"
         },
@@ -4985,14 +5054,14 @@
         {
           "gate": "刷新与性能预算",
           "threshold": "stock <= 250ms，operations <= 320ms，payload 不超预算。",
-          "current_value": "stock 4.1ms / ops 43.3ms",
+          "current_value": "stock 4.6ms / ops 53.8ms",
           "status": "pass"
         }
       ]
     },
     "300750.SZ": {
       "overview": {
-        "generated_at": "2026-04-15T15:13:03.954402+08:00",
+        "generated_at": "2026-04-15T17:34:47.769258+08:00",
         "beta_readiness": "closed_beta_ready",
         "manual_portfolio_count": 1,
         "auto_portfolio_count": 1,
@@ -6278,7 +6347,7 @@
           "metric": "候选页构建延迟",
           "unit": "ms",
           "target": 180.0,
-          "observed": 5.7,
+          "observed": 8.0,
           "status": "pass",
           "note": "目标是 watchlist 小样本内测下的单次构建耗时。"
         },
@@ -6286,7 +6355,7 @@
           "metric": "单票解释页构建延迟",
           "unit": "ms",
           "target": 250.0,
-          "observed": 4.0,
+          "observed": 4.8,
           "status": "pass",
           "note": "包含行情、新闻、证据 trace 和 GPT 追问包拼装。"
         },
@@ -6294,7 +6363,7 @@
           "metric": "模拟交易运营面板构建延迟",
           "unit": "ms",
           "target": 320.0,
-          "observed": 16.1,
+          "observed": 20.8,
           "status": "pass",
           "note": "包含组合收益、归因、回撤、复盘和准入治理聚合。"
         },
@@ -6357,14 +6426,14 @@
         {
           "gate": "刷新与性能预算",
           "threshold": "stock <= 250ms，operations <= 320ms，payload 不超预算。",
-          "current_value": "stock 4.0ms / ops 16.1ms",
+          "current_value": "stock 4.8ms / ops 20.8ms",
           "status": "pass"
         }
       ]
     },
     "601318.SH": {
       "overview": {
-        "generated_at": "2026-04-15T15:13:03.975339+08:00",
+        "generated_at": "2026-04-15T17:34:47.796990+08:00",
         "beta_readiness": "closed_beta_ready",
         "manual_portfolio_count": 1,
         "auto_portfolio_count": 1,
@@ -7650,7 +7719,7 @@
           "metric": "候选页构建延迟",
           "unit": "ms",
           "target": 180.0,
-          "observed": 5.7,
+          "observed": 8.1,
           "status": "pass",
           "note": "目标是 watchlist 小样本内测下的单次构建耗时。"
         },
@@ -7658,7 +7727,7 @@
           "metric": "单票解释页构建延迟",
           "unit": "ms",
           "target": 250.0,
-          "observed": 3.9,
+          "observed": 5.3,
           "status": "pass",
           "note": "包含行情、新闻、证据 trace 和 GPT 追问包拼装。"
         },
@@ -7666,7 +7735,7 @@
           "metric": "模拟交易运营面板构建延迟",
           "unit": "ms",
           "target": 320.0,
-          "observed": 15.9,
+          "observed": 21.4,
           "status": "pass",
           "note": "包含组合收益、归因、回撤、复盘和准入治理聚合。"
         },
@@ -7729,14 +7798,14 @@
         {
           "gate": "刷新与性能预算",
           "threshold": "stock <= 250ms，operations <= 320ms，payload 不超预算。",
-          "current_value": "stock 3.9ms / ops 15.9ms",
+          "current_value": "stock 5.3ms / ops 21.4ms",
           "status": "pass"
         }
       ]
     },
     "002594.SZ": {
       "overview": {
-        "generated_at": "2026-04-15T15:13:03.996346+08:00",
+        "generated_at": "2026-04-15T17:34:47.824057+08:00",
         "beta_readiness": "closed_beta_ready",
         "manual_portfolio_count": 1,
         "auto_portfolio_count": 1,
@@ -9022,7 +9091,7 @@
           "metric": "候选页构建延迟",
           "unit": "ms",
           "target": 180.0,
-          "observed": 5.8,
+          "observed": 7.6,
           "status": "pass",
           "note": "目标是 watchlist 小样本内测下的单次构建耗时。"
         },
@@ -9030,7 +9099,7 @@
           "metric": "单票解释页构建延迟",
           "unit": "ms",
           "target": 250.0,
-          "observed": 3.9,
+          "observed": 4.8,
           "status": "pass",
           "note": "包含行情、新闻、证据 trace 和 GPT 追问包拼装。"
         },
@@ -9038,7 +9107,7 @@
           "metric": "模拟交易运营面板构建延迟",
           "unit": "ms",
           "target": 320.0,
-          "observed": 16.0,
+          "observed": 20.6,
           "status": "pass",
           "note": "包含组合收益、归因、回撤、复盘和准入治理聚合。"
         },
@@ -9101,7 +9170,7 @@
         {
           "gate": "刷新与性能预算",
           "threshold": "stock <= 250ms，operations <= 320ms，payload 不超预算。",
-          "current_value": "stock 3.9ms / ops 16.0ms",
+          "current_value": "stock 4.8ms / ops 20.6ms",
           "status": "pass"
         }
       ]

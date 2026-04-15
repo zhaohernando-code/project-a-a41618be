@@ -149,3 +149,11 @@
 - Note: 本轮仍无法执行 `git add -A`，同样受限于 `.git/worktrees/.../index.lock` 无法创建。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
+
+## 2026-04-15
+
+- Problem: 候选股列表之前完全依赖固定 demo watchlist，导致用户无法把自己的股票纳入候选池，也无法在加入后自动生成单票分析和候选排序。
+- Resolution: 新增持久化 `watchlist_entries`、`/watchlist` 增删改接口、动态股票场景生成器和前端自选池操作区；现在输入股票代码后会立即生成上一版/当前版 recommendation，并同步进入候选股、单票分析和离线快照 contract。
+- Prevention: 以后任何“自选池”需求都必须先落到可持久化的 watchlist 模型和统一分析入口，不能再只在前端维护一份静态 symbol 列表。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback

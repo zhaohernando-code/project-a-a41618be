@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+from hashlib import sha256
+import math
+import random
 from typing import Any
 
 from ashare_evidence.providers import EvidenceBundle, with_lineage
@@ -697,6 +700,374 @@ SCENARIOS: dict[str, ScenarioConfig] = {
     ),
 }
 
+KNOWN_STOCK_NAMES = {
+    symbol: config.name
+    for symbol, config in SCENARIOS.items()
+}
+
+SECTOR_TEMPLATES: tuple[dict[str, str], ...] = (
+    {
+        "industry": "高端消费",
+        "primary_sector_code": "sw-food-beverage",
+        "primary_sector_name": "食品饮料",
+        "secondary_sector_code": "concept-brand-consumption",
+        "secondary_sector_name": "品牌消费",
+        "positive_topic": "渠道动销与现金回款继续改善",
+        "negative_topic": "终端动销恢复节奏仍需验证",
+        "sector_positive_topic": "内需复苏预期回暖",
+        "sector_negative_topic": "税费与渠道库存讨论升温",
+    },
+    {
+        "industry": "新能源设备",
+        "primary_sector_code": "sw-electric-equipment",
+        "primary_sector_name": "电力设备",
+        "secondary_sector_code": "concept-energy-storage",
+        "secondary_sector_name": "储能",
+        "positive_topic": "新签订单与排产节奏同步改善",
+        "negative_topic": "价格竞争和去库存压力仍在",
+        "sector_positive_topic": "新能源链补库预期回升",
+        "sector_negative_topic": "产业链价格下修压力扩大",
+    },
+    {
+        "industry": "保险金融",
+        "primary_sector_code": "sw-non-bank-finance",
+        "primary_sector_name": "非银金融",
+        "secondary_sector_code": "concept-dividend-assets",
+        "secondary_sector_name": "高股息资产",
+        "positive_topic": "负债成本改善与权益弹性同步修复",
+        "negative_topic": "权益波动和新单恢复仍需观察",
+        "sector_positive_topic": "低利率环境下高股息偏好抬升",
+        "sector_negative_topic": "利差与权益波动压制估值修复",
+    },
+    {
+        "industry": "半导体",
+        "primary_sector_code": "sw-electronics",
+        "primary_sector_name": "电子",
+        "secondary_sector_code": "concept-semiconductor",
+        "secondary_sector_name": "半导体",
+        "positive_topic": "客户拉货和产能利用率继续回升",
+        "negative_topic": "验证进度与价格压力仍有反复",
+        "sector_positive_topic": "国产替代与景气改善继续演绎",
+        "sector_negative_topic": "终端需求反复压制估值修复",
+    },
+    {
+        "industry": "创新药",
+        "primary_sector_code": "sw-pharmaceutical-biological",
+        "primary_sector_name": "医药生物",
+        "secondary_sector_code": "concept-innovative-drug",
+        "secondary_sector_name": "创新药",
+        "positive_topic": "核心产品放量与临床进展形成共振",
+        "negative_topic": "研发节奏与医保谈判仍存不确定性",
+        "sector_positive_topic": "创新药情绪修复与海外授权预期升温",
+        "sector_negative_topic": "集采与研发兑现节奏引发分歧",
+    },
+)
+
+
+def _symbol_seed(symbol: str) -> int:
+    return int(sha256(symbol.encode("utf-8")).hexdigest()[:8], 16)
+
+
+def _infer_market_suffix(ticker: str) -> str:
+    if ticker[0] in {"5", "6", "9"}:
+        return "SH"
+    if ticker[0] in {"0", "2", "3"}:
+        return "SZ"
+    if ticker[0] in {"4", "8"}:
+        return "BJ"
+    raise ValueError("暂不支持该证券代码。请输入 6 位 A 股代码。")
+
+
+def normalize_symbol(symbol: str) -> str:
+    raw = symbol.strip().upper().replace(" ", "")
+    if not raw:
+        raise ValueError("请输入股票代码。")
+    if raw.startswith(("SH", "SZ", "BJ")) and len(raw) == 8 and raw[2:].isdigit():
+        raw = f"{raw[2:]}.{raw[:2]}"
+    if "." not in raw:
+        if not raw.isdigit() or len(raw) != 6:
+            raise ValueError("股票代码格式无效，请输入如 600519 或 300750.SZ。")
+        return f"{raw}.{_infer_market_suffix(raw)}"
+    ticker, _, suffix = raw.partition(".")
+    if not ticker.isdigit() or len(ticker) != 6:
+        raise ValueError("股票代码格式无效，请输入 6 位数字代码。")
+    if suffix not in {"SH", "SZ", "BJ"}:
+        raise ValueError("股票代码后缀仅支持 .SH / .SZ / .BJ。")
+    return f"{ticker}.{suffix}"
+
+
+def _exchange_name(suffix: str) -> str:
+    return {
+        "SH": "SSE",
+        "SZ": "SZSE",
+        "BJ": "BSE",
+    }[suffix]
+
+
+def _generate_dynamic_returns(seed: int, tier: int) -> tuple[float, ...]:
+    rng = random.Random(seed)
+    phase = rng.uniform(0.25, math.pi)
+    base_drift = {
+        0: 0.0034,
+        1: 0.0012,
+        2: -0.0007,
+        3: -0.0030,
+    }[tier]
+    late_bias = {
+        0: 0.0022,
+        1: 0.0004,
+        2: -0.0018,
+        3: -0.0027,
+    }[tier]
+    volatility = {
+        0: 0.0016,
+        1: 0.0021,
+        2: 0.0026,
+        3: 0.0032,
+    }[tier]
+    daily_returns: list[float] = []
+    for index in range(28):
+        cycle = math.sin(index / 3.15 + phase) * volatility * 0.55
+        noise = rng.uniform(-volatility, volatility)
+        value = base_drift + cycle + noise
+        if index >= 23:
+            value += late_bias
+        if tier == 1 and index in {6, 13, 20}:
+            value -= 0.0025
+        if tier == 2 and index >= 20:
+            value -= 0.0012
+        if tier == 3 and index in {9, 17, 25}:
+            value -= 0.0042
+        daily_returns.append(round(max(min(value, 0.085), -0.085), 4))
+    return tuple(daily_returns)
+
+
+def _dynamic_start_close(ticker: str, seed: int) -> float:
+    if ticker.startswith("688"):
+        return round(42 + (seed % 1400) / 10, 2)
+    if ticker.startswith("300"):
+        return round(26 + (seed % 900) / 10, 2)
+    if ticker.startswith(("600", "601", "603", "605")):
+        return round(10 + (seed % 700) / 10, 2)
+    if ticker.startswith(("000", "001", "002")):
+        return round(8 + (seed % 620) / 10, 2)
+    return round(12 + (seed % 680) / 10, 2)
+
+
+def _dynamic_sector_configs(template: dict[str, str], seed: int) -> tuple[SectorConfig, ...]:
+    concept_effective_year = 2020 + seed % 5
+    return (
+        SectorConfig(
+            template["primary_sector_code"],
+            template["primary_sector_name"],
+            "industry",
+            "申万一级",
+            is_primary=True,
+        ),
+        SectorConfig(
+            template["secondary_sector_code"],
+            template["secondary_sector_name"],
+            "concept",
+            "概念板块",
+            effective_from=date(concept_effective_year, 1, 1),
+        ),
+    )
+
+
+def _news_timestamp(days_before_latest: int, hour: int, minute: int) -> datetime:
+    return datetime(
+        LATEST_TRADE_DAY.year,
+        LATEST_TRADE_DAY.month,
+        LATEST_TRADE_DAY.day,
+        hour,
+        minute,
+        tzinfo=UTC,
+    ) - timedelta(days=days_before_latest)
+
+
+def _dynamic_news_events(
+    *,
+    symbol: str,
+    stock_name: str,
+    template: dict[str, str],
+    tier: int,
+) -> tuple[dict[str, Any], ...]:
+    ticker = symbol.split(".", 1)[0]
+    stock_direction = "positive" if tier in {0, 1} else "negative"
+    sector_direction = "positive" if tier == 0 else "negative"
+    latest_direction = "positive" if tier in {0, 1} else "negative"
+    stock_topic = template["positive_topic"] if stock_direction == "positive" else template["negative_topic"]
+    sector_topic = template["sector_positive_topic"] if sector_direction == "positive" else template["sector_negative_topic"]
+    latest_topic = template["positive_topic"] if latest_direction == "positive" else template["negative_topic"]
+    return (
+        {
+            "news_key": f"news-{ticker}-ops-{LATEST_TRADE_DAY:%Y%m%d}",
+            "provider_name": "cninfo",
+            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-ops",
+            "headline": f"{stock_name}披露经营更新，{stock_topic}",
+            "summary": f"公司层面最新经营信息显示，{stock_topic}。",
+            "content_excerpt": f"系统将该事件映射为个股层证据，重点关注 {stock_name} 的经营节奏。",
+            "published_at": _news_timestamp(5, 9, 20),
+            "event_scope": "stock",
+            "dedupe_key": f"{ticker}-ops-update-{LATEST_TRADE_DAY:%Y%m%d}",
+            "raw_payload": {"provider": "巨潮资讯", "announcement_type": "operating_update"},
+            "source_uri": f"cninfo://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-ops",
+            "license_tag": "cninfo-public-disclosure",
+            "links": (
+                {
+                    "entity_type": "stock",
+                    "stock_symbol": symbol,
+                    "sector_code": None,
+                    "market_tag": None,
+                    "relevance_score": 0.86,
+                    "impact_direction": stock_direction,
+                    "effective_at": _news_timestamp(5, 9, 20),
+                    "decay_half_life_hours": 96.0,
+                    "mapping_payload": {"layer": "stock", "dedupe_stage": "post-entity-map"},
+                },
+            ),
+        },
+        {
+            "news_key": f"news-{ticker}-ops-repost-{LATEST_TRADE_DAY:%Y%m%d}",
+            "provider_name": "exchange",
+            "external_id": f"exchange-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-ops-repost",
+            "headline": f"{stock_name}经营更新摘要转载：{stock_topic}",
+            "summary": "交易所摘要重述经营更新要点，属于同一事件的重复传播。",
+            "content_excerpt": "用于验证新闻事件去重是否生效。",
+            "published_at": _news_timestamp(5, 13, 40),
+            "event_scope": "stock",
+            "dedupe_key": f"{ticker}-ops-update-{LATEST_TRADE_DAY:%Y%m%d}",
+            "raw_payload": {"provider": "交易所披露", "announcement_type": "operating_update_summary"},
+            "source_uri": f"exchange://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-ops-summary",
+            "license_tag": "exchange-public-disclosure",
+            "links": (
+                {
+                    "entity_type": "stock",
+                    "stock_symbol": symbol,
+                    "sector_code": None,
+                    "market_tag": None,
+                    "relevance_score": 0.71,
+                    "impact_direction": stock_direction,
+                    "effective_at": _news_timestamp(5, 13, 40),
+                    "decay_half_life_hours": 96.0,
+                    "mapping_payload": {"layer": "stock", "dedupe_stage": "pre-dedup"},
+                },
+            ),
+        },
+        {
+            "news_key": f"news-{ticker}-sector-{LATEST_TRADE_DAY:%Y%m%d}",
+            "provider_name": "cninfo",
+            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-sector",
+            "headline": f"{template['primary_sector_name']}板块跟踪：{sector_topic}",
+            "summary": f"行业层面最新跟踪显示，{sector_topic}。",
+            "content_excerpt": "系统会把行业事件按有效期衰减并映射回个股。",
+            "published_at": _news_timestamp(3, 10, 10),
+            "event_scope": "sector",
+            "dedupe_key": f"{template['primary_sector_code']}-sector-{LATEST_TRADE_DAY:%Y%m%d}",
+            "raw_payload": {"provider": "巨潮资讯", "announcement_type": "sector_news"},
+            "source_uri": f"cninfo://news/{template['primary_sector_code']}/{LATEST_TRADE_DAY:%Y%m%d}-sector",
+            "license_tag": "cninfo-public-disclosure",
+            "links": (
+                {
+                    "entity_type": "sector",
+                    "stock_symbol": None,
+                    "sector_code": template["primary_sector_code"],
+                    "market_tag": None,
+                    "relevance_score": 0.63,
+                    "impact_direction": sector_direction,
+                    "effective_at": _news_timestamp(3, 10, 10),
+                    "decay_half_life_hours": 48.0,
+                    "mapping_payload": {"layer": "sector", "dedupe_stage": "post-entity-map"},
+                },
+            ),
+        },
+        {
+            "news_key": f"news-{ticker}-roadshow-{LATEST_TRADE_DAY:%Y%m%d}",
+            "provider_name": "cninfo",
+            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-roadshow",
+            "headline": f"机构调研聚焦{stock_name}，{latest_topic}",
+            "summary": f"最新调研纪要显示，市场关注点集中在 {latest_topic}。",
+            "content_excerpt": "该事件用于解释最新一版建议相较上一版为何变化。",
+            "published_at": _news_timestamp(0, 11, 5),
+            "event_scope": "stock",
+            "dedupe_key": f"{ticker}-roadshow-{LATEST_TRADE_DAY:%Y%m%d}",
+            "raw_payload": {"provider": "巨潮资讯", "announcement_type": "investor_relation"},
+            "source_uri": f"cninfo://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-roadshow",
+            "license_tag": "cninfo-public-disclosure",
+            "links": (
+                {
+                    "entity_type": "stock",
+                    "stock_symbol": symbol,
+                    "sector_code": None,
+                    "market_tag": None,
+                    "relevance_score": 0.88,
+                    "impact_direction": latest_direction,
+                    "effective_at": _news_timestamp(0, 11, 5),
+                    "decay_half_life_hours": 72.0,
+                    "mapping_payload": {"layer": "stock", "dedupe_stage": "post-entity-map"},
+                },
+                {
+                    "entity_type": "sector",
+                    "stock_symbol": None,
+                    "sector_code": template["primary_sector_code"],
+                    "market_tag": None,
+                    "relevance_score": 0.52,
+                    "impact_direction": latest_direction,
+                    "effective_at": _news_timestamp(0, 11, 5),
+                    "decay_half_life_hours": 48.0,
+                    "mapping_payload": {"layer": "sector", "dedupe_stage": "post-entity-map"},
+                },
+            ),
+        },
+    )
+
+
+def build_dynamic_scenario(symbol: str, *, stock_name: str | None = None) -> ScenarioConfig:
+    normalized_symbol = normalize_symbol(symbol)
+    if normalized_symbol in SCENARIOS:
+        return SCENARIOS[normalized_symbol]
+
+    ticker, _, suffix = normalized_symbol.partition(".")
+    seed = _symbol_seed(normalized_symbol)
+    template = SECTOR_TEMPLATES[seed % len(SECTOR_TEMPLATES)]
+    tier = (seed // len(SECTOR_TEMPLATES)) % 4
+    listed_year = 2004 + seed % 18
+    listed_month = 1 + (seed // 17) % 12
+    listed_day = 1 + (seed // 37) % 27
+    exchange = _exchange_name(suffix)
+    name = stock_name.strip() if stock_name and stock_name.strip() else KNOWN_STOCK_NAMES.get(normalized_symbol, f"自选标的 {ticker}")
+    return ScenarioConfig(
+        symbol=normalized_symbol,
+        ticker=ticker,
+        exchange=exchange,
+        name=name,
+        listed_date=date(listed_year, listed_month, listed_day),
+        industry=template["industry"],
+        start_close=_dynamic_start_close(ticker, seed),
+        base_volume=round(9800 + seed % 22000, 2),
+        volume_step=round(110 + seed % 260, 2),
+        volume_wave=round(280 + seed % 900, 2),
+        base_turnover_rate=round(0.038 + (seed % 80) / 1000, 4),
+        turnover_step=round(0.0007 + (seed % 25) / 10000, 4),
+        late_volume_boost=round(1400 + seed % 6200, 2),
+        late_turnover_boost=round(0.004 + (seed % 25) / 1000, 4),
+        daily_returns=_generate_dynamic_returns(seed, tier),
+        sectors=_dynamic_sector_configs(template, seed),
+        news_events=_dynamic_news_events(
+            symbol=normalized_symbol,
+            stock_name=name,
+            template=template,
+            tier=tier,
+        ),
+    )
+
+
+def resolve_scenario(symbol: str, *, stock_name: str | None = None) -> ScenarioConfig:
+    normalized_symbol = normalize_symbol(symbol)
+    if normalized_symbol in SCENARIOS:
+        return SCENARIOS[normalized_symbol]
+    return build_dynamic_scenario(normalized_symbol, stock_name=stock_name)
+
 
 def _stock_record(config: ScenarioConfig) -> dict[str, Any]:
     return with_lineage(
@@ -1110,8 +1481,8 @@ def _slice_inputs(
     return bars, sliced_items, sliced_links
 
 
-def build_dashboard_bundle(symbol: str, *, snapshot: str = "latest") -> EvidenceBundle:
-    config = SCENARIOS[symbol]
+def build_dashboard_bundle(symbol: str, *, snapshot: str = "latest", stock_name: str | None = None) -> EvidenceBundle:
+    config = resolve_scenario(symbol, stock_name=stock_name)
     full_length = len(config.daily_returns)
     if snapshot == "latest":
         as_of_index = full_length - 1

@@ -8,6 +8,9 @@ import type {
   GlossaryEntryView,
   OperationsDashboardResponse,
   StockDashboardResponse,
+  WatchlistDeleteResponse,
+  WatchlistMutationResponse,
+  WatchlistResponse,
 } from "./types";
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
@@ -173,17 +176,38 @@ export const api = {
   loadShellData: async (): Promise<ApiResult<DashboardShellPayload>> =>
     resolveData(
       async () => {
-        const [candidates, glossary] = await Promise.all([
+        const [watchlist, candidates, glossary] = await Promise.all([
+          request<WatchlistResponse>("/watchlist"),
           request<CandidateListResponse>("/dashboard/candidates?limit=8"),
           request<GlossaryEntryView[]>("/dashboard/glossary"),
         ]);
-        return { candidates, glossary };
+        return { watchlist, candidates, glossary };
       },
       () => ({
+        watchlist: offlineSnapshot.watchlist ?? {
+          generated_at: offlineSnapshot.generated_at,
+          items: [],
+        },
         candidates: offlineSnapshot.candidates,
         glossary: offlineSnapshot.glossary,
       }),
     ),
+  addWatchlist: async (symbol: string, name?: string): Promise<WatchlistMutationResponse> =>
+    request<WatchlistMutationResponse>("/watchlist", {
+      method: "POST",
+      body: JSON.stringify({
+        symbol,
+        name: name?.trim() || undefined,
+      }),
+    }),
+  refreshWatchlist: async (symbol: string): Promise<WatchlistMutationResponse> =>
+    request<WatchlistMutationResponse>(`/watchlist/${encodeURIComponent(symbol)}/refresh`, {
+      method: "POST",
+    }),
+  removeWatchlist: async (symbol: string): Promise<WatchlistDeleteResponse> =>
+    request<WatchlistDeleteResponse>(`/watchlist/${encodeURIComponent(symbol)}`, {
+      method: "DELETE",
+    }),
   getStockDashboard: async (symbol: string): Promise<ApiResult<StockDashboardResponse>> =>
     resolveData(
       () => request<StockDashboardResponse>(`/stocks/${encodeURIComponent(symbol)}/dashboard`),

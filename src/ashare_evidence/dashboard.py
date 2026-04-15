@@ -7,13 +7,12 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from ashare_evidence.dashboard_demo import WATCHLIST_SYMBOLS, build_dashboard_watchlist_bundles
 from ashare_evidence.models import MarketBar, ModelVersion, NewsEntityLink, Recommendation, SectorMembership, Stock
 from ashare_evidence.services import (
     _serialize_recommendation,
     get_recommendation_trace,
-    ingest_bundle,
 )
+from ashare_evidence.watchlist import active_watchlist_symbols, reset_watchlist_to_defaults
 
 DIRECTION_LABELS = {
     "buy": "偏积极",
@@ -68,17 +67,7 @@ def get_glossary_entries() -> list[dict[str, str]]:
 
 
 def bootstrap_dashboard_demo(session: Session) -> dict[str, Any]:
-    recommendation_ids: list[int] = []
-    for bundle in build_dashboard_watchlist_bundles():
-        recommendation = ingest_bundle(session, bundle)
-        recommendation_ids.append(recommendation.id)
-    session.commit()
-    candidates = list_candidate_recommendations(session)
-    return {
-        "symbols": list(WATCHLIST_SYMBOLS),
-        "recommendation_count": len(recommendation_ids),
-        "candidate_count": len(candidates["items"]),
-    }
+    return reset_watchlist_to_defaults(session)
 
 
 def _all_recommendations(session: Session) -> list[Recommendation]:
@@ -349,8 +338,16 @@ def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence
 
 
 def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str, Any]:
+    active_symbols = set(active_watchlist_symbols(session))
+    if not active_symbols:
+        return {
+            "generated_at": datetime.now().astimezone(),
+            "items": [],
+        }
     candidates: list[dict[str, Any]] = []
     for recommendation in _latest_recommendations(session):
+        if recommendation.stock.symbol not in active_symbols:
+            continue
         summary = _serialize_recommendation(recommendation)
         history = _recommendation_history(session, summary["stock"]["symbol"], limit=2)
         previous_summary = _serialize_recommendation(history[1]) if len(history) > 1 else None

@@ -7,6 +7,7 @@ from pathlib import Path
 from ashare_evidence.dashboard import bootstrap_dashboard_demo, get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.operations import build_operations_dashboard
+from ashare_evidence.watchlist import add_watchlist_symbol, list_watchlist_entries, remove_watchlist_symbol
 
 
 class DashboardViewTests(unittest.TestCase):
@@ -80,6 +81,34 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("滚动验证", terms)
         self.assertIn("降级条件", terms)
         self.assertIn("LLM 因子上限", terms)
+
+    def test_watchlist_can_add_custom_symbol_and_remove_it(self) -> None:
+        with session_scope(self.database_url) as session:
+            bootstrap_dashboard_demo(session)
+            item = add_watchlist_symbol(session, "688981", stock_name="中芯国际")
+
+        self.assertEqual(item["symbol"], "688981.SH")
+        self.assertEqual(item["name"], "中芯国际")
+
+        with session_scope(self.database_url) as session:
+            watchlist = list_watchlist_entries(session)
+            candidates = list_candidate_recommendations(session, limit=10)
+            dashboard = get_stock_dashboard(session, "688981.SH")
+
+        self.assertIn("688981.SH", {entry["symbol"] for entry in watchlist["items"]})
+        self.assertIn("688981.SH", {entry["symbol"] for entry in candidates["items"]})
+        self.assertEqual(dashboard["stock"]["name"], "中芯国际")
+        self.assertGreaterEqual(len(dashboard["price_chart"]), 24)
+
+        with session_scope(self.database_url) as session:
+            removal = remove_watchlist_symbol(session, "688981")
+
+        self.assertTrue(removal["removed"])
+
+        with session_scope(self.database_url) as session:
+            candidates = list_candidate_recommendations(session, limit=10)
+
+        self.assertNotIn("688981.SH", {entry["symbol"] for entry in candidates["items"]})
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
 import {
   ApiOutlined,
   BarChartOutlined,
-  BranchesOutlined,
   DatabaseOutlined,
+  DeleteOutlined,
   LineChartOutlined,
+  PlusOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   StockOutlined,
+  SyncOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import {
@@ -44,6 +46,7 @@ import type {
   PricePointView,
   RecommendationReplayView,
   StockDashboardResponse,
+  WatchlistItemView,
 } from "./types";
 
 const { Paragraph, Text, Title } = Typography;
@@ -387,6 +390,7 @@ function App() {
   const [view, setView] = useState<ViewMode>("candidates");
   const [preferredMode, setPreferredMode] = useState<DataMode>(() => api.getPreferredMode());
   const [sourceInfo, setSourceInfo] = useState<DataSourceInfo>(() => buildInitialSourceInfo());
+  const [watchlist, setWatchlist] = useState<WatchlistItemView[]>([]);
   const [candidates, setCandidates] = useState<CandidateItemView[]>([]);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [glossary, setGlossary] = useState<GlossaryEntryView[]>([]);
@@ -395,13 +399,23 @@ function App() {
   const [operations, setOperations] = useState<OperationsDashboardResponse | null>(null);
   const [questionDraft, setQuestionDraft] = useState("");
   const [betaKeyDraft, setBetaKeyDraft] = useState(() => api.getBetaAccessKey());
+  const [watchlistSymbolDraft, setWatchlistSymbolDraft] = useState("");
+  const [watchlistNameDraft, setWatchlistNameDraft] = useState("");
   const [loadingShell, setLoadingShell] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [mutatingWatchlist, setMutatingWatchlist] = useState(false);
+  const [watchlistMutationSymbol, setWatchlistMutationSymbol] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const canMutateWatchlist = preferredMode === "online";
 
   const activeCandidate = useMemo(
     () => candidates.find((item) => item.symbol === selectedSymbol) ?? candidates[0] ?? null,
     [candidates, selectedSymbol],
+  );
+
+  const activeWatchlistItem = useMemo(
+    () => watchlist.find((item) => item.symbol === selectedSymbol) ?? watchlist[0] ?? null,
+    [watchlist, selectedSymbol],
   );
 
   const mergedGlossary = useMemo(() => {
@@ -409,16 +423,18 @@ function App() {
     return Array.from(new Map(entries.map((item) => [item.term, item])).values());
   }, [dashboard?.glossary, glossary]);
 
-  async function loadShellData(): Promise<string | null> {
+  async function loadShellData(preferredSymbol?: string | null): Promise<string | null> {
     setLoadingShell(true);
     setError(null);
     try {
       const { data, source } = await api.loadShellData();
+      setWatchlist(data.watchlist.items);
       setCandidates(data.candidates.items);
       setGeneratedAt(data.candidates.generated_at);
       setGlossary(data.glossary);
       setSourceInfo(source);
-      const nextSymbol = data.candidates.items.find((item) => item.symbol === selectedSymbol)?.symbol
+      const nextSymbol = data.candidates.items.find((item) => item.symbol === preferredSymbol)?.symbol
+        ?? data.candidates.items.find((item) => item.symbol === selectedSymbol)?.symbol
         ?? data.candidates.items[0]?.symbol
         ?? null;
       setSelectedSymbol(nextSymbol);
@@ -455,7 +471,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!selectedSymbol) return;
+    if (!selectedSymbol) {
+      setDashboard(null);
+      setOperations(null);
+      return;
+    }
     let cancelled = false;
     void (async () => {
       await loadDetailData(selectedSymbol);
@@ -468,9 +488,9 @@ function App() {
     };
   }, [selectedSymbol]);
 
-  async function reloadEverything(): Promise<void> {
-    const initialSymbol = await loadShellData();
-    const resolvedSymbol = initialSymbol ?? selectedSymbol;
+  async function reloadEverything(preferredSymbol?: string | null): Promise<void> {
+    const initialSymbol = await loadShellData(preferredSymbol);
+    const resolvedSymbol = preferredSymbol ?? initialSymbol ?? selectedSymbol;
     if (resolvedSymbol) {
       await loadDetailData(resolvedSymbol);
     }
@@ -501,6 +521,82 @@ function App() {
 
   async function handleRefresh() {
     await reloadEverything();
+  }
+
+  async function handleAddWatchlist() {
+    if (!watchlistSymbolDraft.trim()) {
+      messageApi.warning("请先输入股票代码");
+      return;
+    }
+    if (!canMutateWatchlist) {
+      messageApi.warning("请先切换到在线 API 模式，再修改自选池");
+      return;
+    }
+    setMutatingWatchlist(true);
+    setWatchlistMutationSymbol(watchlistSymbolDraft.trim().toUpperCase());
+    setError(null);
+    try {
+      const response = await api.addWatchlist(watchlistSymbolDraft, watchlistNameDraft);
+      setWatchlistSymbolDraft("");
+      setWatchlistNameDraft("");
+      messageApi.success(response.message);
+      await reloadEverything(response.item.symbol);
+      setView("candidates");
+    } catch (mutationError) {
+      const messageText = mutationError instanceof Error ? mutationError.message : "加入自选池失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setMutatingWatchlist(false);
+      setWatchlistMutationSymbol(null);
+    }
+  }
+
+  async function handleRefreshWatchlist(symbol: string) {
+    if (!canMutateWatchlist) {
+      messageApi.warning("请先切换到在线 API 模式，再触发重新分析");
+      return;
+    }
+    setMutatingWatchlist(true);
+    setWatchlistMutationSymbol(symbol);
+    setError(null);
+    try {
+      const response = await api.refreshWatchlist(symbol);
+      messageApi.success(response.message);
+      await reloadEverything(response.item.symbol);
+    } catch (mutationError) {
+      const messageText = mutationError instanceof Error ? mutationError.message : "重新分析失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setMutatingWatchlist(false);
+      setWatchlistMutationSymbol(null);
+    }
+  }
+
+  async function handleRemoveWatchlist(symbol: string) {
+    if (!canMutateWatchlist) {
+      messageApi.warning("请先切换到在线 API 模式，再移除自选股");
+      return;
+    }
+    setMutatingWatchlist(true);
+    setWatchlistMutationSymbol(symbol);
+    setError(null);
+    try {
+      const response = await api.removeWatchlist(symbol);
+      messageApi.success(`已移除 ${response.symbol}，当前剩余 ${response.active_count} 只自选股`);
+      const nextSymbol = selectedSymbol === symbol
+        ? watchlist.find((item) => item.symbol !== symbol)?.symbol ?? null
+        : selectedSymbol;
+      await reloadEverything(nextSymbol);
+    } catch (mutationError) {
+      const messageText = mutationError instanceof Error ? mutationError.message : "移除自选股失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setMutatingWatchlist(false);
+      setWatchlistMutationSymbol(null);
+    }
   }
 
   function handleCandidateSelect(symbol: string, nextView?: ViewMode) {
@@ -863,30 +959,31 @@ function App() {
     <>
       {messageContextHolder}
       <div className="workspace-shell">
-        <header className="command-header">
-          <div>
-            <div className="header-kicker">A-Share Advisory Console</div>
-            <Title level={1}>A 股投资建议操作面板</Title>
-            <Paragraph>
-              自选股池、2-8 周波段、候选股推荐、单票解释与模拟交易运营闭环集中在同一控制台。页面默认支持离线快照，静态部署不再依赖在线 demo API 存活。
+        <div className="workspace-topbar panel-card">
+          <div className="topbar-main">
+            <div className="topbar-kicker">A-Share Advisory Desk</div>
+            <Title level={3}>自选股操作台</Title>
+            <Paragraph className="topbar-note">
+              直接维护自选池、触发分析、查看候选排序和单票证据。默认支持离线快照，写入类操作请切到在线 API。
             </Paragraph>
             <Space wrap className="header-meta">
-              <Tag color="blue">自选股池</Tag>
-              <Tag color="cyan">2-8 周波段</Tag>
+              <Tag color="blue">自选池</Tag>
+              <Tag color="cyan">2-8 周</Tag>
               <Tag color={sourceInfo.mode === "online" ? "green" : "gold"}>{sourceInfo.label}</Tag>
-              <Tag icon={<DatabaseOutlined />}>{`快照时间 ${formatDate(sourceInfo.snapshotGeneratedAt)}`}</Tag>
+              <Tag icon={<DatabaseOutlined />}>{`快照 ${formatDate(sourceInfo.snapshotGeneratedAt)}`}</Tag>
             </Space>
           </div>
-          <div className="header-summary">
+          <div className="topbar-stats">
+            <Statistic title="自选股" value={watchlist.length} />
             <Statistic title="候选股" value={candidates.length} />
-            <Statistic title="当前焦点" value={activeCandidate?.name ?? "--"} />
+            <Statistic title="当前焦点" value={activeCandidate?.name ?? activeWatchlistItem?.name ?? "--"} />
             <Statistic title="最近刷新" value={formatDate(generatedAt)} />
           </div>
-        </header>
+        </div>
 
         <Card className="command-deck panel-card">
           <Row gutter={[16, 16]}>
-            <Col xs={24} xl={8}>
+            <Col xs={24} xl={6}>
               <div className="deck-section-title">数据模式</div>
               <Segmented
                 block
@@ -920,13 +1017,13 @@ function App() {
               </Space>
             </Col>
 
-            <Col xs={24} xl={8}>
+            <Col xs={24} xl={6}>
               <div className="deck-section-title">当前焦点</div>
               <Select
                 className="full-width"
                 value={selectedSymbol ?? undefined}
                 placeholder="选择一个自选股"
-                options={candidates.map((item) => ({
+                options={watchlist.map((item) => ({
                   value: item.symbol,
                   label: `${item.name} · ${item.symbol}`,
                 }))}
@@ -942,7 +1039,36 @@ function App() {
               </div>
             </Col>
 
-            <Col xs={24} xl={8}>
+            <Col xs={24} xl={6}>
+              <div className="deck-section-title">加入自选</div>
+              <Space direction="vertical" size={10} className="full-width">
+                <Input
+                  value={watchlistSymbolDraft}
+                  onChange={(event) => setWatchlistSymbolDraft(event.target.value)}
+                  placeholder="输入股票代码，如 600519 或 300750.SZ"
+                />
+                <Input
+                  value={watchlistNameDraft}
+                  onChange={(event) => setWatchlistNameDraft(event.target.value)}
+                  placeholder="可选：自定义显示名称"
+                />
+              </Space>
+              <div className="deck-actions">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  loading={mutatingWatchlist}
+                  onClick={() => void handleAddWatchlist()}
+                >
+                  加入并分析
+                </Button>
+              </div>
+              <Paragraph className="deck-note compact-note">
+                在线模式下会把股票写入自选池，并立即生成候选排序和单票分析所需数据。
+              </Paragraph>
+            </Col>
+
+            <Col xs={24} xl={6}>
               <div className="deck-section-title">内测访问</div>
               <Input.Password
                 value={betaKeyDraft}
@@ -955,6 +1081,9 @@ function App() {
                 </Button>
                 <Text type="secondary">{`Header: ${sourceInfo.betaHeaderName}`}</Text>
               </div>
+              <Paragraph className="deck-note compact-note">
+                {canMutateWatchlist ? "当前可修改自选池和触发重新分析。" : "离线快照为只读模式，不能新增、移除或重分析自选股。"}
+              </Paragraph>
             </Col>
           </Row>
         </Card>
@@ -1043,54 +1172,99 @@ function App() {
               </Card>
             </Col>
             <Col xs={24} xl={8}>
-              <Card
-                className="panel-card"
-                title={activeCandidate ? `当前入选标的 · ${activeCandidate.name}` : "当前入选标的"}
-                extra={
-                  activeCandidate ? (
-                    <Button type="link" onClick={() => handleCandidateSelect(activeCandidate.symbol, "stock")}>
-                      打开单票分析
-                    </Button>
-                  ) : null
-                }
-              >
-                {activeCandidate ? (
-                  <>
-                    <Space wrap className="inline-tags">
-                      <Tag color={directionColor(activeCandidate.direction)}>{activeCandidate.direction_label}</Tag>
-                      <Tag>{`${activeCandidate.confidence_label}置信`}</Tag>
-                      <Tag>{activeCandidate.applicable_period}</Tag>
-                    </Space>
-                    <Paragraph className="panel-description">{activeCandidate.summary}</Paragraph>
-                    <Descriptions size="small" column={1}>
-                      <Descriptions.Item label="当前读法">{activeCandidate.why_now}</Descriptions.Item>
-                      <Descriptions.Item label="主要风险">{activeCandidate.primary_risk ?? "等待更多风险证据。"}</Descriptions.Item>
-                      <Descriptions.Item label="最近变化">{activeCandidate.change_summary}</Descriptions.Item>
-                      <Descriptions.Item label="数据时间">{formatDate(activeCandidate.as_of_data_time)}</Descriptions.Item>
-                    </Descriptions>
-                    <Card size="small" className="sub-panel-card">
-                      <Title level={5}>Watchlist 快照</Title>
-                      <List
-                        size="small"
-                        dataSource={candidates}
-                        renderItem={(item) => (
-                          <List.Item>
+              <div className="panel-stack">
+                <Card
+                  className="panel-card"
+                  title={activeCandidate ? `当前入选标的 · ${activeCandidate.name}` : "当前入选标的"}
+                  extra={
+                    activeCandidate ? (
+                      <Button type="link" onClick={() => handleCandidateSelect(activeCandidate.symbol, "stock")}>
+                        打开单票分析
+                      </Button>
+                    ) : null
+                  }
+                >
+                  {activeCandidate ? (
+                    <>
+                      <Space wrap className="inline-tags">
+                        <Tag color={directionColor(activeCandidate.direction)}>{activeCandidate.direction_label}</Tag>
+                        <Tag>{`${activeCandidate.confidence_label}置信`}</Tag>
+                        <Tag>{activeCandidate.applicable_period}</Tag>
+                      </Space>
+                      <Paragraph className="panel-description">{activeCandidate.summary}</Paragraph>
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="当前读法">{activeCandidate.why_now}</Descriptions.Item>
+                        <Descriptions.Item label="主要风险">{activeCandidate.primary_risk ?? "等待更多风险证据。"}</Descriptions.Item>
+                        <Descriptions.Item label="最近变化">{activeCandidate.change_summary}</Descriptions.Item>
+                        <Descriptions.Item label="数据时间">{formatDate(activeCandidate.as_of_data_time)}</Descriptions.Item>
+                      </Descriptions>
+                    </>
+                  ) : (
+                    <Empty description="没有可展示的候选股" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  )}
+                </Card>
+
+                <Card
+                  className="panel-card"
+                  title="自选池维护"
+                  extra={<Text type="secondary">{`共 ${watchlist.length} 只`}</Text>}
+                >
+                  {watchlist.length > 0 ? (
+                    <List
+                      size="small"
+                      dataSource={watchlist}
+                      renderItem={(item) => (
+                        <List.Item>
+                          <div className="watchlist-entry">
                             <div className="list-item-row">
                               <div>
                                 <strong>{item.name}</strong>
-                                <div className="muted-line">{item.symbol}</div>
+                                <div className="muted-line">{`${item.symbol} · ${item.source_kind === "default_seed" ? "默认样本" : "手动加入"}`}</div>
                               </div>
-                              <Tag color={directionColor(item.direction)}>{item.direction_label}</Tag>
+                              {item.latest_direction ? (
+                                <Tag color={directionColor(item.latest_direction)}>
+                                  {directionLabels[item.latest_direction] ?? item.latest_direction}
+                                </Tag>
+                              ) : (
+                                <Tag>{item.analysis_status}</Tag>
+                              )}
                             </div>
-                          </List.Item>
-                        )}
-                      />
-                    </Card>
-                  </>
-                ) : (
-                  <Empty description="没有可展示的候选股" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                )}
-              </Card>
+                            <div className="watchlist-meta">
+                              <Text type="secondary">{`最近分析 ${formatDate(item.last_analyzed_at ?? item.updated_at)}`}</Text>
+                              {item.latest_confidence_label ? <Text type="secondary">{`${item.latest_confidence_label}置信`}</Text> : null}
+                            </div>
+                            <div className="watchlist-actions">
+                              <Button type="link" onClick={() => handleCandidateSelect(item.symbol)}>
+                                打开
+                              </Button>
+                              <Button
+                                type="link"
+                                icon={<SyncOutlined />}
+                                disabled={!canMutateWatchlist}
+                                loading={mutatingWatchlist && watchlistMutationSymbol === item.symbol}
+                                onClick={() => void handleRefreshWatchlist(item.symbol)}
+                              >
+                                重分析
+                              </Button>
+                              <Button
+                                type="link"
+                                danger
+                                icon={<DeleteOutlined />}
+                                disabled={!canMutateWatchlist}
+                                onClick={() => void handleRemoveWatchlist(item.symbol)}
+                              >
+                                移除
+                              </Button>
+                            </div>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  ) : (
+                    <Empty description="当前自选池为空，请先添加股票代码" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  )}
+                </Card>
+              </div>
             </Col>
           </Row>
         ) : null}
