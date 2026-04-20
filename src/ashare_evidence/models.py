@@ -405,3 +405,46 @@ class WatchlistEntry(TimestampedMixin, LineageMixin, Base):
     last_analyzed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     watchlist_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class AppSetting(TimestampedMixin, Base):
+    __tablename__ = "app_settings"
+    __table_args__ = (UniqueConstraint("setting_key", name="uq_app_setting_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    setting_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    setting_value: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class ProviderCredential(TimestampedMixin, Base):
+    __tablename__ = "provider_credentials"
+    __table_args__ = (UniqueConstraint("provider_name", name="uq_provider_credential_name"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    provider_name: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    display_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    access_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    base_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    enabled: Mapped[bool] = mapped_column(default=True, nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    config_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class ModelApiKey(TimestampedMixin, Base):
+    __tablename__ = "model_api_keys"
+    __table_args__ = (UniqueConstraint("name", name="uq_model_api_key_name"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    provider_name: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    model_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    base_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    api_key: Mapped[str] = mapped_column(Text, nullable=False)
+    enabled: Mapped[bool] = mapped_column(default=True, nullable=False)
+    is_default: Mapped[bool] = mapped_column(default=False, nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, default=100, nullable=False, index=True)
+    last_status: Mapped[str] = mapped_column(String(16), default="untested", nullable=False)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    metadata_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)

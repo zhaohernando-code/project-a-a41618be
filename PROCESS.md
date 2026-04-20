@@ -166,3 +166,13 @@
 - Validation: `cd /root/codex/release/.codex-system/worktrees/dashboard-ui/task-mo5avwpw-gox7nh && npm install --prefer-offline --include=dev --no-audit --fund=false && npm run build`
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=tool-entry remediation
+
+## 2026-04-21
+
+- Problem: 部署环境已经从 GitHub Pages 迁移到自托管服务器，但项目仍保留“在线 API / 离线快照”双模式、浏览器本地自选池和用户侧在线接入配置，这些静态站假设与新的服务端真实数据模式冲突。
+- Resolution: 前端收口为统一服务端模式；新增 `app_settings`、`provider_credentials`、`model_api_keys` 三类 SQLite 配置实体；新增 `/settings/runtime`、模型 Key 管理、数据源凭据管理和 `/analysis/follow-up` 分析接口；补齐 `AKShare + Tushare` 统一字段映射摘要、`Redis` 关注池缓存 TTL 和模型 Key 默认/显式选择/故障切换逻辑。
+- Prevention: 后续凡是部署形态已经确定为自托管服务器的项目，不再为了静态演示保留离线快照主路径；如果必须保留历史快照工具，也要明确它是非主链路并从 UI 和验收文档中移除。
+- Validation: `python3 -m py_compile src/ashare_evidence/models.py src/ashare_evidence/runtime_config.py src/ashare_evidence/llm_service.py src/ashare_evidence/api.py src/ashare_evidence/operations.py src/ashare_evidence/schemas.py tests/test_runtime_config.py`; `cd frontend && npm run build`
+- Note: `PYTHONPATH=src python3 -m unittest discover -s tests` 仍无法执行，原因是当前沙箱缺少 `fastapi`、`sqlalchemy` 等依赖且网络受限，无法安装。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=deployment-migration refactor

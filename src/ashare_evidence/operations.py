@@ -60,32 +60,32 @@ BENCHMARK_DAILY_RETURNS = (
 
 REFRESH_SCHEDULE = [
     {
-        "scope": "延迟行情",
-        "cadence_minutes": 15,
-        "market_delay_minutes": 20,
-        "stale_after_minutes": 45,
-        "trigger": "交易日 09:45-15:05 自动刷新，盘后 18:30 做全量校正。",
-    },
-    {
-        "scope": "公告与新闻映射",
-        "cadence_minutes": 10,
+        "scope": "实时行情缓存",
+        "cadence_minutes": 1,
         "market_delay_minutes": 0,
-        "stale_after_minutes": 30,
-        "trigger": "盘中定时拉取，事件去重和个股/行业映射同步重算。",
+        "stale_after_minutes": 1,
+        "trigger": "关注池命中请求时按 3-5 秒 TTL 读 Redis，单飞刷新并允许短时过期兜底。",
     },
     {
-        "scope": "因子与建议",
-        "cadence_minutes": 60,
-        "market_delay_minutes": 20,
-        "stale_after_minutes": 90,
-        "trigger": "交易时段滚动重算，证据冲突过大时即时降级为风险提示。",
+        "scope": "K线与技术特征",
+        "cadence_minutes": 1,
+        "market_delay_minutes": 0,
+        "stale_after_minutes": 5,
+        "trigger": "关注池标的按 1 分钟 TTL 聚合日线/分钟线，失败时回读最近有效缓存。",
+    },
+    {
+        "scope": "财报与结构化指标",
+        "cadence_minutes": 1440,
+        "market_delay_minutes": 0,
+        "stale_after_minutes": 2880,
+        "trigger": "财报与日级基本面按 1 天 TTL 缓存，公告更新后触发主动失效。",
     },
     {
         "scope": "模拟交易运营面板",
         "cadence_minutes": 30,
-        "market_delay_minutes": 20,
+        "market_delay_minutes": 0,
         "stale_after_minutes": 120,
-        "trigger": "组合收益、归因、回撤和命中复盘半小时重刷一次。",
+        "trigger": "组合收益、归因、回撤和命中复盘半小时重刷一次，依赖上游缓存而不是重复打外部源。",
     },
 ]
 
@@ -728,8 +728,8 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
     }
     refresh_policy = {
         "market_timezone": "Asia/Shanghai",
-        "cache_ttl_seconds": 300,
-        "manual_refresh_cooldown_minutes": 15,
+        "cache_ttl_seconds": 5,
+        "manual_refresh_cooldown_minutes": 1,
         "schedules": REFRESH_SCHEDULE,
     }
 

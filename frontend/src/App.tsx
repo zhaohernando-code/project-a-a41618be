@@ -1,12 +1,11 @@
 import {
-  ApiOutlined,
   BarChartOutlined,
   DatabaseOutlined,
   DeleteOutlined,
   LineChartOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SafetyCertificateOutlined,
+  SettingOutlined,
   StockOutlined,
   SyncOutlined,
   ThunderboltOutlined,
@@ -37,15 +36,18 @@ import { startTransition, useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import type {
   CandidateItemView,
-  DataMode,
   DataSourceInfo,
   DashboardRuntimeConfig,
+  FollowUpAnalysisResponse,
   GlossaryEntryView,
+  ModelApiKeyView,
   OperationsDashboardResponse,
   PortfolioNavPointView,
   PortfolioSummaryView,
   PricePointView,
+  ProviderCredentialView,
   RecommendationReplayView,
+  RuntimeSettingsResponse,
   StockDashboardResponse,
   WatchlistItemView,
 } from "./types";
@@ -53,7 +55,7 @@ import type {
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
 
-type ViewMode = "candidates" | "stock" | "operations";
+type ViewMode = "candidates" | "stock" | "operations" | "config";
 
 const numberFormatter = new Intl.NumberFormat("zh-CN", {
   maximumFractionDigits: 2,
@@ -120,35 +122,21 @@ function statusColor(status: string): string {
 
 function buildInitialSourceInfo(): DataSourceInfo {
   const runtimeConfig = api.getRuntimeConfig();
-  const preferredMode = runtimeConfig.preferredMode;
   return {
-    mode: preferredMode,
-    preferredMode,
-    label: preferredMode === "online" ? "在线 API" : "离线快照",
-    detail:
-      preferredMode === "online"
-        ? runtimeConfig.apiBase
-          ? `正在尝试连接 ${runtimeConfig.apiBase}。`
-          : "正在尝试连接同源在线接口；若前后端分离部署，请先填写后端 API 地址。"
-        : "当前使用仓库内置离线快照，并支持在浏览器本地维护自选池；结果为演示分析，不调用第三方接口。",
+    mode: "online",
+    preferredMode: "online",
+    label: "服务端实时数据",
+    detail: "页面统一通过服务端读取真实行情、K 线和财报；缓存与上游切换由服务端负责。",
     apiBase: runtimeConfig.apiBase,
     betaHeaderName: runtimeConfig.betaHeaderName,
     betaKeyPresent: Boolean(api.getBetaAccessKey()),
-    snapshotGeneratedAt: runtimeConfig.snapshotGeneratedAt,
+    snapshotGeneratedAt: "",
     fallbackReason: null,
   };
 }
 
 function mergeSourceInfo(primary: DataSourceInfo, secondary: DataSourceInfo): DataSourceInfo {
-  const preferOffline = primary.mode === "offline" || secondary.mode === "offline";
-  const base = preferOffline
-    ? (primary.mode === "offline" ? primary : secondary)
-    : primary;
-  const fallbackReasons = [primary.fallbackReason, secondary.fallbackReason].filter(Boolean).join("；");
-  return {
-    ...base,
-    fallbackReason: fallbackReasons || null,
-  };
+  return secondary ?? primary;
 }
 
 function PriceSparkline({ points }: { points: PricePointView[] }) {
@@ -392,9 +380,9 @@ function App() {
   const initialRuntimeConfig = api.getRuntimeConfig();
   const [messageApi, messageContextHolder] = message.useMessage();
   const [view, setView] = useState<ViewMode>("candidates");
-  const [preferredMode, setPreferredMode] = useState<DataMode>(() => initialRuntimeConfig.preferredMode);
   const [runtimeConfig, setRuntimeConfig] = useState<DashboardRuntimeConfig>(initialRuntimeConfig);
   const [sourceInfo, setSourceInfo] = useState<DataSourceInfo>(() => buildInitialSourceInfo());
+  const [runtimeSettings, setRuntimeSettings] = useState<RuntimeSettingsResponse | null>(null);
   const [watchlist, setWatchlist] = useState<WatchlistItemView[]>([]);
   const [candidates, setCandidates] = useState<CandidateItemView[]>([]);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
@@ -403,14 +391,23 @@ function App() {
   const [dashboard, setDashboard] = useState<StockDashboardResponse | null>(null);
   const [operations, setOperations] = useState<OperationsDashboardResponse | null>(null);
   const [questionDraft, setQuestionDraft] = useState("");
-  const [apiBaseDraft, setApiBaseDraft] = useState(() => initialRuntimeConfig.apiBase);
-  const [betaKeyDraft, setBetaKeyDraft] = useState(() => api.getBetaAccessKey());
+  const [analysisAnswer, setAnalysisAnswer] = useState<FollowUpAnalysisResponse | null>(null);
+  const [analysisKeyId, setAnalysisKeyId] = useState<number | undefined>(undefined);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyProvider, setNewKeyProvider] = useState("openai");
+  const [newKeyModel, setNewKeyModel] = useState("gpt-4.1-mini");
+  const [newKeyBaseUrl, setNewKeyBaseUrl] = useState("https://api.openai.com/v1");
+  const [newKeySecret, setNewKeySecret] = useState("");
+  const [newKeyPriority, setNewKeyPriority] = useState("100");
+  const [providerDrafts, setProviderDrafts] = useState<Record<string, { accessToken: string; baseUrl: string; enabled: boolean; notes: string }>>({});
   const [watchlistSymbolDraft, setWatchlistSymbolDraft] = useState("");
   const [watchlistNameDraft, setWatchlistNameDraft] = useState("");
   const [loadingShell, setLoadingShell] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [mutatingWatchlist, setMutatingWatchlist] = useState(false);
   const [watchlistMutationSymbol, setWatchlistMutationSymbol] = useState<string | null>(null);
+  const [savingConfig, setSavingConfig] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const canMutateWatchlist = true;
 
@@ -428,6 +425,44 @@ function App() {
     const entries = [...glossary, ...(dashboard?.glossary ?? [])];
     return Array.from(new Map(entries.map((item) => [item.term, item])).values());
   }, [dashboard?.glossary, glossary]);
+
+  const modelApiKeys = runtimeSettings?.model_api_keys ?? [];
+  const providerCredentials = runtimeSettings?.provider_credentials ?? [];
+
+  async function loadRuntimeSettings(): Promise<void> {
+    const payload = await api.getRuntimeSettings();
+    setRuntimeSettings(payload);
+    setAnalysisKeyId((current) => {
+      if (current && payload.model_api_keys.some((item) => item.id === current)) {
+        return current;
+      }
+      return payload.default_model_api_key_id ?? payload.model_api_keys[0]?.id;
+    });
+    setProviderDrafts((current) => {
+      const next: Record<string, { accessToken: string; baseUrl: string; enabled: boolean; notes: string }> = { ...current };
+      payload.provider_credentials.forEach((credential) => {
+        if (!next[credential.provider_name]) {
+          next[credential.provider_name] = {
+            accessToken: "",
+            baseUrl: credential.base_url ?? "",
+            enabled: credential.enabled,
+            notes: credential.notes ?? "",
+          };
+        }
+      });
+      payload.data_sources.forEach((source) => {
+        if (!next[source.provider_name]) {
+          next[source.provider_name] = {
+            accessToken: "",
+            baseUrl: source.base_url ?? "",
+            enabled: source.enabled,
+            notes: "",
+          };
+        }
+      });
+      return next;
+    });
+  }
 
   async function loadShellData(preferredSymbol?: string | null): Promise<string | null> {
     setLoadingShell(true);
@@ -465,6 +500,7 @@ function App() {
       setDashboard(stockResult.data);
       setOperations(operationsResult.data);
       setQuestionDraft(stockResult.data.follow_up.suggested_questions[0] ?? "");
+      setAnalysisAnswer(null);
       setSourceInfo(mergeSourceInfo(stockResult.source, operationsResult.source));
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "加载单票与运营面板失败。");
@@ -474,7 +510,14 @@ function App() {
   }
 
   useEffect(() => {
-    void loadShellData();
+    void (async () => {
+      try {
+        await loadRuntimeSettings();
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "加载运行时配置失败。");
+      }
+      await loadShellData();
+    })();
   }, []);
 
   useEffect(() => {
@@ -496,6 +539,7 @@ function App() {
   }, [selectedSymbol]);
 
   async function reloadEverything(preferredSymbol?: string | null): Promise<void> {
+    await loadRuntimeSettings();
     const initialSymbol = await loadShellData(preferredSymbol);
     const resolvedSymbol = preferredSymbol ?? initialSymbol ?? selectedSymbol;
     if (resolvedSymbol) {
@@ -503,65 +547,11 @@ function App() {
     }
   }
 
-  async function handleModeChange(mode: DataMode) {
-    api.setPreferredMode(mode);
-    const nextRuntimeConfig = api.getRuntimeConfig();
-    setPreferredMode(mode);
-    setRuntimeConfig(nextRuntimeConfig);
-    setSourceInfo(buildInitialSourceInfo());
-    if (mode === "online" && !nextRuntimeConfig.apiBase) {
-      messageApi.info("这里的在线 API 指本项目后端地址；前后端分离部署时请先填写，例如 http://127.0.0.1:8000。");
-    }
-    await reloadEverything();
-  }
-
-  async function handleApplyApiBase() {
-    api.setApiBase(apiBaseDraft);
-    const nextRuntimeConfig = api.getRuntimeConfig();
-    setRuntimeConfig(nextRuntimeConfig);
-    setApiBaseDraft(nextRuntimeConfig.apiBase);
-    setSourceInfo(buildInitialSourceInfo());
-    messageApi.success(
-      nextRuntimeConfig.apiBase
-        ? `在线 API 地址已更新为 ${nextRuntimeConfig.apiBase}`
-        : "已切换为同源相对路径模式",
-    );
-    if (preferredMode === "online") {
-      await reloadEverything();
-    }
-  }
-
-  async function handleResetApiBase() {
-    api.resetApiBase();
-    const nextRuntimeConfig = api.getRuntimeConfig();
-    setRuntimeConfig(nextRuntimeConfig);
-    setApiBaseDraft(nextRuntimeConfig.apiBase);
-    setSourceInfo(buildInitialSourceInfo());
-    messageApi.success(
-      nextRuntimeConfig.apiBase
-        ? `已恢复默认 API 地址 ${nextRuntimeConfig.apiBase}`
-        : "已恢复默认设置；当前未预置在线 API 地址",
-    );
-    if (preferredMode === "online") {
-      await reloadEverything();
-    }
-  }
-
-  async function handleApplyBetaKey() {
-    api.setBetaAccessKey(betaKeyDraft);
-    setRuntimeConfig(api.getRuntimeConfig());
-    await reloadEverything();
-  }
-
   async function handleBootstrap() {
     setError(null);
     const { data, source } = await api.bootstrapDemo();
     setSourceInfo(source);
-    messageApi.success(
-      source.mode === "online"
-        ? `已重新初始化 ${data.candidate_count} 条候选股演示数据`
-        : `已切换到离线演示快照，当前包含 ${data.candidate_count} 条候选股`,
-    );
+    messageApi.success(`已重新初始化 ${data.candidate_count} 条候选股样本数据。`);
     await reloadEverything();
   }
 
@@ -630,6 +620,144 @@ function App() {
     } finally {
       setMutatingWatchlist(false);
       setWatchlistMutationSymbol(null);
+    }
+  }
+
+  async function handleCreateModelApiKey() {
+    if (!newKeyName.trim() || !newKeyModel.trim() || !newKeyBaseUrl.trim() || !newKeySecret.trim()) {
+      messageApi.warning("请完整填写模型 Key 名称、模型名、Base URL 和 Key。");
+      return;
+    }
+    setSavingConfig(true);
+    setError(null);
+    try {
+      await api.createModelApiKey({
+        name: newKeyName.trim(),
+        provider_name: newKeyProvider.trim(),
+        model_name: newKeyModel.trim(),
+        base_url: newKeyBaseUrl.trim(),
+        api_key: newKeySecret.trim(),
+        enabled: true,
+        priority: Number.parseInt(newKeyPriority, 10) || 100,
+        make_default: modelApiKeys.length === 0,
+      });
+      setNewKeyName("");
+      setNewKeySecret("");
+      setNewKeyPriority("100");
+      await loadRuntimeSettings();
+      messageApi.success("模型 API Key 已保存。");
+    } catch (saveError) {
+      const messageText = saveError instanceof Error ? saveError.message : "保存模型 API Key 失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
+  async function handleToggleModelApiKey(item: ModelApiKeyView) {
+    setSavingConfig(true);
+    setError(null);
+    try {
+      await api.updateModelApiKey(item.id, { enabled: !item.enabled });
+      await loadRuntimeSettings();
+      messageApi.success(`${item.name} 已${item.enabled ? "停用" : "启用"}。`);
+    } catch (saveError) {
+      const messageText = saveError instanceof Error ? saveError.message : "更新模型 API Key 状态失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
+  async function handleSetDefaultModelApiKey(item: ModelApiKeyView) {
+    setSavingConfig(true);
+    setError(null);
+    try {
+      await api.setDefaultModelApiKey(item.id);
+      await loadRuntimeSettings();
+      setAnalysisKeyId(item.id);
+      messageApi.success(`已将 ${item.name} 设为默认分析 Key。`);
+    } catch (saveError) {
+      const messageText = saveError instanceof Error ? saveError.message : "设置默认 Key 失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
+  async function handleDeleteModelApiKey(item: ModelApiKeyView) {
+    setSavingConfig(true);
+    setError(null);
+    try {
+      await api.deleteModelApiKey(item.id);
+      await loadRuntimeSettings();
+      messageApi.success(`已删除 ${item.name}。`);
+    } catch (saveError) {
+      const messageText = saveError instanceof Error ? saveError.message : "删除模型 API Key 失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
+  async function handleSaveProviderCredential(providerName: string) {
+    const draft = providerDrafts[providerName];
+    if (!draft) return;
+    setSavingConfig(true);
+    setError(null);
+    try {
+      await api.upsertProviderCredential(providerName, {
+        access_token: draft.accessToken.trim() || null,
+        base_url: draft.baseUrl.trim() || null,
+        enabled: draft.enabled,
+        notes: draft.notes.trim() || null,
+      });
+      setProviderDrafts((current) => ({
+        ...current,
+        [providerName]: {
+          ...current[providerName],
+          accessToken: "",
+        },
+      }));
+      await loadRuntimeSettings();
+      messageApi.success(`${providerName.toUpperCase()} 凭据已更新。`);
+    } catch (saveError) {
+      const messageText = saveError instanceof Error ? saveError.message : "保存数据源凭据失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
+  async function handleRunAnalysis() {
+    if (!dashboard || !selectedSymbol) return;
+    if (modelApiKeys.length === 0) {
+      messageApi.warning("请先在“模型配置”里至少保存一个模型 API Key。");
+      setView("config");
+      return;
+    }
+    setAnalysisLoading(true);
+    setError(null);
+    try {
+      const payload = await api.runFollowUpAnalysis({
+        symbol: selectedSymbol,
+        question: questionDraft,
+        model_api_key_id: analysisKeyId,
+        failover_enabled: runtimeSettings?.llm_failover_enabled ?? true,
+      });
+      setAnalysisAnswer(payload);
+      messageApi.success(payload.failover_used ? "已完成分析，并触发故障切换。" : "已完成分析。");
+    } catch (analysisError) {
+      const messageText = analysisError instanceof Error ? analysisError.message : "服务端分析失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setAnalysisLoading(false);
     }
   }
 
@@ -926,6 +1054,16 @@ function App() {
                       </Button>
                     ))}
                   </Space>
+                  <Select
+                    className="full-width"
+                    value={analysisKeyId}
+                    placeholder="选择用于分析的模型 Key"
+                    options={modelApiKeys.map((item) => ({
+                      value: item.id,
+                      label: `${item.name} · ${item.model_name}${item.is_default ? " · 默认" : ""}`,
+                    }))}
+                    onChange={(value) => setAnalysisKeyId(value)}
+                  />
                   <TextArea
                     rows={5}
                     value={questionDraft}
@@ -933,11 +1071,25 @@ function App() {
                     placeholder="输入你要继续追问的问题"
                   />
                   <div className="prompt-actions">
-                    <Button type="primary" onClick={handleCopyPrompt}>
+                    <Button type="primary" loading={analysisLoading} onClick={() => void handleRunAnalysis()}>
+                      服务端分析
+                    </Button>
+                    <Button onClick={handleCopyPrompt}>
                       复制追问包
                     </Button>
-                    <Text type="secondary">复制内容已带上当前建议、变化原因和关键证据。</Text>
+                    <Text type="secondary">可以显式选 Key；若默认 Key 失败，服务端会按优先级故障切换。</Text>
                   </div>
+                  {analysisAnswer ? (
+                    <Card size="small" className="prompt-packet-card">
+                      <Title level={5}>分析结果</Title>
+                      <Paragraph className="panel-description">{analysisAnswer.answer}</Paragraph>
+                      <Space wrap className="inline-tags">
+                        <Tag color="blue">{analysisAnswer.selected_key.name}</Tag>
+                        <Tag>{analysisAnswer.selected_key.model_name}</Tag>
+                        {analysisAnswer.failover_used ? <Tag color="orange">已故障切换</Tag> : null}
+                      </Space>
+                    </Card>
+                  ) : null}
                   <Card size="small" className="prompt-packet-card">
                     <Title level={5}>证据包提示</Title>
                     <ul className="plain-list">
@@ -1004,13 +1156,14 @@ function App() {
             <div className="topbar-kicker">A-Share Advisory Desk</div>
             <Title level={3}>自选股操作台</Title>
             <Paragraph className="topbar-note">
-              直接维护自选池、触发分析、查看候选排序和单票证据。离线模式会在浏览器本地生成演示分析；接入项目后端后可切到在线持久化。
+              当前部署假设已经切到自托管服务器。前端不再使用离线快照，所有真实数据统一由服务端基于关注池、SQLite 和 Redis 策略管理。
             </Paragraph>
             <Space wrap className="header-meta">
-              <Tag color="blue">自选池</Tag>
+              <Tag color="blue">全站共享关注池</Tag>
               <Tag color="cyan">2-8 周</Tag>
-              <Tag color={sourceInfo.mode === "online" ? "green" : "gold"}>{sourceInfo.label}</Tag>
-              <Tag icon={<DatabaseOutlined />}>{`快照 ${formatDate(sourceInfo.snapshotGeneratedAt)}`}</Tag>
+              <Tag color="green">{sourceInfo.label}</Tag>
+              <Tag icon={<DatabaseOutlined />}>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
+              <Tag>{runtimeSettings?.cache_backend ?? "Redis"}</Tag>
             </Space>
           </div>
           <div className="topbar-stats">
@@ -1028,37 +1181,17 @@ function App() {
         <Card className="command-deck panel-card">
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={6}>
-              <div className="deck-section-title">数据模式</div>
-              <Segmented
-                block
-                value={preferredMode}
-                options={[
-                  {
-                    label: (
-                      <Space>
-                        <DatabaseOutlined />
-                        离线快照
-                      </Space>
-                    ),
-                    value: "offline",
-                  },
-                  {
-                    label: (
-                      <Space>
-                        <ApiOutlined />
-                        在线 API
-                      </Space>
-                    ),
-                    value: "online",
-                  },
-                ]}
-                onChange={(value) => void handleModeChange(value as DataMode)}
-              />
+              <div className="deck-section-title">部署与存储</div>
               <Paragraph className="deck-note">{sourceInfo.detail}</Paragraph>
               <Space wrap className="inline-tags">
-                <Tag color={sourceInfo.mode === "online" ? "green" : "gold"}>{sourceInfo.label}</Tag>
-                <Tag>{sourceInfo.apiBase || "未配置 API Base"}</Tag>
+                <Tag color="green">{runtimeSettings?.deployment_mode ?? "self_hosted_server"}</Tag>
+                <Tag>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
+                <Tag>{runtimeSettings?.cache_backend ?? "Redis"}</Tag>
+                <Tag>{runtimeSettings?.provider_selection_mode ?? "runtime_policy"}</Tag>
               </Space>
+              <Paragraph className="deck-note compact-note">
+                {runtimeSettings?.deployment_notes[0] ?? "服务端负责上游 API 访问、缓存和失败回退，前端只消费统一 contract。"}
+              </Paragraph>
             </Col>
 
             <Col xs={24} xl={6}>
@@ -1078,7 +1211,7 @@ function App() {
                   刷新面板
                 </Button>
                 <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => void handleBootstrap()}>
-                  重置演示数据
+                  重建样本数据
                 </Button>
               </div>
             </Col>
@@ -1108,42 +1241,38 @@ function App() {
                 </Button>
               </div>
               <Paragraph className="deck-note compact-note">
-                离线模式会在浏览器本地生成一套演示分析；在线模式会把股票写入项目后端并生成同结构数据。
+                新股票会进入全站共享关注池，后续缓存只围绕这里的标的生效，用来降低 Redis 和上游 API 压力。
               </Paragraph>
             </Col>
 
             <Col xs={24} xl={6}>
-              <div className="deck-section-title">在线接入</div>
-              <Space direction="vertical" size={10} className="full-width">
-                <Input
-                  value={apiBaseDraft}
-                  onChange={(event) => setApiBaseDraft(event.target.value)}
-                  placeholder="输入后端 API 地址，如 http://127.0.0.1:8000"
-                />
-                <Input.Password
-                  value={betaKeyDraft}
-                  onChange={(event) => setBetaKeyDraft(event.target.value)}
-                  placeholder="可选：输入在线 API 的 access key"
-                />
-              </Space>
-              <div className="deck-actions">
-                <Button onClick={() => void handleApplyApiBase()} icon={<ApiOutlined />}>
-                  应用接口地址
-                </Button>
-                <Button onClick={() => void handleResetApiBase()}>
-                  恢复默认
-                </Button>
-                <Button onClick={() => void handleApplyBetaKey()} icon={<SafetyCertificateOutlined />}>
-                  应用 access key
-                </Button>
-              </div>
+              <div className="deck-section-title">数据源与缓存</div>
+              <List
+                size="small"
+                dataSource={runtimeSettings?.cache_policies ?? []}
+                renderItem={(item) => (
+                  <List.Item>
+                    <div className="full-width">
+                      <div className="list-item-row">
+                        <strong>{item.label}</strong>
+                        <Tag>{`${item.ttl_seconds}s`}</Tag>
+                      </div>
+                      <div className="muted-line">{`失败兜底 ${item.stale_if_error_seconds}s · ${item.warm_on_watchlist ? "仅关注池预热" : "全量"}`}</div>
+                    </div>
+                  </List.Item>
+                )}
+              />
               <Paragraph className="deck-note compact-note">
-                这里配置的是本项目后端地址，不是 Tushare、AkShare 或 OpenAI。前后端分离部署时填写 <Text code>http://127.0.0.1:8000</Text>；若不接后端，保持离线模式即可直接使用本地自选池。
+                {runtimeSettings
+                  ? `当前按 ${runtimeSettings.provider_order.join(" -> ")} 做运行时选源，失败后自动切换。`
+                  : "服务端会根据 AKShare/Tushare 凭据和运行时策略决定实际数据源。"}
               </Paragraph>
               <Space wrap className="inline-tags">
-                <Tag>{runtimeConfig.apiBase || "未配置 API Base"}</Tag>
-                <Tag>{runtimeConfig.apiBaseOverrideActive ? "运行时覆盖" : runtimeConfig.apiBaseDefault ? "构建默认" : "无默认值"}</Tag>
-                <Tag>{`Header: ${sourceInfo.betaHeaderName}`}</Tag>
+                {(runtimeSettings?.data_sources ?? []).map((item) => (
+                  <Tag key={item.provider_name} color={item.credential_configured ? "green" : "gold"}>
+                    {`${item.provider_name.toUpperCase()} ${item.credential_configured ? "已配置" : "待配置"}`}
+                  </Tag>
+                ))}
               </Space>
             </Col>
           </Row>
@@ -1180,19 +1309,18 @@ function App() {
               ),
               value: "operations",
             },
+            {
+              label: (
+                <Space>
+                  <SettingOutlined />
+                  模型配置
+                </Space>
+              ),
+              value: "config",
+            },
           ]}
           onChange={(value) => setView(value as ViewMode)}
         />
-
-        {sourceInfo.fallbackReason ? (
-          <Alert
-            showIcon
-            type="warning"
-            className="status-alert"
-            message="在线接口不可用，已切换到离线快照"
-            description={sourceInfo.fallbackReason}
-          />
-        ) : null}
 
         {error ? (
           <Alert
@@ -1550,6 +1678,194 @@ function App() {
               </Row>
             </div>
           )
+        ) : null}
+
+        {!loadingShell && view === "config" ? (
+          <div className="panel-stack">
+            <Row gutter={[16, 16]}>
+              <Col xs={24} xl={14}>
+                <Card
+                  className="panel-card"
+                  title="模型 API Key"
+                  extra={<Text type="secondary">{`当前 ${modelApiKeys.length} 个`}</Text>}
+                >
+                  <List
+                    dataSource={modelApiKeys}
+                    locale={{ emptyText: "尚未配置模型 API Key" }}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <div className="watchlist-entry">
+                          <div className="list-item-row">
+                            <div>
+                              <strong>{item.name}</strong>
+                              <div className="muted-line">{`${item.provider_name} · ${item.model_name}`}</div>
+                            </div>
+                            <Space wrap>
+                              {item.is_default ? <Tag color="blue">默认</Tag> : null}
+                              <Tag color={item.enabled ? "green" : "default"}>{item.enabled ? "启用" : "停用"}</Tag>
+                              <Tag>{`P${item.priority}`}</Tag>
+                            </Space>
+                          </div>
+                          <div className="watchlist-meta">
+                            <Text type="secondary">{item.base_url}</Text>
+                            <Text type="secondary">{`最近状态 ${item.last_status}${item.last_error ? ` · ${item.last_error}` : ""}`}</Text>
+                          </div>
+                          <div className="watchlist-actions">
+                            <Button type="link" disabled={item.is_default} onClick={() => void handleSetDefaultModelApiKey(item)}>
+                              设为默认
+                            </Button>
+                            <Button type="link" onClick={() => void handleToggleModelApiKey(item)}>
+                              {item.enabled ? "停用" : "启用"}
+                            </Button>
+                            <Button type="link" danger onClick={() => void handleDeleteModelApiKey(item)}>
+                              删除
+                            </Button>
+                          </div>
+                        </div>
+                      </List.Item>
+                    )}
+                  />
+                </Card>
+
+                <Card className="panel-card" title="新增模型 Key">
+                  <Row gutter={[12, 12]}>
+                    <Col xs={24} md={12}>
+                      <Input value={newKeyName} onChange={(event) => setNewKeyName(event.target.value)} placeholder="名称，如主 OpenAI" />
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Input value={newKeyProvider} onChange={(event) => setNewKeyProvider(event.target.value)} placeholder="provider，如 openai" />
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Input value={newKeyModel} onChange={(event) => setNewKeyModel(event.target.value)} placeholder="模型名，如 gpt-4.1-mini" />
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Input value={newKeyBaseUrl} onChange={(event) => setNewKeyBaseUrl(event.target.value)} placeholder="Base URL，如 https://api.openai.com/v1" />
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Input.Password value={newKeySecret} onChange={(event) => setNewKeySecret(event.target.value)} placeholder="API Key" />
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Input value={newKeyPriority} onChange={(event) => setNewKeyPriority(event.target.value)} placeholder="优先级，越小越优先" />
+                    </Col>
+                  </Row>
+                  <div className="deck-actions">
+                    <Button type="primary" loading={savingConfig} onClick={() => void handleCreateModelApiKey()}>
+                      保存模型 Key
+                    </Button>
+                  </div>
+                </Card>
+              </Col>
+
+              <Col xs={24} xl={10}>
+                <Card className="panel-card" title="数据源凭据">
+                  <List
+                    dataSource={runtimeSettings?.data_sources ?? []}
+                    renderItem={(item) => {
+                      const draft = providerDrafts[item.provider_name] ?? {
+                        accessToken: "",
+                        baseUrl: item.base_url ?? "",
+                        enabled: item.enabled,
+                        notes: "",
+                      };
+                      const saved = providerCredentials.find((credential) => credential.provider_name === item.provider_name);
+                      return (
+                        <List.Item>
+                          <div className="full-width">
+                            <div className="list-item-row">
+                              <div>
+                                <strong>{item.provider_name.toUpperCase()}</strong>
+                                <div className="muted-line">{item.role}</div>
+                              </div>
+                              <Tag color={item.credential_configured ? "green" : "gold"}>
+                                {item.credential_configured ? "已配置" : "待配置"}
+                              </Tag>
+                            </div>
+                            <Paragraph className="panel-description">{item.freshness_note}</Paragraph>
+                            <Space direction="vertical" size={8} className="full-width">
+                              <Input
+                                value={draft.baseUrl}
+                                onChange={(event) =>
+                                  setProviderDrafts((current) => ({
+                                    ...current,
+                                    [item.provider_name]: { ...draft, baseUrl: event.target.value },
+                                  }))
+                                }
+                                placeholder="可选：覆盖默认 Base URL"
+                              />
+                              <Input.Password
+                                value={draft.accessToken}
+                                onChange={(event) =>
+                                  setProviderDrafts((current) => ({
+                                    ...current,
+                                    [item.provider_name]: { ...draft, accessToken: event.target.value },
+                                  }))
+                                }
+                                placeholder={item.provider_name === "akshare" ? "可选：接入层 Token / 代理凭据" : "输入 Tushare Token"}
+                              />
+                              <Input
+                                value={draft.notes}
+                                onChange={(event) =>
+                                  setProviderDrafts((current) => ({
+                                    ...current,
+                                    [item.provider_name]: { ...draft, notes: event.target.value },
+                                  }))
+                                }
+                                placeholder="备注"
+                              />
+                            </Space>
+                            <div className="deck-actions">
+                              <Button
+                                onClick={() =>
+                                  setProviderDrafts((current) => ({
+                                    ...current,
+                                    [item.provider_name]: { ...draft, enabled: !draft.enabled },
+                                  }))
+                                }
+                              >
+                                {draft.enabled ? "切换为停用" : "切换为启用"}
+                              </Button>
+                              <Button type="primary" loading={savingConfig} onClick={() => void handleSaveProviderCredential(item.provider_name)}>
+                                保存凭据
+                              </Button>
+                            </div>
+                            <Space wrap className="inline-tags">
+                              <Tag>{saved?.masked_token ?? "未保存 Token"}</Tag>
+                              <Tag>{item.docs_url}</Tag>
+                            </Space>
+                          </div>
+                        </List.Item>
+                      );
+                    }}
+                  />
+                </Card>
+
+                <Card className="panel-card" title="统一领域模型与缓存策略">
+                  <List
+                    size="small"
+                    dataSource={runtimeSettings?.field_mappings ?? []}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <div>
+                          <strong>{`${item.dataset} · ${item.canonical_field}`}</strong>
+                          <div className="muted-line">{`AKShare: ${item.akshare_field} / Tushare: ${item.tushare_field}`}</div>
+                          <div className="muted-line">{item.notes}</div>
+                        </div>
+                      </List.Item>
+                    )}
+                  />
+                  <Card size="small" className="sub-panel-card">
+                    <Title level={5}>抗击穿策略</Title>
+                    <ul className="plain-list">
+                      <li>{`单飞刷新：${runtimeSettings?.anti_stampede.singleflight ? "开启" : "关闭"}`}</li>
+                      <li>{`失败读旧值：${runtimeSettings?.anti_stampede.serve_stale_on_error ? "开启" : "关闭"}`}</li>
+                      <li>{`空结果 TTL：${runtimeSettings?.anti_stampede.empty_result_ttl_seconds ?? "--"} 秒`}</li>
+                      <li>{`锁超时：${runtimeSettings?.anti_stampede.lock_timeout_seconds ?? "--"} 秒`}</li>
+                    </ul>
+                  </Card>
+                </Card>
+              </Col>
+            </Row>
+          </div>
         ) : null}
       </div>
     </>

@@ -15,13 +15,30 @@ from ashare_evidence.dashboard import (
     list_candidate_recommendations,
 )
 from ashare_evidence.db import get_database_url, get_session_factory, init_database
+from ashare_evidence.llm_service import run_follow_up_analysis
 from ashare_evidence.operations import build_operations_dashboard
+from ashare_evidence.runtime_config import (
+    create_model_api_key,
+    delete_model_api_key,
+    ensure_runtime_defaults,
+    get_runtime_settings,
+    set_default_model_api_key,
+    upsert_provider_credential,
+    update_model_api_key,
+)
 from ashare_evidence.schemas import (
+    FollowUpAnalysisRequest,
+    FollowUpAnalysisResponse,
     CandidateListResponse,
     DashboardBootstrapResponse,
     LatestRecommendationResponse,
+    ModelApiKeyCreateRequest,
+    ModelApiKeyDeleteResponse,
+    ModelApiKeyUpdateRequest,
     OperationsDashboardResponse,
+    ProviderCredentialUpsertRequest,
     RecommendationTraceResponse,
+    RuntimeSettingsResponse,
     StockDashboardResponse,
     WatchlistCreateRequest,
     WatchlistDeleteResponse,
@@ -41,6 +58,9 @@ def create_app(database_url: str | None = None) -> FastAPI:
     resolved_database_url = get_database_url(database_url)
     init_database(resolved_database_url)
     session_factory = get_session_factory(resolved_database_url)
+    with session_factory() as session:
+        ensure_runtime_defaults(session)
+        session.commit()
 
     def get_session() -> Iterator[Session]:
         session = session_factory()
@@ -70,6 +90,137 @@ def create_app(database_url: str | None = None) -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "database_url": resolved_database_url}
+
+    @app.get("/settings/runtime", response_model=RuntimeSettingsResponse)
+    def runtime_settings(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        return get_runtime_settings(session)
+
+    @app.put("/settings/provider-credentials/{provider_name}")
+    def provider_credential_upsert(
+        provider_name: str,
+        payload: ProviderCredentialUpsertRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            record = upsert_provider_credential(
+                session,
+                provider_name,
+                access_token=payload.access_token,
+                base_url=payload.base_url,
+                enabled=payload.enabled,
+                notes=payload.notes,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return record
+
+    @app.post("/settings/model-api-keys")
+    def model_api_key_create(
+        payload: ModelApiKeyCreateRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            record = create_model_api_key(
+                session,
+                name=payload.name,
+                provider_name=payload.provider_name,
+                model_name=payload.model_name,
+                base_url=payload.base_url,
+                api_key=payload.api_key,
+                enabled=payload.enabled,
+                priority=payload.priority,
+                make_default=payload.make_default,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return record
+
+    @app.patch("/settings/model-api-keys/{key_id}")
+    def model_api_key_update(
+        key_id: int,
+        payload: ModelApiKeyUpdateRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            record = update_model_api_key(
+                session,
+                key_id,
+                name=payload.name,
+                provider_name=payload.provider_name,
+                model_name=payload.model_name,
+                base_url=payload.base_url,
+                api_key=payload.api_key,
+                enabled=payload.enabled,
+                priority=payload.priority,
+                make_default=payload.make_default,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        session.commit()
+        return record
+
+    @app.post("/settings/model-api-keys/{key_id}/default")
+    def model_api_key_set_default(
+        key_id: int,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            record = set_default_model_api_key(session, key_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        session.commit()
+        return record
+
+    @app.delete("/settings/model-api-keys/{key_id}", response_model=ModelApiKeyDeleteResponse)
+    def model_api_key_remove(
+        key_id: int,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            payload = delete_model_api_key(session, key_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        session.commit()
+        return payload
+
+    @app.post("/analysis/follow-up", response_model=FollowUpAnalysisResponse)
+    def follow_up_analysis(
+        payload: FollowUpAnalysisRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            return run_follow_up_analysis(
+                session,
+                symbol=payload.symbol,
+                question=payload.question,
+                model_api_key_id=payload.model_api_key_id,
+                failover_enabled=payload.failover_enabled,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     @app.post("/bootstrap/demo")
     def bootstrap_demo(

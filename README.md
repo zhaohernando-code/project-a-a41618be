@@ -1,167 +1,95 @@
-# 一个关于a股的当前数据和投资建议看板
+# 一个关于A股的当前数据和投资建议看板
 
-当前仓库已经完成“返修验收”版本：在既有证据优先数据底座、建议引擎和模拟交易闭环之上，补齐了前端可离线运行的数据闭环，并把页面重构为可操作的控制台风格面板。即使在线 API 不可用，静态部署页面也能直接完成候选股、单票分析、运营看板和 demo 初始化的最小可用闭环。
+当前版本已经从“适配 GitHub Pages 的离线演示前端”收口为“适配自托管服务器的一期服务端模式”：
+
+- 前端不再暴露“在线 API / 离线快照”切换，也不再让用户配置项目后端地址。
+- 股票真实数据统一由服务端获取，围绕全站共享关注池做热点缓存。
+- 一期本地持久化确定为 `SQLite`，热点缓存方案确定为 `Redis`。
+- Web 新增“模型配置”视图，支持整站共享的大模型 `API Key` 管理、默认 Key 和故障切换。
 
 ## 当前实现
 
-- 后端技术栈：`Python 3.10+ + FastAPI + SQLAlchemy`
-- 前端技术栈：`Vite 4 + React 18 + TypeScript + Ant Design`
-- 数据路线预留：`Tushare Pro + 巨潮资讯/交易所披露 + Qlib`，当前用 `DemoLowCostRouteProvider` 证明链路
-- 新增 dashboard demo watchlist：`600519.SH`、`300750.SZ`、`601318.SH`、`002594.SZ`
-- 强制血缘字段：`license_tag`、`usage_scope`、`redistribution_scope`、`source_uri`、`lineage_hash`
-- 新增前端离线闭环：
-  - `frontend/src/offline-snapshot.json` 由当前后端 dashboard contract 导出，不是另一套手写伪数据
-  - 前端支持 `在线 API / 离线快照` 两种模式，默认在无 `VITE_API_BASE_URL` 时走离线快照
-  - 离线快照模式支持浏览器本地自选池：可直接新增/移除/重分析股票，不要求用户先配置任何第三方 API
-  - 页面顶部支持运行时填写后端 `API Base URL`，无需重新构建前端也可切到在线模式
-  - 在线 API 不可用或 access key 缺失时，页面自动回退到离线快照并给出提示
-  - `重置演示数据` 按钮在线上不可达时也可恢复内置 demo 快照
-- 新增自选池闭环：
-  - 离线模式支持在浏览器本地维护自选池；在线模式支持把标的写入项目后端的 `watchlist_entries`
-  - 新增标的后会即时生成上一版/当前版 recommendation、候选排序、单票分析和模拟交易上下文
-  - 固定 demo watchlist 已下沉为可持久化 `watchlist_entries`，不再只能靠前端写死列表
-- 已交付信号层：
-  - `price_baseline_factor`
-  - `news_event_factor`
-  - `llm_assessment_factor`
-  - `fusion_scorecard`
-- 已交付建议输出：方向、置信表达、核心驱动、反向风险、适用周期、更新时间、降级条件、因子拆解、验证快照
-- 已交付用户闭环：
-  - 候选股推荐页：按方向、置信度和趋势排序展示 watchlist
-  - 单票分析页：价格走势、关键指标、相关新闻、建议摘要和变化原因
-  - 解释与追问：术语解释、证据回溯、风险提示、GPT 追问包
-  - UI 重构：顶部改为紧凑操作面板，支持数据模式切换、焦点股票切换、自选股新增/移除/重分析、后端 API 地址和 access key 运行时配置、演示数据重置
-- 已交付模拟交易与内测闭环：
-  - 分离式模拟交易：`手动模拟仓` 与 `模型自动持仓模拟仓` 独立记账、独立收益归因、独立回撤阈值
-  - A 股规则检查：整手约束、T+1 卖出、印花税方向、涨跌停边界
-  - 组合运营视图：净值曲线、基准对比、收益归因、近期订单审计、建议命中复盘
-  - 内测治理：header allowlist 访问控制、刷新节奏、性能预算、上线门槛
-- 已落表域模型：
-  - 股票与板块：`stocks`、`sectors`、`sector_memberships`
-  - 行情与事件：`market_bars`、`news_items`、`news_entity_links`
-  - 特征与模型：`feature_snapshots`、`model_registries`、`model_versions`、`model_runs`、`model_results`
-  - 建议与证据：`prompt_versions`、`recommendations`、`recommendation_evidence`
-  - 模拟交易：`paper_portfolios`、`paper_orders`、`paper_fills`
-  - 采集审计：`ingestion_runs`
-  - 自选池：`watchlist_entries`
-- 已交付入口：
-  - CLI：初始化数据库、写入 demo 数据、写入 dashboard watchlist、查看候选页/单票页 payload、查看完整 trace、导出前端离线快照
-  - API：
-    - `/health`
-    - `/bootstrap/demo`
-    - `/bootstrap/dashboard-demo`
-    - `/watchlist`
-    - `/watchlist/{symbol}/refresh`
-    - `/dashboard/candidates`
-    - `/dashboard/glossary`
-    - `/dashboard/operations`
-    - `/stocks/{symbol}/recommendations/latest`
-    - `/stocks/{symbol}/dashboard`
-    - `/recommendations/{id}/trace`
-  - Frontend：`frontend/` 下可构建 GitHub Pages 子页面静态站点
+- 后端：`Python 3.10+ + FastAPI + SQLAlchemy`
+- 前端：`Vite + React + TypeScript + Ant Design`
+- 本地持久化：
+  - `watchlist_entries`
+  - `app_settings`
+  - `provider_credentials`
+  - `model_api_keys`
+- 统一数据源策略：
+  - `AKShare`：实时行情与公开站点补缺
+  - `Tushare`：日线/K 线、财报与结构化指标
+  - 运行时选源，不在一期固化单一主源
+- 统一缓存策略：
+  - 实时行情：`5s`
+  - K 线：`60s`
+  - 财报：`86400s`
+  - 仅对全站共享关注池预热
+  - 启用单飞刷新、失败读旧值、空结果 TTL、锁超时与抖动
+- LLM 分析链路：
+  - 多个模型 Key
+  - 默认 Key
+  - 分析时显式选择 Key
+  - 主 Key 失败时按优先级自动故障切换
 
-## 验收路径
+## 主要接口
 
-### 路径 A：直接验收静态前端闭环
+- `/health`
+- `/watchlist`
+- `/watchlist/{symbol}/refresh`
+- `/dashboard/candidates`
+- `/dashboard/glossary`
+- `/dashboard/operations`
+- `/stocks/{symbol}/dashboard`
+- `/recommendations/{id}/trace`
+- `/settings/runtime`
+- `/settings/provider-credentials/{provider_name}`
+- `/settings/model-api-keys`
+- `/settings/model-api-keys/{id}`
+- `/settings/model-api-keys/{id}/default`
+- `/analysis/follow-up`
 
-1. 打开部署后的前端页面。
-2. 确认顶部“数据模式”为 `离线快照`，状态提示显示当前使用仓库内置快照。
-3. 在 `加入自选` 区域输入如 `688981` 或 `300750.SZ`，直接点击 `加入并分析`，确认无需配置 API 也能把股票加入当前浏览器里的本地自选池。
-4. 在 `候选股` 视图中点击任一股票，确认可以切到 `单票分析` 查看价格、建议、事件、证据、术语和 GPT 追问包。
-5. 切到 `运营看板`，确认可以查看手动模拟仓、自动持仓仓、净值轨迹、订单审计、刷新策略和上线门槛。
-6. 点击 `重置演示数据`，页面应提示已恢复内置演示快照，候选股、单票和运营看板继续可用。
-
-这条路径不依赖在线 API，适合 GitHub Pages 子页面直接验收。
-
-### 路径 B：验收在线 API 接入
-
-1. 启动后端：
+## 运行方式
 
 ```bash
 PYTHONPATH=src uvicorn ashare_evidence.api:app --reload
-```
-
-2. 以前端连接在线 API 的方式启动：
-
-```bash
-cd frontend
-VITE_API_BASE_URL=http://127.0.0.1:8000 npm run dev
-```
-
-3. 如果前端启动时没有预置 `VITE_API_BASE_URL`，也可以直接打开页面后，在顶部“在线接入”里填写后端地址，例如 `http://127.0.0.1:8000`，再点击 `应用接口地址`。
-4. 如后端启用 allowlist，再在顶部“在线接入”里填写 access key 并点击 `应用 access key`。
-5. 把“数据模式”切到 `在线 API`，确认页面不再显示离线回退提示。
-6. 在“加入自选”区域输入如 `688981` 或 `300750.SZ`，点击 `加入并分析`。
-7. 确认新股票进入右侧自选池列表，并能在候选股、单票分析中查看新生成的数据；再验证 `重分析` 和 `移除` 按钮可用。
-8. 这里填写的是本项目后端地址，不是 `Tushare`、`AkShare` 或 `OpenAI` 的第三方 API 地址。
-
-## 目录
-
-- [src/ashare_evidence/models.py](./src/ashare_evidence/models.py): 证据化数据模型
-- [src/ashare_evidence/providers.py](./src/ashare_evidence/providers.py): 低成本路线 provider contract 与 demo provider
-- [src/ashare_evidence/dashboard_demo.py](./src/ashare_evidence/dashboard_demo.py): 多股票 watchlist demo 数据与上一版/当前版建议构造
-- [src/ashare_evidence/signal_engine.py](./src/ashare_evidence/signal_engine.py): 价格/新闻/LLM/融合信号引擎
-- [src/ashare_evidence/services.py](./src/ashare_evidence/services.py): 入库、trace、建议查询服务
-- [src/ashare_evidence/dashboard.py](./src/ashare_evidence/dashboard.py): 候选页、单票页、变化原因、术语和追问聚合服务
-- [src/ashare_evidence/api.py](./src/ashare_evidence/api.py): FastAPI 应用
-- [src/ashare_evidence/frontend_snapshot.py](./src/ashare_evidence/frontend_snapshot.py): 前端离线快照导出器
-- [tests/test_traceability.py](./tests/test_traceability.py): 回溯链路验证
-- [tests/test_dashboard_views.py](./tests/test_dashboard_views.py): 用户看板 payload 验证
-- [tests/test_frontend_snapshot.py](./tests/test_frontend_snapshot.py): 离线快照导出验证
-- [frontend/src/App.tsx](./frontend/src/App.tsx): Ant Design 控制台式主界面
-- [frontend/src/offline-snapshot.json](./frontend/src/offline-snapshot.json): 由后端 contract 导出的前端离线快照
-
-## 本地运行
-
-当前环境可直接用 `PYTHONPATH=src` 启动，无需先打包安装。
-
-```bash
-PYTHONPATH=src python3 -m ashare_evidence load-demo --database-url sqlite:///./data/validation.db
-PYTHONPATH=src python3 -m ashare_evidence load-dashboard-demo --database-url sqlite:///./data/validation.db
-PYTHONPATH=src python3 -m ashare_evidence candidates --database-url sqlite:///./data/validation.db
-PYTHONPATH=src python3 -m ashare_evidence stock-dashboard --database-url sqlite:///./data/validation.db --symbol 600519.SH
-PYTHONPATH=src python3 -m ashare_evidence operations --database-url sqlite:///./data/validation.db --sample-symbol 600519.SH
-PYTHONPATH=src python3 -m ashare_evidence latest --database-url sqlite:///./data/validation.db --symbol 600519.SH
-PYTHONPATH=src python3 -m ashare_evidence trace --database-url sqlite:///./data/validation.db --recommendation-id 1
-PYTHONPATH=src python3 -m ashare_evidence export-frontend-snapshot --output frontend/src/offline-snapshot.json
-PYTHONPATH=src uvicorn ashare_evidence.api:app --reload
 
 cd frontend
-npm install
-npm run build
+npm run dev
 ```
 
-### 小范围内测访问控制
-
-默认配置为 `open_demo`，方便本地直接打开前端和 API。
-
-如果要切到带 allowlist 的闭测模式，可设置：
-
-```bash
-export ASHARE_BETA_ACCESS_MODE=allowlist
-export ASHARE_BETA_ACCESS_HEADER=X-Ashare-Beta-Key
-export ASHARE_BETA_ALLOWLIST="viewer-token:viewer,analyst-token:analyst,operator-token:operator"
-```
-
-前端也可通过以下方式附带 key：
-
-```bash
-export VITE_BETA_ACCESS_HEADER=X-Ashare-Beta-Key
-export VITE_BETA_ACCESS_KEY=viewer-token
-```
-
-如果要让前端默认连在线 API，可同时设置：
+如果前后端分离部署，需要在构建前设置：
 
 ```bash
 export VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-如果不想重新构建前端，也可以在页面顶部“在线接入”直接填写这个地址。这里配置的是本项目后端 API，不是 `Tushare`、`AkShare` 或 `OpenAI` 的第三方地址；如果不接后端，保持 `离线快照` 模式即可直接使用浏览器本地自选池。
+## 验证
+
+本轮已完成：
+
+```bash
+python3 -m py_compile \
+  src/ashare_evidence/models.py \
+  src/ashare_evidence/runtime_config.py \
+  src/ashare_evidence/llm_service.py \
+  src/ashare_evidence/api.py \
+  src/ashare_evidence/operations.py \
+  src/ashare_evidence/schemas.py \
+  tests/test_runtime_config.py
+
+cd frontend
+npm run build
+```
+
+本轮未完成：
+
+- `PYTHONPATH=src python3 -m unittest discover -s tests`
+
+原因：当前沙箱内缺少 `fastapi`、`sqlalchemy` 等 Python 依赖，且网络被限制，无法在线安装。
 
 ## 当前边界
 
-- 真实 `Tushare / 巨潮 / Qlib` 网络适配器还未接入，当前以 demo provider 验证 schema、信号引擎 contract 和 trace 逻辑
-- 当前滚动验证指标和 LLM 因子历史评估仍为 demo/offline payload，下一步要替换成真实 walk-forward 结果
-- GPT 追问入口当前交付为“带证据上下文的追问包生成器”，尚未直接接入在线 LLM 会话服务
-- 当前访问控制仍是轻量级 allowlist/header 方案，正式外部部署前仍建议接到更稳妥的身份系统或反向代理鉴权
-- 当前前端构建产物因 `Ant Design + 离线快照` 较大，`vite build` 会给出 chunk size warning；当前不影响功能验收，但正式公网发布前建议再做拆包与快照懒加载
+- 真实 `AKShare / Tushare` 适配器与 `Redis` 实连尚未在当前受限环境完成联调。
+- `frontend_snapshot` 等离线导出工具仍保留在仓库里作为历史产物，但前端主路径已不再依赖它们。
+- LLM 分析接口采用 OpenAI-compatible 协议，当前已完成 Key 选择与故障切换逻辑，但未在本环境对外部模型服务做真实连通验证。

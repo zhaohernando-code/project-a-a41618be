@@ -33,30 +33,38 @@
 
 ## Step 7 Delivery Snapshot
 
-2026-04-15 已完成“Address acceptance feedback”返修，当前交付包括：
+2026-04-21 已按“部署迁移的重构”完成一期服务端模式返修，当前交付包括：
 
-- 前端新增“在线 API / 离线快照”双模式数据层：
-  - 默认在无 `VITE_API_BASE_URL` 时直接使用仓库内置离线快照
-  - 在线接口不可用或 access key 缺失时自动回退到离线快照
-  - 候选股、单票分析、运营看板和 demo 初始化在静态部署下均可继续使用
-- 新增 `src/ashare_evidence/frontend_snapshot.py`：
-  - 基于现有 `dashboard` / `operations` contract 导出前端离线快照
-  - 不新开平行伪实现，前端离线数据直接复用当前后端 demo 输出
-- 前端主界面重构为 `Ant Design` 控制台式布局：
-  - 顶部不再使用占位性 hero 文案，改为数据模式、焦点股票、access key 和演示重置的紧凑操作面板
-  - 三个主视图统一收敛为 `候选股 / 单票分析 / 运营看板`
-  - 单票页保留价格、建议、事件、证据、术语、GPT 追问和模拟订单
-  - 运营页保留分离式模拟交易、净值轨迹、收益归因、规则审计、命中复盘和上线门槛
+- 前端不再暴露“在线 API / 离线快照”双模式，也不再要求用户填写项目后端地址；页面统一按自托管服务器模式读取服务端真实数据 contract。
+- 新增服务端运行时配置底座：
+  - SQLite 新增 `app_settings`、`provider_credentials`、`model_api_keys`
+  - 默认落定 `AKShare + Tushare` 运行时选源、`Redis` 关注池缓存策略、`SQLite` 本地持久化
+  - 在代码中补齐了统一领域字段映射摘要，避免把 provider 差异直接泄漏到业务层
+- 新增整站共享的大模型 Key 管理：
+  - Web 新增“模型配置”视图
+  - 支持多 Key、新增、默认 Key、启停、删除
+  - 单票“追问与模拟”页支持显式选择分析 Key，并在主 Key 失败时按优先级故障切换
+- 新增服务端配置接口：
+  - `/settings/runtime`
+  - `/settings/provider-credentials/{provider_name}`
+  - `/settings/model-api-keys`
+  - `/settings/model-api-keys/{id}`
+  - `/settings/model-api-keys/{id}/default`
+  - `/analysis/follow-up`
+- 缓存口径已固化到运行时设置与运营面板：
+  - 实时行情 `5s`
+  - K 线 `60s`
+  - 财报 `86400s`
+  - 仅关注池预热，并带单飞刷新、失败读旧值、空结果 TTL 和锁超时策略
 - 新增验证：
-  - `tests/test_frontend_snapshot.py`
-  - `PYTHONPATH=src python3 -m unittest discover -s tests`
+  - `python3 -m py_compile src/ashare_evidence/models.py src/ashare_evidence/runtime_config.py src/ashare_evidence/llm_service.py src/ashare_evidence/api.py src/ashare_evidence/operations.py src/ashare_evidence/schemas.py tests/test_runtime_config.py`
   - `cd frontend && npm run build`
 
 当前仍保留的边界：
 
-- 真实 `Tushare / 巨潮 / Qlib` provider 尚未联网接入，当前行情、事件和滚动验证仍为 demo/offline contract
-- GPT 追问入口当前提供的是“带上下文的追问包生成器”，还未接入线上对话服务
-- 前端构建因 `Ant Design + 离线快照` 体积较大，正式公网发布前仍建议进一步拆包或改为快照懒加载
+- 真实 `AKShare / Tushare` 网络适配器与 `Redis` 实际连接尚未在当前受限环境内联调，当前交付的是服务端模式底座、统一模型和管理界面
+- Python 依赖在当前沙箱中缺失且无法联网安装，因此 `PYTHONPATH=src python3 -m unittest discover -s tests` 无法在本环境完成
+- LLM 分析接口已采用 OpenAI-compatible 调用协议并支持故障切换，但未在当前沙箱里对外网模型服务做真实连通验证
 
 ## Execution Steps
 

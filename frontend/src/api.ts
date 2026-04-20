@@ -1,14 +1,18 @@
-import { offlineSnapshot } from "./offlineSnapshot";
-import { offlineLocal } from "./offlineLocal";
 import type {
   CandidateListResponse,
   DashboardBootstrapResponse,
   DashboardRuntimeConfig,
   DashboardShellPayload,
-  DataMode,
   DataSourceInfo,
+  FollowUpAnalysisRequest,
+  FollowUpAnalysisResponse,
   GlossaryEntryView,
+  ModelApiKeyCreateRequest,
+  ModelApiKeyDeleteResponse,
+  ModelApiKeyUpdateRequest,
   OperationsDashboardResponse,
+  ProviderCredentialUpsertRequest,
+  RuntimeSettingsResponse,
   StockDashboardResponse,
   WatchlistDeleteResponse,
   WatchlistMutationResponse,
@@ -17,10 +21,8 @@ import type {
 
 const envApiBase = normalizeApiBase(import.meta.env.VITE_API_BASE_URL ?? "");
 const betaHeaderName = import.meta.env.VITE_BETA_ACCESS_HEADER ?? "X-Ashare-Beta-Key";
-const apiBaseStorageKey = "ashare-dashboard-api-base";
 const betaStorageKey = "ashare-beta-access-key";
-const preferredModeStorageKey = "ashare-dashboard-preferred-mode";
-const requestTimeoutMs = 8000;
+const requestTimeoutMs = 10000;
 
 type ApiResult<T> = {
   data: T;
@@ -31,34 +33,13 @@ function normalizeApiBase(value: string | null | undefined): string {
   return (value ?? "").trim().replace(/\/$/, "");
 }
 
-function hasApiBaseOverride(): boolean {
-  return window.localStorage.getItem(apiBaseStorageKey) !== null;
-}
-
 function getApiBase(): string {
-  if (hasApiBaseOverride()) {
-    return normalizeApiBase(window.localStorage.getItem(apiBaseStorageKey));
-  }
   return envApiBase;
 }
 
 function makeUrl(path: string): string {
   const apiBase = getApiBase();
   return apiBase ? `${apiBase}${path}` : path;
-}
-
-function getDefaultPreferredMode(): DataMode {
-  const apiBase = getApiBase();
-  return apiBase ? "online" : "offline";
-}
-
-function getPreferredMode(): DataMode {
-  const stored = window.localStorage.getItem(preferredModeStorageKey);
-  return stored === "online" || stored === "offline" ? stored : getDefaultPreferredMode();
-}
-
-function setPreferredMode(value: DataMode): void {
-  window.localStorage.setItem(preferredModeStorageKey, value);
 }
 
 function getBetaAccessKey(): string {
@@ -72,46 +53,26 @@ function getRuntimeConfig(): DashboardRuntimeConfig {
   return {
     apiBase,
     apiBaseDefault: envApiBase,
-    apiBaseOverrideActive: hasApiBaseOverride(),
+    apiBaseOverrideActive: false,
     betaHeaderName,
-    onlineConfigured: Boolean(apiBase),
-    preferredMode: getPreferredMode(),
-    snapshotGeneratedAt: offlineSnapshot.generated_at,
+    onlineConfigured: true,
+    preferredMode: "online",
+    snapshotGeneratedAt: "",
   };
 }
 
-function describeError(error: unknown): string {
-  const hint = getApiBase()
-    ? ""
-    : " 当前未显式配置在线 API 地址；如果不准备接项目后端，也可以直接切回离线快照并使用本地自选池。";
-  if (error instanceof Error) {
-    return `${error.message}${hint}`.trim();
-  }
-  return `在线接口不可用。${hint}`.trim();
-}
-
-function buildSourceInfo(mode: DataMode, preferredMode: DataMode, fallbackReason?: string | null): DataSourceInfo {
+function buildSourceInfo(): DataSourceInfo {
   const apiBase = getApiBase();
-  const betaKeyPresent = Boolean(getBetaAccessKey());
-  const detail =
-    mode === "online"
-      ? `当前通过 ${apiBase || "同源相对路径"} 获取接口数据。`
-      : preferredMode === "offline"
-        ? "当前使用仓库内置离线快照，并支持在浏览器本地维护自选池；结果为演示分析，不调用第三方接口。"
-        : apiBase
-          ? "在线接口未连通，当前自动回退到仓库内置离线快照，本地自选池仍可继续使用。"
-          : "当前尚未显式填写在线 API 地址，已回退到离线快照，本地自选池仍可继续使用。";
-
   return {
-    mode,
-    preferredMode,
-    label: mode === "online" ? "在线 API" : "离线快照",
-    detail,
+    mode: "online",
+    preferredMode: "online",
+    label: "服务端实时数据",
+    detail: "前端统一通过服务端接口读取真实数据；行情、K 线和财报缓存由服务端负责。",
     apiBase,
     betaHeaderName,
-    betaKeyPresent,
-    snapshotGeneratedAt: offlineSnapshot.generated_at,
-    fallbackReason,
+    betaKeyPresent: Boolean(getBetaAccessKey()),
+    snapshotGeneratedAt: "",
+    fallbackReason: null,
   };
 }
 
@@ -135,11 +96,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       let detail = `${response.status} ${response.statusText}`;
       try {
         const payload = (await response.json()) as { detail?: string };
-        if (payload.detail) {
-          detail = payload.detail;
-        }
+        if (payload.detail) detail = payload.detail;
       } catch {
-        // Keep status-derived detail.
+        // Preserve fallback detail.
       }
       throw new Error(detail);
     }
@@ -155,44 +114,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
-function readOfflineStockDashboard(symbol: string): StockDashboardResponse {
-  return offlineLocal.getStockDashboard(symbol);
-}
-
-function readOfflineOperationsDashboard(symbol: string): OperationsDashboardResponse {
-  return offlineLocal.getOperationsDashboard(symbol);
-}
-
-async function resolveData<T>(onlineLoader: () => Promise<T>, offlineLoader: () => T | Promise<T>): Promise<ApiResult<T>> {
-  const preferredMode = getPreferredMode();
-  if (preferredMode === "offline") {
-    return {
-      data: await offlineLoader(),
-      source: buildSourceInfo("offline", preferredMode, null),
-    };
-  }
-
-  try {
-    return {
-      data: await onlineLoader(),
-      source: buildSourceInfo("online", preferredMode, null),
-    };
-  } catch (error) {
-    return {
-      data: await offlineLoader(),
-      source: buildSourceInfo("offline", preferredMode, describeError(error)),
-    };
-  }
-}
-
 export const api = {
   getApiBase,
-  setApiBase: (value: string) => {
-    window.localStorage.setItem(apiBaseStorageKey, normalizeApiBase(value));
-  },
-  resetApiBase: () => {
-    window.localStorage.removeItem(apiBaseStorageKey);
-  },
   getBetaAccessKey,
   setBetaAccessKey: (value: string) => {
     const trimmed = value.trim();
@@ -202,76 +125,85 @@ export const api = {
       window.localStorage.removeItem(betaStorageKey);
     }
   },
-  getPreferredMode,
-  setPreferredMode,
   getRuntimeConfig,
-  bootstrapDemo: async (): Promise<ApiResult<DashboardBootstrapResponse>> => {
-    const preferredMode = getPreferredMode();
-    if (preferredMode === "offline") {
-      return {
-        data: offlineLocal.resetDemo(),
-        source: buildSourceInfo("offline", preferredMode, null),
-      };
-    }
-    try {
-      return {
-        data: await request<DashboardBootstrapResponse>("/bootstrap/dashboard-demo", {
-          method: "POST",
-        }),
-        source: buildSourceInfo("online", preferredMode, null),
-      };
-    } catch (error) {
-      return {
-        data: offlineLocal.resetDemo(),
-        source: buildSourceInfo("offline", preferredMode, describeError(error)),
-      };
-    }
+  loadShellData: async (): Promise<ApiResult<DashboardShellPayload>> => {
+    const [watchlist, candidates, glossary] = await Promise.all([
+      request<WatchlistResponse>("/watchlist"),
+      request<CandidateListResponse>("/dashboard/candidates?limit=8"),
+      request<GlossaryEntryView[]>("/dashboard/glossary"),
+    ]);
+    return {
+      data: { watchlist, candidates, glossary },
+      source: buildSourceInfo(),
+    };
   },
-  loadShellData: async (): Promise<ApiResult<DashboardShellPayload>> =>
-    resolveData(
-      async () => {
-        const [watchlist, candidates, glossary] = await Promise.all([
-          request<WatchlistResponse>("/watchlist"),
-          request<CandidateListResponse>("/dashboard/candidates?limit=8"),
-          request<GlossaryEntryView[]>("/dashboard/glossary"),
-        ]);
-        return { watchlist, candidates, glossary };
-      },
-      () => offlineLocal.loadShellData(),
-    ),
+  bootstrapDemo: async (): Promise<ApiResult<DashboardBootstrapResponse>> => ({
+    data: await request<DashboardBootstrapResponse>("/bootstrap/dashboard-demo", {
+      method: "POST",
+    }),
+    source: buildSourceInfo(),
+  }),
   addWatchlist: async (symbol: string, name?: string): Promise<WatchlistMutationResponse> =>
-    getPreferredMode() === "offline"
-      ? Promise.resolve(offlineLocal.addWatchlist(symbol, name))
-      : request<WatchlistMutationResponse>("/watchlist", {
-          method: "POST",
-          body: JSON.stringify({
-            symbol,
-            name: name?.trim() || undefined,
-          }),
-        }),
+    request<WatchlistMutationResponse>("/watchlist", {
+      method: "POST",
+      body: JSON.stringify({
+        symbol,
+        name: name?.trim() || undefined,
+      }),
+    }),
   refreshWatchlist: async (symbol: string): Promise<WatchlistMutationResponse> =>
-    getPreferredMode() === "offline"
-      ? Promise.resolve(offlineLocal.refreshWatchlist(symbol))
-      : request<WatchlistMutationResponse>(`/watchlist/${encodeURIComponent(symbol)}/refresh`, {
-          method: "POST",
-        }),
+    request<WatchlistMutationResponse>(`/watchlist/${encodeURIComponent(symbol)}/refresh`, {
+      method: "POST",
+    }),
   removeWatchlist: async (symbol: string): Promise<WatchlistDeleteResponse> =>
-    getPreferredMode() === "offline"
-      ? Promise.resolve(offlineLocal.removeWatchlist(symbol))
-      : request<WatchlistDeleteResponse>(`/watchlist/${encodeURIComponent(symbol)}`, {
-          method: "DELETE",
-        }),
-  getStockDashboard: async (symbol: string): Promise<ApiResult<StockDashboardResponse>> =>
-    resolveData(
-      () => request<StockDashboardResponse>(`/stocks/${encodeURIComponent(symbol)}/dashboard`),
-      () => readOfflineStockDashboard(symbol),
+    request<WatchlistDeleteResponse>(`/watchlist/${encodeURIComponent(symbol)}`, {
+      method: "DELETE",
+    }),
+  getStockDashboard: async (symbol: string): Promise<ApiResult<StockDashboardResponse>> => ({
+    data: await request<StockDashboardResponse>(`/stocks/${encodeURIComponent(symbol)}/dashboard`),
+    source: buildSourceInfo(),
+  }),
+  getOperationsDashboard: async (sampleSymbol: string): Promise<ApiResult<OperationsDashboardResponse>> => ({
+    data: await request<OperationsDashboardResponse>(
+      `/dashboard/operations?sample_symbol=${encodeURIComponent(sampleSymbol)}`,
     ),
-  getOperationsDashboard: async (sampleSymbol = offlineSnapshot.bootstrap.symbols[0]): Promise<ApiResult<OperationsDashboardResponse>> =>
-    resolveData(
-      () =>
-        request<OperationsDashboardResponse>(
-          `/dashboard/operations?sample_symbol=${encodeURIComponent(sampleSymbol)}`,
-        ),
-      () => readOfflineOperationsDashboard(sampleSymbol),
-    ),
+    source: buildSourceInfo(),
+  }),
+  getRuntimeSettings: async (): Promise<RuntimeSettingsResponse> =>
+    request<RuntimeSettingsResponse>("/settings/runtime"),
+  upsertProviderCredential: async (
+    providerName: string,
+    payload: ProviderCredentialUpsertRequest,
+  ): Promise<void> => {
+    await request(`/settings/provider-credentials/${encodeURIComponent(providerName)}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  createModelApiKey: async (payload: ModelApiKeyCreateRequest): Promise<void> => {
+    await request("/settings/model-api-keys", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateModelApiKey: async (keyId: number, payload: ModelApiKeyUpdateRequest): Promise<void> => {
+    await request(`/settings/model-api-keys/${keyId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+  setDefaultModelApiKey: async (keyId: number): Promise<void> => {
+    await request(`/settings/model-api-keys/${keyId}/default`, {
+      method: "POST",
+    });
+  },
+  deleteModelApiKey: async (keyId: number): Promise<ModelApiKeyDeleteResponse> =>
+    request<ModelApiKeyDeleteResponse>(`/settings/model-api-keys/${keyId}`, {
+      method: "DELETE",
+    }),
+  runFollowUpAnalysis: async (payload: FollowUpAnalysisRequest): Promise<FollowUpAnalysisResponse> =>
+    request<FollowUpAnalysisResponse>("/analysis/follow-up", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
