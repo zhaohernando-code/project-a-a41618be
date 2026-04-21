@@ -23,6 +23,7 @@ const betaHeaderName = import.meta.env.VITE_BETA_ACCESS_HEADER ?? "X-Ashare-Beta
 const betaStorageKey = "ashare-beta-access-key";
 const requestTimeoutMs = 10000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
+const notFoundSignatures = ["tool not found", "tool_not_found", "not found"];
 const localApiBaseStorageKey = "ashare-api-base-url";
 
 type ApiResult<T> = {
@@ -198,6 +199,11 @@ function isLikelyHtmlText(text: string): boolean {
   return htmlPrefixes.some((prefix) => compact.startsWith(prefix));
 }
 
+function isLikelyServiceNotFoundText(text: string): boolean {
+  const compact = text.trim().toLowerCase();
+  return notFoundSignatures.some((signature) => compact.includes(signature));
+}
+
 function toPreview(text: string, maxChars = 220): string {
   const compact = text.replace(/\s+/g, " ").trim();
   return compact.length > maxChars ? `${compact.slice(0, maxChars)}...` : compact;
@@ -208,6 +214,9 @@ async function parseJsonResponse<T>(response: Response, endpoint: string): Promi
   const text = await response.text();
 
   if (isLikelyHtmlText(text)) {
+    throw createHtmlError(endpoint, response.url, toPreview(text));
+  }
+  if (isLikelyServiceNotFoundText(text)) {
     throw createHtmlError(endpoint, response.url, toPreview(text));
   }
 
@@ -273,6 +282,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
               }
             } else {
               const preview = await readTextPreview(response);
+              if (isLikelyServiceNotFoundText(preview) && !hasExplicitBase && index < requestUrls.length - 1) {
+                continue;
+              }
               if (
                 preview
                 && !hasExplicitBase
