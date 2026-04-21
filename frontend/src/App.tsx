@@ -135,8 +135,22 @@ function buildInitialSourceInfo(): DataSourceInfo {
   };
 }
 
-function mergeSourceInfo(primary: DataSourceInfo, secondary: DataSourceInfo): DataSourceInfo {
-  return secondary ?? primary;
+function mergeSourceInfo(primary: DataSourceInfo | null | undefined, secondary: DataSourceInfo | null | undefined): DataSourceInfo {
+  if (!primary && !secondary) {
+    return buildInitialSourceInfo();
+  }
+  if (!primary) {
+    return secondary as DataSourceInfo;
+  }
+  if (!secondary) {
+    return primary;
+  }
+
+  return {
+    ...primary,
+    ...secondary,
+    fallbackReason: secondary.fallbackReason ?? primary.fallbackReason ?? null,
+  };
 }
 
 function PriceSparkline({ points }: { points: PricePointView[] }) {

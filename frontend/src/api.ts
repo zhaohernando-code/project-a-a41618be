@@ -244,6 +244,10 @@ function isLikelyServiceNotFoundText(text: string): boolean {
   return notFoundSignatures.some((signature) => compact.includes(signature));
 }
 
+function isRetryableNetworkError(error: unknown): boolean {
+  return error instanceof TypeError || error instanceof SyntaxError;
+}
+
 function toPreview(text: string, maxChars = 220): string {
   const compact = text.replace(/\s+/g, " ").trim();
   return compact.length > maxChars ? `${compact.slice(0, maxChars)}...` : compact;
@@ -354,7 +358,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
           throw error;
         }
       } catch (error) {
-        if (isHtmlResponseError(error) && index < requestUrls.length - 1) {
+        if (index < requestUrls.length - 1 && (isHtmlResponseError(error) || isRetryableNetworkError(error))) {
           continue;
         }
         throw error;
