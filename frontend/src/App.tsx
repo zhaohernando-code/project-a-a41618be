@@ -3,10 +3,12 @@ import {
   DatabaseOutlined,
   DeleteOutlined,
   LineChartOutlined,
+  MoonOutlined,
   PlusOutlined,
   ReloadOutlined,
   SettingOutlined,
   StockOutlined,
+  SunOutlined,
   SyncOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
@@ -17,14 +19,18 @@ import {
   Col,
   Descriptions,
   Empty,
+  Form,
+  Grid,
   Input,
   List,
+  Modal,
+  Popover,
   Row,
-  Segmented,
   Select,
   Skeleton,
   Space,
   Statistic,
+  Switch,
   Table,
   Tabs,
   Tag,
@@ -32,6 +38,8 @@ import {
   Typography,
   message,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import type { ReactNode } from "react";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import type {
@@ -45,7 +53,6 @@ import type {
   PortfolioNavPointView,
   PortfolioSummaryView,
   PricePointView,
-  ProviderCredentialView,
   RecommendationReplayView,
   RuntimeDataSourceView,
   RuntimeSettingsResponse,
@@ -56,7 +63,19 @@ import type {
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
 
-type ViewMode = "candidates" | "stock" | "operations" | "config";
+type ViewMode = "candidates" | "stock" | "operations" | "settings";
+type ThemeMode = "light" | "dark";
+
+type CandidateWorkspaceRow = WatchlistItemView & {
+  candidate: CandidateItemView | null;
+};
+
+type ViewCard = {
+  key: ViewMode;
+  label: string;
+  description: string;
+  icon: ReactNode;
+};
 
 const numberFormatter = new Intl.NumberFormat("zh-CN", {
   maximumFractionDigits: 2,
@@ -158,6 +177,61 @@ function mergeSourceInfo(primary: DataSourceInfo | null | undefined, secondary: 
     ...secondary,
     fallbackReason: secondary.fallbackReason ?? primary.fallbackReason ?? null,
   };
+}
+
+function inferExchangeFromSymbol(symbol: string): string {
+  if (symbol.endsWith(".SH")) return "SSE";
+  if (symbol.endsWith(".SZ")) return "SZSE";
+  return "--";
+}
+
+function buildCandidateWorkspaceRows(
+  watchlist: WatchlistItemView[],
+  candidates: CandidateItemView[],
+): CandidateWorkspaceRow[] {
+  const candidateBySymbol = new Map(candidates.map((item) => [item.symbol, item] as const));
+  const seen = new Set<string>();
+  const rows: CandidateWorkspaceRow[] = [];
+
+  watchlist.forEach((item) => {
+    seen.add(item.symbol);
+    rows.push({
+      ...item,
+      candidate: candidateBySymbol.get(item.symbol) ?? null,
+    });
+  });
+
+  candidates.forEach((candidate) => {
+    if (seen.has(candidate.symbol)) {
+      return;
+    }
+    rows.push({
+      symbol: candidate.symbol,
+      name: candidate.name,
+      exchange: inferExchangeFromSymbol(candidate.symbol),
+      ticker: candidate.symbol.split(".")[0] ?? candidate.symbol,
+      status: "active",
+      source_kind: "candidate_only",
+      analysis_status: "ready",
+      added_at: candidate.generated_at,
+      updated_at: candidate.generated_at,
+      last_analyzed_at: candidate.generated_at,
+      last_error: null,
+      latest_direction: candidate.direction,
+      latest_confidence_label: candidate.confidence_label,
+      latest_generated_at: candidate.generated_at,
+      candidate,
+    });
+  });
+
+  return rows.sort((left, right) => {
+    const leftRank = left.candidate?.rank ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = right.candidate?.rank ?? Number.MAX_SAFE_INTEGER;
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+    return left.symbol.localeCompare(right.symbol);
+  });
 }
 
 function PriceSparkline({ points }: { points: PricePointView[] }) {
@@ -397,8 +471,10 @@ function PortfolioWorkspace({ portfolio }: { portfolio: PortfolioSummaryView }) 
   );
 }
 
-function App() {
+function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme: () => void }) {
   const initialRuntimeConfig = api.getRuntimeConfig();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const [messageApi, messageContextHolder] = message.useMessage();
   const [view, setView] = useState<ViewMode>("candidates");
   const [runtimeConfig, setRuntimeConfig] = useState<DashboardRuntimeConfig>(initialRuntimeConfig);
@@ -424,6 +500,8 @@ function App() {
   const [providerDrafts, setProviderDrafts] = useState<Record<string, { accessToken: string; baseUrl: string; enabled: boolean; notes: string }>>({});
   const [watchlistSymbolDraft, setWatchlistSymbolDraft] = useState("");
   const [watchlistNameDraft, setWatchlistNameDraft] = useState("");
+  const [addPopoverOpen, setAddPopoverOpen] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<CandidateWorkspaceRow | null>(null);
   const [loadingShell, setLoadingShell] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [mutatingWatchlist, setMutatingWatchlist] = useState(false);
@@ -432,15 +510,17 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const canMutateWatchlist = true;
 
-  const activeCandidate = useMemo(
-    () => candidates.find((item) => item.symbol === selectedSymbol) ?? candidates[0] ?? null,
-    [candidates, selectedSymbol],
+  const candidateRows = useMemo(
+    () => buildCandidateWorkspaceRows(watchlist, candidates),
+    [watchlist, candidates],
   );
 
-  const activeWatchlistItem = useMemo(
-    () => watchlist.find((item) => item.symbol === selectedSymbol) ?? watchlist[0] ?? null,
-    [watchlist, selectedSymbol],
+  const activeRow = useMemo(
+    () => candidateRows.find((item) => item.symbol === selectedSymbol) ?? candidateRows[0] ?? null,
+    [candidateRows, selectedSymbol],
   );
+
+  const activeCandidate = activeRow?.candidate ?? null;
 
   const mergedGlossary = useMemo(() => {
     const entries = [...glossary, ...(dashboard?.glossary ?? [])];
@@ -449,6 +529,33 @@ function App() {
 
   const modelApiKeys = runtimeSettings?.model_api_keys ?? [];
   const providerCredentials = runtimeSettings?.provider_credentials ?? [];
+
+  const navCards: ViewCard[] = [
+    {
+      key: "candidates",
+      label: "候选与自选",
+      description: "统一查看候选标的、自选维护与快捷操作。",
+      icon: <StockOutlined />,
+    },
+    {
+      key: "stock",
+      label: "单票分析",
+      description: "查看价格轨迹、证据、风险和追问结果。",
+      icon: <LineChartOutlined />,
+    },
+    {
+      key: "operations",
+      label: "运营复盘",
+      description: "检查组合表现、规则审计和命中复盘。",
+      icon: <BarChartOutlined />,
+    },
+    {
+      key: "settings",
+      label: "设置",
+      description: "集中查看说明、模型和数据源配置。",
+      icon: <SettingOutlined />,
+    },
+  ];
 
   async function loadRuntimeSettings(): Promise<void> {
     const payload = await api.getRuntimeSettings();
@@ -603,6 +710,7 @@ function App() {
       const response = await api.addWatchlist(watchlistSymbolDraft, watchlistNameDraft);
       setWatchlistSymbolDraft("");
       setWatchlistNameDraft("");
+      setAddPopoverOpen(false);
       messageApi.success(response.message);
       await reloadEverything(response.item.symbol);
       setView("candidates");
@@ -634,7 +742,9 @@ function App() {
     }
   }
 
-  async function handleRemoveWatchlist(symbol: string) {
+  async function handleConfirmRemoveWatchlist() {
+    if (!pendingRemoval) return;
+    const symbol = pendingRemoval.symbol;
     setMutatingWatchlist(true);
     setWatchlistMutationSymbol(symbol);
     setError(null);
@@ -642,8 +752,9 @@ function App() {
       const response = await api.removeWatchlist(symbol);
       messageApi.success(`已移除 ${response.symbol}，当前剩余 ${response.active_count} 只自选股`);
       const nextSymbol = selectedSymbol === symbol
-        ? watchlist.find((item) => item.symbol !== symbol)?.symbol ?? null
+        ? candidateRows.find((item) => item.symbol !== symbol)?.symbol ?? null
         : selectedSymbol;
+      setPendingRemoval(null);
       await reloadEverything(nextSymbol);
     } catch (mutationError) {
       const messageText = mutationError instanceof Error ? mutationError.message : "移除自选股失败。";
@@ -769,8 +880,8 @@ function App() {
   async function handleRunAnalysis() {
     if (!dashboard || !selectedSymbol) return;
     if (modelApiKeys.length === 0) {
-      messageApi.warning("请先在“模型配置”里至少保存一个模型 API Key。");
-      setView("config");
+      messageApi.warning("请先在“设置 -> 模型”里至少保存一个模型 API Key。");
+      setView("settings");
       return;
     }
     setAnalysisLoading(true);
@@ -816,80 +927,130 @@ function App() {
     }
   }
 
-  const candidateColumns = [
+  const candidateColumns: ColumnsType<CandidateWorkspaceRow> = [
     {
-      title: "#",
-      dataIndex: "rank",
-      width: 64,
+      title: "序",
+      key: "rank",
+      width: 56,
+      render: (_, record) => record.candidate?.rank ?? "--",
     },
     {
       title: "标的",
       key: "stock",
-      render: (_: unknown, record: CandidateItemView) => (
+      width: 180,
+      render: (_, record) => (
         <div className="table-primary-cell">
           <strong>{record.name}</strong>
-          <Text type="secondary">{`${record.symbol} · ${record.sector}`}</Text>
+          <Text type="secondary">
+            {record.candidate ? `${record.symbol} · ${record.candidate.sector}` : record.symbol}
+          </Text>
         </div>
       ),
     },
     {
       title: "建议",
       key: "signal",
-      render: (_: unknown, record: CandidateItemView) => (
-        <Space direction="vertical" size={2}>
-          <Tag color={directionColor(record.direction)}>{record.direction_label}</Tag>
-          <Text type="secondary">{`${record.confidence_label}置信 · ${record.applicable_period}`}</Text>
-        </Space>
+      width: 160,
+      render: (_, record) => (
+        record.candidate ? (
+          <Space direction="vertical" size={2}>
+            <Tag color={directionColor(record.candidate.direction)}>{record.candidate.direction_label}</Tag>
+            <Text type="secondary">{`${record.candidate.confidence_label}置信 · ${record.candidate.applicable_period}`}</Text>
+          </Space>
+        ) : (
+          <Text type="secondary">等待分析结果</Text>
+        )
       ),
     },
     {
-      title: "价位/20日",
+      title: "价格 / 20日",
       key: "price",
-      render: (_: unknown, record: CandidateItemView) => (
-        <Space direction="vertical" size={2}>
-          <Text strong>{formatNumber(record.last_close)}</Text>
-          <Text type={record.price_return_20d >= 0 ? "success" : "danger"}>{formatPercent(record.price_return_20d)}</Text>
-        </Space>
+      width: 120,
+      render: (_, record) => (
+        record.candidate ? (
+          <Space direction="vertical" size={2}>
+            <Text strong>{formatNumber(record.candidate.last_close)}</Text>
+            <Text type={record.candidate.price_return_20d >= 0 ? "success" : "danger"}>
+              {formatPercent(record.candidate.price_return_20d)}
+            </Text>
+          </Space>
+        ) : (
+          <Text type="secondary">--</Text>
+        )
       ),
     },
     {
-      title: "为什么现在",
-      dataIndex: "why_now",
-      render: (value: string) => <span className="truncate-cell">{value}</span>,
+      title: "当前触发点",
+      key: "trigger",
+      render: (_, record) => (
+        <span className="truncate-cell">
+          {record.candidate?.why_now ?? "暂无候选信号，等待服务端重新分析。"}
+        </span>
+      ),
     },
     {
-      title: "变化",
-      key: "change",
-      render: (_: unknown, record: CandidateItemView) => (
-        <Space direction="vertical" size={2}>
-          <Tag>{record.change_badge}</Tag>
-          <Text type="secondary">{record.change_summary}</Text>
-        </Space>
+      title: "主要风险",
+      key: "risk",
+      width: 220,
+      render: (_, record) => (
+        <span className="truncate-cell">
+          {record.candidate?.primary_risk ?? record.last_error ?? "暂无额外风险提示。"}
+        </span>
       ),
     },
     {
       title: "操作",
       key: "action",
-      width: 110,
-      render: (_: unknown, record: CandidateItemView) => (
-        <Button
-          type="link"
-          onClick={(event) => {
-            event.stopPropagation();
-            handleCandidateSelect(record.symbol, "stock");
-          }}
-        >
-          打开
-        </Button>
-      ),
+      width: 200,
+      fixed: "right",
+      render: (_, record) => {
+        const managedByWatchlist = record.source_kind !== "candidate_only";
+        return (
+          <div className="table-action-group">
+            <Button
+              type="link"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleCandidateSelect(record.symbol, "stock");
+              }}
+            >
+              打开
+            </Button>
+            <Button
+              type="link"
+              icon={<SyncOutlined />}
+              disabled={!canMutateWatchlist || !managedByWatchlist}
+              loading={mutatingWatchlist && watchlistMutationSymbol === record.symbol}
+              onClick={(event) => {
+                event.stopPropagation();
+                void handleRefreshWatchlist(record.symbol);
+              }}
+            >
+              重分析
+            </Button>
+            <Button
+              type="link"
+              danger
+              icon={<DeleteOutlined />}
+              disabled={!canMutateWatchlist || !managedByWatchlist}
+              onClick={(event) => {
+                event.stopPropagation();
+                setPendingRemoval(record);
+              }}
+            >
+              移除
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
-  const replayColumns = [
+  const replayColumns: ColumnsType<RecommendationReplayView> = [
     {
       title: "标的",
       key: "stock",
-      render: (_: unknown, record: RecommendationReplayView) => (
+      render: (_, record) => (
         <div className="table-primary-cell">
           <strong>{record.stock_name}</strong>
           <Text type="secondary">{`${record.symbol} · ${record.review_window_days} 交易日`}</Text>
@@ -907,9 +1068,9 @@ function App() {
       render: (value: string) => <Tag color={statusColor(value)}>{value}</Tag>,
     },
     {
-      title: "标的/基准/超额",
+      title: "标的 / 基准 / 超额",
       key: "performance",
-      render: (_: unknown, record: RecommendationReplayView) => (
+      render: (_, record) => (
         <Space direction="vertical" size={2}>
           <Text>{`标的 ${formatPercent(record.stock_return)}`}</Text>
           <Text type="secondary">{`基准 ${formatPercent(record.benchmark_return)} / 超额 ${formatPercent(record.excess_return)}`}</Text>
@@ -1172,113 +1333,77 @@ function App() {
     label: `${portfolio.mode_label} · ${portfolio.name}`,
     children: <PortfolioWorkspace portfolio={portfolio} />,
   })) ?? [];
+
   const topbarStats = [
-    { label: "自选股", value: String(watchlist.length) },
-    { label: "候选股", value: String(candidates.length) },
-    { label: "当前焦点", value: activeCandidate?.name ?? activeWatchlistItem?.name ?? "--" },
+    { label: "自选池规模", value: `${watchlist.length} 只标的` },
+    { label: "候选输出", value: `${candidates.length} 条信号` },
+    { label: "当前焦点", value: activeRow ? `${activeRow.name} · ${activeRow.symbol}` : "--" },
     { label: "最近刷新", value: formatDate(generatedAt) },
   ];
 
-  return (
-    <>
-      {messageContextHolder}
-      <div className="workspace-shell">
-        <div className="workspace-topbar panel-card">
-          <div className="topbar-main">
-            <div className="topbar-kicker">A-Share Advisory Desk</div>
-            <Title level={3}>自选股操作台</Title>
-            <Paragraph className="topbar-note">
-              当前部署假设已经切到自托管服务器。前端不再使用离线快照，所有真实数据统一由服务端基于关注池、SQLite 和 Redis 策略管理。
-            </Paragraph>
-            <Space wrap className="header-meta">
-              <Tag color="blue">全站共享关注池</Tag>
-              <Tag color="cyan">2-8 周</Tag>
-              <Tag color="green">{sourceInfo.label}</Tag>
-              <Tag icon={<DatabaseOutlined />}>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
-              <Tag>{runtimeSettings?.cache_backend ?? "Redis"}</Tag>
-            </Space>
-          </div>
-          <div className="topbar-stats">
-            {topbarStats.map((item) => (
-              <div key={item.label} className="topbar-stat-item">
-                <div className="topbar-stat-label">{item.label}</div>
-                <div className="topbar-stat-value" title={item.value}>
-                  {item.value}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+  const addWatchlistOverlay = (
+    <div className="watchlist-add-popover">
+      <Form layout="vertical" size="small">
+        <Form.Item label="股票代码">
+          <Input
+            value={watchlistSymbolDraft}
+            onChange={(event) => setWatchlistSymbolDraft(event.target.value)}
+            placeholder="如 600519 或 300750.SZ"
+          />
+        </Form.Item>
+        <Form.Item label="显示名称">
+          <Input
+            value={watchlistNameDraft}
+            onChange={(event) => setWatchlistNameDraft(event.target.value)}
+            placeholder="可选：自定义显示名称"
+          />
+        </Form.Item>
+      </Form>
+      <div className="watchlist-add-actions">
+        <Button size="small" onClick={() => setAddPopoverOpen(false)}>
+          取消
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          icon={<PlusOutlined />}
+          loading={mutatingWatchlist}
+          onClick={() => void handleAddWatchlist()}
+        >
+          加入并分析
+        </Button>
+      </div>
+    </div>
+  );
 
-        <Card className="command-deck panel-card">
-          <Row gutter={[16, 16]}>
-            <Col xs={24} xl={6}>
-              <div className="deck-section-title">部署与存储</div>
-              <Paragraph className="deck-note">{sourceInfo.detail}</Paragraph>
+  const settingsTabItems = [
+    {
+      key: "overview",
+      label: "说明",
+      children: (
+        <Row gutter={[16, 16]}>
+          <Col xs={24} xl={9}>
+            <Card className="panel-card" title="运行方式概览">
+              <Descriptions size="small" column={1}>
+                <Descriptions.Item label="部署模式">{runtimeSettings?.deployment_mode ?? "self_hosted_server"}</Descriptions.Item>
+                <Descriptions.Item label="存储引擎">{runtimeSettings?.storage_engine ?? "SQLite"}</Descriptions.Item>
+                <Descriptions.Item label="缓存后端">{runtimeSettings?.cache_backend ?? "Redis"}</Descriptions.Item>
+                <Descriptions.Item label="选源策略">{runtimeSettings?.provider_selection_mode ?? "runtime_policy"}</Descriptions.Item>
+                <Descriptions.Item label="关注池范围">{runtimeSettings?.watchlist_scope ?? "shared_watchlist"}</Descriptions.Item>
+                <Descriptions.Item label="LLM 故障切换">{runtimeSettings?.llm_failover_enabled ? "开启" : "关闭"}</Descriptions.Item>
+              </Descriptions>
+              <Paragraph className="panel-description settings-help-text">
+                {sourceInfo.detail}
+              </Paragraph>
               <Space wrap className="inline-tags">
-                <Tag color="green">{runtimeSettings?.deployment_mode ?? "self_hosted_server"}</Tag>
-                <Tag>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
+                <Tag color="green">{sourceInfo.label}</Tag>
+                <Tag icon={<DatabaseOutlined />}>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
                 <Tag>{runtimeSettings?.cache_backend ?? "Redis"}</Tag>
-                <Tag>{runtimeSettings?.provider_selection_mode ?? "runtime_policy"}</Tag>
               </Space>
-              <Paragraph className="deck-note compact-note">
-                {runtimeSettings?.deployment_notes[0] ?? "服务端负责上游 API 访问、缓存和失败回退，前端只消费统一 contract。"}
-              </Paragraph>
-            </Col>
-
-            <Col xs={24} xl={6}>
-              <div className="deck-section-title">当前焦点</div>
-              <Select
-                className="full-width"
-                value={selectedSymbol ?? undefined}
-                placeholder="选择一个自选股"
-                options={watchlist.map((item) => ({
-                  value: item.symbol,
-                  label: `${item.name} · ${item.symbol}`,
-                }))}
-                onChange={(value) => handleCandidateSelect(value)}
-              />
-              <div className="deck-actions">
-                <Button icon={<ReloadOutlined />} onClick={() => void handleRefresh()}>
-                  刷新面板
-                </Button>
-                <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => void handleBootstrap()}>
-                  重建样本数据
-                </Button>
-              </div>
-            </Col>
-
-            <Col xs={24} xl={6}>
-              <div className="deck-section-title">加入自选</div>
-              <Space direction="vertical" size={10} className="full-width">
-                <Input
-                  value={watchlistSymbolDraft}
-                  onChange={(event) => setWatchlistSymbolDraft(event.target.value)}
-                  placeholder="输入股票代码，如 600519 或 300750.SZ"
-                />
-                <Input
-                  value={watchlistNameDraft}
-                  onChange={(event) => setWatchlistNameDraft(event.target.value)}
-                  placeholder="可选：自定义显示名称"
-                />
-              </Space>
-              <div className="deck-actions">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  loading={mutatingWatchlist}
-                  onClick={() => void handleAddWatchlist()}
-                >
-                  加入并分析
-                </Button>
-              </div>
-              <Paragraph className="deck-note compact-note">
-                新股票会进入全站共享关注池，后续缓存只围绕这里的标的生效，用来降低 Redis 和上游 API 压力。
-              </Paragraph>
-            </Col>
-
-            <Col xs={24} xl={6}>
-              <div className="deck-section-title">数据源与缓存</div>
+            </Card>
+          </Col>
+          <Col xs={24} xl={15}>
+            <Card className="panel-card" title="缓存与运行说明">
               <List
                 size="small"
                 dataSource={runtimeSettings?.cache_policies ?? []}
@@ -1289,622 +1414,735 @@ function App() {
                         <strong>{item.label}</strong>
                         <Tag>{`${item.ttl_seconds}s`}</Tag>
                       </div>
-                      <div className="muted-line">{`失败兜底 ${item.stale_if_error_seconds}s · ${item.warm_on_watchlist ? "仅关注池预热" : "全量"}`}</div>
+                      <div className="muted-line">{`失败读旧值 ${item.stale_if_error_seconds}s · ${item.warm_on_watchlist ? "仅关注池预热" : "全量"}`}</div>
                     </div>
                   </List.Item>
                 )}
               />
-              <Paragraph className="deck-note compact-note">
-                {runtimeSettings
-                  ? `当前按 ${runtimeSettings.provider_order.join(" -> ")} 做运行时选源，失败后自动切换。`
-                  : "服务端会根据 AKShare/Tushare 凭据和运行时策略决定实际数据源。"}
-              </Paragraph>
-              <Space wrap className="inline-tags">
-                {(runtimeSettings?.data_sources ?? []).map((item) => (
-                  <Tag key={item.provider_name} color={dataSourceStatusColor(item)}>
-                    {`${item.provider_name.toUpperCase()} ${item.status_label}`}
-                  </Tag>
+              <div className="settings-note-stack">
+                {(runtimeSettings?.deployment_notes ?? []).map((note) => (
+                  <Alert key={note} type="info" showIcon message={note} />
                 ))}
-              </Space>
-            </Col>
-          </Row>
-        </Card>
-
-        <Segmented
-          className="workspace-switch"
-          value={view}
-          options={[
-            {
-              label: (
-                <Space>
-                  <StockOutlined />
-                  候选股
-                </Space>
-              ),
-              value: "candidates",
-            },
-            {
-              label: (
-                <Space>
-                  <LineChartOutlined />
-                  单票分析
-                </Space>
-              ),
-              value: "stock",
-            },
-            {
-              label: (
-                <Space>
-                  <BarChartOutlined />
-                  运营看板
-                </Space>
-              ),
-              value: "operations",
-            },
-            {
-              label: (
-                <Space>
-                  <SettingOutlined />
-                  模型配置
-                </Space>
-              ),
-              value: "config",
-            },
-          ]}
-          onChange={(value) => setView(value as ViewMode)}
-        />
-
-        {error ? (
-          <Alert
-            showIcon
-            type="error"
-            className="status-alert"
-            message="面板加载失败"
-            description={error}
-          />
-        ) : null}
-
-        {loadingShell ? (
-          <Card className="panel-card loading-card">
-            <Skeleton active paragraph={{ rows: 6 }} />
-          </Card>
-        ) : null}
-
-        {!loadingShell && view === "candidates" ? (
-          <Row gutter={[16, 16]}>
-            <Col xs={24} xl={16}>
-              <Card
-                className="panel-card"
-                title="候选股操作台"
-                extra={<Text type="secondary">{`更新时间 ${formatDate(generatedAt)}`}</Text>}
-              >
-                <Table
-                  rowKey="symbol"
-                  size="small"
-                  pagination={false}
-                  dataSource={candidates}
-                  columns={candidateColumns}
-                  onRow={(record) => ({
-                    onClick: () => handleCandidateSelect(record.symbol),
-                  })}
-                  rowClassName={(record) => (record.symbol === activeCandidate?.symbol ? "candidate-row-active" : "")}
-                  locale={{ emptyText: "当前没有候选股" }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} xl={8}>
-              <div className="panel-stack">
-                <Card
-                  className="panel-card"
-                  title={activeCandidate ? `当前入选标的 · ${activeCandidate.name}` : "当前入选标的"}
-                  extra={
-                    activeCandidate ? (
-                      <Button type="link" onClick={() => handleCandidateSelect(activeCandidate.symbol, "stock")}>
-                        打开单票分析
-                      </Button>
-                    ) : null
-                  }
-                >
-                  {activeCandidate ? (
-                    <>
-                      <Space wrap className="inline-tags">
-                        <Tag color={directionColor(activeCandidate.direction)}>{activeCandidate.direction_label}</Tag>
-                        <Tag>{`${activeCandidate.confidence_label}置信`}</Tag>
-                        <Tag>{activeCandidate.applicable_period}</Tag>
-                      </Space>
-                      <Paragraph className="panel-description">{activeCandidate.summary}</Paragraph>
-                      <Descriptions size="small" column={1}>
-                        <Descriptions.Item label="当前读法">{activeCandidate.why_now}</Descriptions.Item>
-                        <Descriptions.Item label="主要风险">{activeCandidate.primary_risk ?? "等待更多风险证据。"}</Descriptions.Item>
-                        <Descriptions.Item label="最近变化">{activeCandidate.change_summary}</Descriptions.Item>
-                        <Descriptions.Item label="数据时间">{formatDate(activeCandidate.as_of_data_time)}</Descriptions.Item>
-                      </Descriptions>
-                    </>
-                  ) : (
-                    <Empty description="没有可展示的候选股" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  )}
-                </Card>
-
-                <Card
-                  className="panel-card"
-                  title="自选池维护"
-                  extra={<Text type="secondary">{`共 ${watchlist.length} 只`}</Text>}
-                >
-                  {watchlist.length > 0 ? (
-                    <List
-                      size="small"
-                      dataSource={watchlist}
-                      renderItem={(item) => (
-                        <List.Item>
-                          <div className="watchlist-entry">
-                            <div className="list-item-row">
-                              <div>
-                                <strong>{item.name}</strong>
-                                <div className="muted-line">{`${item.symbol} · ${item.source_kind === "default_seed" ? "默认样本" : "手动加入"}`}</div>
-                              </div>
-                              {item.latest_direction ? (
-                                <Tag color={directionColor(item.latest_direction)}>
-                                  {directionLabels[item.latest_direction] ?? item.latest_direction}
-                                </Tag>
-                              ) : (
-                                <Tag>{item.analysis_status}</Tag>
-                              )}
-                            </div>
-                            <div className="watchlist-meta">
-                              <Text type="secondary">{`最近分析 ${formatDate(item.last_analyzed_at ?? item.updated_at)}`}</Text>
-                              {item.latest_confidence_label ? <Text type="secondary">{`${item.latest_confidence_label}置信`}</Text> : null}
-                            </div>
-                            <div className="watchlist-actions">
-                              <Button type="link" onClick={() => handleCandidateSelect(item.symbol)}>
-                                打开
-                              </Button>
-                              <Button
-                                type="link"
-                                icon={<SyncOutlined />}
-                                disabled={!canMutateWatchlist}
-                                loading={mutatingWatchlist && watchlistMutationSymbol === item.symbol}
-                                onClick={() => void handleRefreshWatchlist(item.symbol)}
-                              >
-                                重分析
-                              </Button>
-                              <Button
-                                type="link"
-                                danger
-                                icon={<DeleteOutlined />}
-                                disabled={!canMutateWatchlist}
-                                onClick={() => void handleRemoveWatchlist(item.symbol)}
-                              >
-                                移除
-                              </Button>
-                            </div>
-                          </div>
-                        </List.Item>
-                      )}
-                    />
-                  ) : (
-                    <Empty description="当前自选池为空，请先添加股票代码" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  )}
-                </Card>
               </div>
-            </Col>
-          </Row>
-        ) : null}
-
-        {!loadingShell && view === "stock" ? (
-          loadingDetail || !dashboard ? (
-            <Card className="panel-card loading-card">
-              <Skeleton active paragraph={{ rows: 10 }} />
-            </Card>
-          ) : (
-            <div className="panel-stack">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="最新收盘" value={formatNumber(dashboard.hero.latest_close)} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="日涨跌" value={formatPercent(dashboard.hero.day_change_pct)} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="置信表达" value={dashboard.recommendation.confidence_expression} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="最近刷新" value={formatDate(dashboard.hero.last_updated)} />
-                  </Card>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 16]}>
-                <Col xs={24} xl={16}>
-                  <Card
-                    className="panel-card"
-                    title={`${dashboard.stock.name} · ${dashboard.stock.symbol}`}
-                    extra={
-                      <Space wrap className="inline-tags">
-                        <Tag color={directionColor(dashboard.recommendation.direction)}>{dashboard.hero.direction_label}</Tag>
-                        <Tag>{`${dashboard.recommendation.confidence_label}置信`}</Tag>
-                      </Space>
-                    }
-                  >
-                    <Paragraph className="panel-description">{dashboard.recommendation.summary}</Paragraph>
-                    <div className="chart-shell">
-                      <PriceSparkline points={dashboard.price_chart} />
-                    </div>
-                    <div className="chart-meta-row">
-                      <span>{`区间高点 ${formatNumber(dashboard.hero.high_price)}`}</span>
-                      <span>{`区间低点 ${formatNumber(dashboard.hero.low_price)}`}</span>
-                      <span>{`换手率 ${dashboard.hero.turnover_rate ? formatPercent(dashboard.hero.turnover_rate / 100) : "未提供"}`}</span>
-                    </div>
-                    <Space wrap className="inline-tags">
-                      {dashboard.hero.sector_tags.map((tag) => (
-                        <Tag key={tag} color="blue">
-                          {tag}
-                        </Tag>
-                      ))}
-                    </Space>
-                  </Card>
-                </Col>
-                <Col xs={24} xl={8}>
-                  <Card className="panel-card" title="当前建议摘要">
-                    <Descriptions size="small" column={1}>
-                      <Descriptions.Item label="适用周期">{dashboard.recommendation.applicable_period}</Descriptions.Item>
-                      <Descriptions.Item label="数据时间">{formatDate(dashboard.recommendation.as_of_data_time)}</Descriptions.Item>
-                      <Descriptions.Item label="生成时间">{formatDate(dashboard.recommendation.generated_at)}</Descriptions.Item>
-                      <Descriptions.Item label="模型版本">{dashboard.model.version}</Descriptions.Item>
-                    </Descriptions>
-                    <Card size="small" className="sub-panel-card">
-                      <Title level={5}>核心驱动</Title>
-                      <ul className="plain-list">
-                        {dashboard.recommendation.core_drivers.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </Card>
-                    <Card size="small" className="sub-panel-card">
-                      <Title level={5}>反向风险</Title>
-                      <ul className="plain-list">
-                        {dashboard.recommendation.reverse_risks.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </Card>
-                  </Card>
-                </Col>
-              </Row>
-
-              <Card className="panel-card">
-                <Tabs items={stockTabItems} />
+              <Card size="small" className="sub-panel-card">
+                <Title level={5}>抗击穿策略</Title>
+                <ul className="plain-list">
+                  <li>{`单飞刷新：${runtimeSettings?.anti_stampede.singleflight ? "开启" : "关闭"}`}</li>
+                  <li>{`失败读旧值：${runtimeSettings?.anti_stampede.serve_stale_on_error ? "开启" : "关闭"}`}</li>
+                  <li>{`空结果 TTL：${runtimeSettings?.anti_stampede.empty_result_ttl_seconds ?? "--"} 秒`}</li>
+                  <li>{`锁超时：${runtimeSettings?.anti_stampede.lock_timeout_seconds ?? "--"} 秒`}</li>
+                </ul>
               </Card>
-            </div>
-          )
-        ) : null}
-
-        {!loadingShell && view === "operations" ? (
-          loadingDetail || !operations ? (
-            <Card className="panel-card loading-card">
-              <Skeleton active paragraph={{ rows: 10 }} />
             </Card>
-          ) : (
-            <div className="panel-stack">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="手动模拟仓" value={operations.overview.manual_portfolio_count} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="自动持仓仓" value={operations.overview.auto_portfolio_count} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="建议命中率" value={formatPercent(operations.overview.recommendation_replay_hit_rate)} />
-                  </Card>
-                </Col>
-                <Col xs={24} md={12} xl={6}>
-                  <Card className="panel-card metric-card">
-                    <Statistic title="规则通过率" value={formatPercent(operations.overview.rule_pass_rate)} />
-                  </Card>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 16]}>
-                <Col xs={24} xl={16}>
-                  <Card
-                    className="panel-card"
-                    title="分离式模拟交易运营台"
-                    extra={<Tag color={statusColor(operations.overview.beta_readiness)}>{operations.overview.beta_readiness}</Tag>}
-                  >
-                    <Paragraph className="panel-description">
-                      手动模拟与模型自动持仓已分账运行，收益归因、回撤监控、规则审计与建议命中复盘在同一运营面板查看。
-                    </Paragraph>
-                    <Tabs items={portfolioTabs} />
-                  </Card>
-                </Col>
-                <Col xs={24} xl={8}>
-                  <Card className="panel-card" title="访问控制与刷新">
-                    <Descriptions size="small" column={1}>
-                      <Descriptions.Item label="内测阶段">{operations.access_control.beta_phase}</Descriptions.Item>
-                      <Descriptions.Item label="鉴权模式">{operations.access_control.auth_mode}</Descriptions.Item>
-                      <Descriptions.Item label="Header">{operations.access_control.required_header}</Descriptions.Item>
-                      <Descriptions.Item label="活跃用户">{operations.access_control.active_users}</Descriptions.Item>
-                    </Descriptions>
-                    <Card size="small" className="sub-panel-card">
-                      <Title level={5}>刷新策略</Title>
-                      <List
-                        size="small"
-                        dataSource={operations.refresh_policy.schedules}
-                        renderItem={(item) => (
-                          <List.Item>
-                            <div>
-                              <div className="list-item-row">
-                                <strong>{item.scope}</strong>
-                                <Tag>{`${item.cadence_minutes} 分钟`}</Tag>
-                              </div>
-                              <div className="muted-line">{item.trigger}</div>
-                            </div>
-                          </List.Item>
-                        )}
-                      />
-                    </Card>
-                    <Card size="small" className="sub-panel-card">
-                      <Title level={5}>上线门槛</Title>
-                      <List
-                        size="small"
-                        dataSource={operations.launch_gates}
-                        renderItem={(item) => (
-                          <List.Item>
-                            <div className="list-item-row">
-                              <div>
-                                <strong>{item.gate}</strong>
-                                <div className="muted-line">{`${item.current_value} / ${item.threshold}`}</div>
-                              </div>
-                              <Tag color={statusColor(item.status)}>{item.status}</Tag>
-                            </div>
-                          </List.Item>
-                        )}
-                      />
-                    </Card>
-                  </Card>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 16]}>
-                <Col xs={24} xl={10}>
-                  <Card className="panel-card" title="性能阈值">
-                    <List
-                      dataSource={operations.performance_thresholds}
-                      renderItem={(item) => (
-                        <List.Item>
-                          <div className="list-item-row">
-                            <div>
-                              <strong>{item.metric}</strong>
-                              <div className="muted-line">{item.note}</div>
-                            </div>
-                            <Tag color={statusColor(item.status)}>{`${item.observed}${item.unit}`}</Tag>
-                          </div>
-                        </List.Item>
-                      )}
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} xl={14}>
-                  <Card className="panel-card" title="建议命中复盘">
-                    <Table
-                      rowKey="recommendation_id"
-                      size="small"
-                      pagination={false}
-                      dataSource={operations.recommendation_replay}
-                      columns={replayColumns}
-                      locale={{ emptyText: "暂无复盘数据" }}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-            </div>
-          )
-        ) : null}
-
-        {!loadingShell && view === "config" ? (
-          <div className="panel-stack">
-            <Row gutter={[16, 16]}>
-              <Col xs={24} xl={14}>
-                <Card
-                  className="panel-card"
-                  title="模型 API Key"
-                  extra={<Text type="secondary">{`当前 ${modelApiKeys.length} 个`}</Text>}
-                >
-                  <List
-                    dataSource={modelApiKeys}
-                    locale={{ emptyText: "尚未配置模型 API Key" }}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div className="watchlist-entry">
-                          <div className="list-item-row">
-                            <div>
-                              <strong>{item.name}</strong>
-                              <div className="muted-line">{`${item.provider_name} · ${item.model_name}`}</div>
-                            </div>
-                            <Space wrap>
-                              {item.is_default ? <Tag color="blue">默认</Tag> : null}
-                              <Tag color={item.enabled ? "green" : "default"}>{item.enabled ? "启用" : "停用"}</Tag>
-                              <Tag>{`P${item.priority}`}</Tag>
-                            </Space>
-                          </div>
-                          <div className="watchlist-meta">
-                            <Text type="secondary">{item.base_url}</Text>
-                            <Text type="secondary">{`最近状态 ${item.last_status}${item.last_error ? ` · ${item.last_error}` : ""}`}</Text>
-                          </div>
-                          <div className="watchlist-actions">
-                            <Button type="link" disabled={item.is_default} onClick={() => void handleSetDefaultModelApiKey(item)}>
-                              设为默认
-                            </Button>
-                            <Button type="link" onClick={() => void handleToggleModelApiKey(item)}>
-                              {item.enabled ? "停用" : "启用"}
-                            </Button>
-                            <Button type="link" danger onClick={() => void handleDeleteModelApiKey(item)}>
-                              删除
-                            </Button>
-                          </div>
+          </Col>
+          <Col xs={24} xl={10}>
+            <Card className="panel-card" title="数据源状态">
+              <List
+                size="small"
+                dataSource={runtimeSettings?.data_sources ?? []}
+                renderItem={(item) => (
+                  <List.Item>
+                    <div className="full-width">
+                      <div className="list-item-row">
+                        <div>
+                          <strong>{item.provider_name.toUpperCase()}</strong>
+                          <div className="muted-line">{item.role}</div>
                         </div>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
+                        <Tag color={dataSourceStatusColor(item)}>{item.status_label}</Tag>
+                      </div>
+                      <Paragraph className="panel-description">{item.freshness_note}</Paragraph>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} xl={14}>
+            <Card className="panel-card" title="统一字段说明">
+              <List
+                size="small"
+                dataSource={runtimeSettings?.field_mappings ?? []}
+                renderItem={(item) => (
+                  <List.Item>
+                    <div>
+                      <strong>{`${item.dataset} · ${item.canonical_field}`}</strong>
+                      <div className="muted-line">{`AKShare: ${item.akshare_field} / Tushare: ${item.tushare_field}`}</div>
+                      <div className="muted-line">{item.notes}</div>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      key: "models",
+      label: "模型",
+      children: (
+        <Row gutter={[16, 16]}>
+          <Col xs={24} xl={14}>
+            <Card
+              className="panel-card"
+              title="模型 API Key"
+              extra={<Text type="secondary">{`当前 ${modelApiKeys.length} 个`}</Text>}
+            >
+              <List
+                dataSource={modelApiKeys}
+                locale={{ emptyText: "尚未配置模型 API Key" }}
+                renderItem={(item) => (
+                  <List.Item>
+                    <div className="watchlist-entry">
+                      <div className="list-item-row">
+                        <div>
+                          <strong>{item.name}</strong>
+                          <div className="muted-line">{`${item.provider_name} · ${item.model_name}`}</div>
+                        </div>
+                        <Space wrap>
+                          {item.is_default ? <Tag color="blue">默认</Tag> : null}
+                          <Tag color={item.enabled ? "green" : "default"}>{item.enabled ? "启用" : "停用"}</Tag>
+                          <Tag>{`P${item.priority}`}</Tag>
+                        </Space>
+                      </div>
+                      <div className="watchlist-meta">
+                        <Text type="secondary">{item.base_url}</Text>
+                        <Text type="secondary">{`最近状态 ${item.last_status}${item.last_error ? ` · ${item.last_error}` : ""}`}</Text>
+                      </div>
+                      <div className="watchlist-actions">
+                        <Button type="link" disabled={item.is_default} onClick={() => void handleSetDefaultModelApiKey(item)}>
+                          设为默认
+                        </Button>
+                        <Button type="link" onClick={() => void handleToggleModelApiKey(item)}>
+                          {item.enabled ? "停用" : "启用"}
+                        </Button>
+                        <Button type="link" danger onClick={() => void handleDeleteModelApiKey(item)}>
+                          删除
+                        </Button>
+                      </div>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} xl={10}>
+            <Card className="panel-card" title="新增模型 Key">
+              <Form layout="vertical">
+                <Form.Item label="Key 名称" required>
+                  <Input value={newKeyName} onChange={(event) => setNewKeyName(event.target.value)} placeholder="如：主 OpenAI" />
+                </Form.Item>
+                <Form.Item label="Provider" required>
+                  <Input value={newKeyProvider} onChange={(event) => setNewKeyProvider(event.target.value)} placeholder="如：openai" />
+                </Form.Item>
+                <Form.Item label="模型名" required>
+                  <Input value={newKeyModel} onChange={(event) => setNewKeyModel(event.target.value)} placeholder="如：gpt-4.1-mini" />
+                </Form.Item>
+                <Form.Item label="Base URL" required>
+                  <Input value={newKeyBaseUrl} onChange={(event) => setNewKeyBaseUrl(event.target.value)} placeholder="如：https://api.openai.com/v1" />
+                </Form.Item>
+                <Form.Item label="API Key" required>
+                  <Input.Password value={newKeySecret} onChange={(event) => setNewKeySecret(event.target.value)} placeholder="输入模型 API Key" />
+                </Form.Item>
+                <Form.Item label="优先级">
+                  <Input value={newKeyPriority} onChange={(event) => setNewKeyPriority(event.target.value)} placeholder="数字越小优先级越高" />
+                </Form.Item>
+              </Form>
+              <div className="deck-actions">
+                <Button type="primary" loading={savingConfig} onClick={() => void handleCreateModelApiKey()}>
+                  保存模型 Key
+                </Button>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      key: "providers",
+      label: "数据源",
+      children: (
+        <Row gutter={[16, 16]}>
+          {(runtimeSettings?.data_sources ?? []).map((item) => {
+            const draft = providerDrafts[item.provider_name] ?? {
+              accessToken: "",
+              baseUrl: item.base_url ?? "",
+              enabled: item.enabled,
+              notes: "",
+            };
+            const saved = providerCredentials.find((credential) => credential.provider_name === item.provider_name);
 
-                <Card className="panel-card" title="新增模型 Key">
-                  <Row gutter={[12, 12]}>
-                    <Col xs={24} md={12}>
-                      <Input value={newKeyName} onChange={(event) => setNewKeyName(event.target.value)} placeholder="名称，如主 OpenAI" />
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Input value={newKeyProvider} onChange={(event) => setNewKeyProvider(event.target.value)} placeholder="provider，如 openai" />
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Input value={newKeyModel} onChange={(event) => setNewKeyModel(event.target.value)} placeholder="模型名，如 gpt-4.1-mini" />
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Input value={newKeyBaseUrl} onChange={(event) => setNewKeyBaseUrl(event.target.value)} placeholder="Base URL，如 https://api.openai.com/v1" />
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Input.Password value={newKeySecret} onChange={(event) => setNewKeySecret(event.target.value)} placeholder="API Key" />
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Input value={newKeyPriority} onChange={(event) => setNewKeyPriority(event.target.value)} placeholder="优先级，越小越优先" />
-                    </Col>
-                  </Row>
+            return (
+              <Col key={item.provider_name} xs={24} xl={12}>
+                <Card className="panel-card" title={item.provider_name.toUpperCase()}>
+                  <div className="list-item-row">
+                    <div>
+                      <Tag color={dataSourceStatusColor(item)}>{item.status_label}</Tag>
+                      <Paragraph className="panel-description">{item.freshness_note}</Paragraph>
+                    </div>
+                    <div className="settings-switch">
+                      <Text type="secondary">启用</Text>
+                      <Switch
+                        checked={draft.enabled}
+                        onChange={(checked) =>
+                          setProviderDrafts((current) => ({
+                            ...current,
+                            [item.provider_name]: { ...draft, enabled: checked },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <Form layout="vertical">
+                    <Form.Item label="Base URL">
+                      <Input
+                        value={draft.baseUrl}
+                        onChange={(event) =>
+                          setProviderDrafts((current) => ({
+                            ...current,
+                            [item.provider_name]: { ...draft, baseUrl: event.target.value },
+                          }))
+                        }
+                        placeholder="可选：覆盖默认 Base URL"
+                      />
+                    </Form.Item>
+                    <Form.Item label={item.credential_required ? "Access Token" : "预留 Token"}>
+                      <Input.Password
+                        value={draft.accessToken}
+                        onChange={(event) =>
+                          setProviderDrafts((current) => ({
+                            ...current,
+                            [item.provider_name]: { ...draft, accessToken: event.target.value },
+                          }))
+                        }
+                        placeholder={item.credential_required ? "输入服务端使用的 Token" : "可选：为未来代理层预留"}
+                      />
+                    </Form.Item>
+                    <Form.Item label="备注">
+                      <Input
+                        value={draft.notes}
+                        onChange={(event) =>
+                          setProviderDrafts((current) => ({
+                            ...current,
+                            [item.provider_name]: { ...draft, notes: event.target.value },
+                          }))
+                        }
+                        placeholder="记录接入说明、范围或限制"
+                      />
+                    </Form.Item>
+                  </Form>
                   <div className="deck-actions">
-                    <Button type="primary" loading={savingConfig} onClick={() => void handleCreateModelApiKey()}>
-                      保存模型 Key
+                    <Button type="primary" loading={savingConfig} onClick={() => void handleSaveProviderCredential(item.provider_name)}>
+                      保存数据源设置
                     </Button>
                   </div>
+                  <Space wrap className="inline-tags">
+                    <Tag>{saved?.masked_token ?? "未保存 Token"}</Tag>
+                    <Tag>{item.docs_url}</Tag>
+                  </Space>
                 </Card>
               </Col>
+            );
+          })}
+        </Row>
+      ),
+    },
+  ];
 
-              <Col xs={24} xl={10}>
-                <Card className="panel-card" title="数据源凭据">
-                  <List
-                    dataSource={runtimeSettings?.data_sources ?? []}
-                    renderItem={(item) => {
-                      const draft = providerDrafts[item.provider_name] ?? {
-                        accessToken: "",
-                        baseUrl: item.base_url ?? "",
-                        enabled: item.enabled,
-                        notes: "",
-                      };
-                      const saved = providerCredentials.find((credential) => credential.provider_name === item.provider_name);
-                      return (
-                        <List.Item>
-                          <div className="full-width">
-                            <div className="list-item-row">
-                              <div>
-                                <strong>{item.provider_name.toUpperCase()}</strong>
-                                <div className="muted-line">{item.role}</div>
-                              </div>
-                              <Tag color={dataSourceStatusColor(item)}>
-                                {item.status_label}
-                              </Tag>
-                            </div>
-                            <Paragraph className="panel-description">{item.freshness_note}</Paragraph>
-                            <Space direction="vertical" size={8} className="full-width">
-                              <Input
-                                value={draft.baseUrl}
-                                onChange={(event) =>
-                                  setProviderDrafts((current) => ({
-                                    ...current,
-                                    [item.provider_name]: { ...draft, baseUrl: event.target.value },
-                                  }))
-                                }
-                                placeholder="可选：覆盖默认 Base URL"
-                              />
-                              <Input.Password
-                                value={draft.accessToken}
-                                onChange={(event) =>
-                                  setProviderDrafts((current) => ({
-                                    ...current,
-                                    [item.provider_name]: { ...draft, accessToken: event.target.value },
-                                  }))
-                                }
-                                placeholder={
-                                  item.credential_required
-                                    ? "输入 Tushare Token"
-                                    : "可选：预留给未来代理层/接入层凭据"
-                                }
-                              />
-                              <Input
-                                value={draft.notes}
-                                onChange={(event) =>
-                                  setProviderDrafts((current) => ({
-                                    ...current,
-                                    [item.provider_name]: { ...draft, notes: event.target.value },
-                                  }))
-                                }
-                                placeholder="备注"
-                              />
-                            </Space>
-                            <div className="deck-actions">
-                              <Button
-                                onClick={() =>
-                                  setProviderDrafts((current) => ({
-                                    ...current,
-                                    [item.provider_name]: { ...draft, enabled: !draft.enabled },
-                                  }))
-                                }
-                              >
-                                {draft.enabled ? "切换为停用" : "切换为启用"}
-                              </Button>
-                              <Button type="primary" loading={savingConfig} onClick={() => void handleSaveProviderCredential(item.provider_name)}>
-                                保存凭据
-                              </Button>
-                            </div>
-                            <Space wrap className="inline-tags">
-                              <Tag>{saved?.masked_token ?? "未保存 Token"}</Tag>
-                              <Tag>{item.docs_url}</Tag>
-                              {!item.credential_required ? <Tag>当前前端不要求你配置此源</Tag> : null}
-                            </Space>
-                          </div>
-                        </List.Item>
-                      );
-                    }}
+  return (
+    <>
+      {messageContextHolder}
+      <div className="app-theme-shell" data-theme={themeMode}>
+        <div className="workspace-shell">
+          <div className="workspace-hero panel-card">
+            <div className="hero-header">
+              <div className="hero-copy">
+                <div className="topbar-kicker">A-Share Advisory Desk</div>
+                <Title level={2}>自选股工作台</Title>
+                <Paragraph className="topbar-note">
+                  页面收敛为一个工作区：候选信号、自选维护、单票分析、运营复盘和设置都围绕同一批标的展开。
+                </Paragraph>
+                <Space wrap className="header-meta">
+                  <Tag color="blue">2-8 周</Tag>
+                  <Tag color="cyan">{sourceInfo.label}</Tag>
+                  <Tag icon={<DatabaseOutlined />}>{runtimeSettings?.storage_engine ?? "SQLite"}</Tag>
+                  <Tag>{runtimeSettings?.cache_backend ?? "Redis"}</Tag>
+                  <Tag>{runtimeConfig.apiBase || "同源 API"}</Tag>
+                </Space>
+              </div>
+
+              <div className="hero-actions-panel">
+                <div className="hero-action-block">
+                  <Text type="secondary">当前焦点</Text>
+                  <Select
+                    className="global-focus-select"
+                    value={selectedSymbol ?? undefined}
+                    placeholder="选择一个标的"
+                    options={candidateRows.map((item) => ({
+                      value: item.symbol,
+                      label: `${item.name} · ${item.symbol}`,
+                    }))}
+                    onChange={(value) => handleCandidateSelect(value)}
                   />
-                </Card>
+                </div>
+                <div className="hero-action-row">
+                  <Button icon={<ReloadOutlined />} onClick={() => void handleRefresh()}>
+                    刷新
+                  </Button>
+                  <Button icon={<ThunderboltOutlined />} onClick={() => void handleBootstrap()}>
+                    重建样本
+                  </Button>
+                  <Button className="theme-toggle-button" icon={themeMode === "dark" ? <SunOutlined /> : <MoonOutlined />} onClick={onToggleTheme}>
+                    {themeMode === "dark" ? "浅色模式" : "夜间模式"}
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-                <Card className="panel-card" title="统一领域模型与缓存策略">
+            <div className="hero-stat-grid">
+              {topbarStats.map((item) => (
+                <div key={item.label} className="hero-stat-card">
+                  <div className="topbar-stat-label">{item.label}</div>
+                  <div className="topbar-stat-value" title={item.value}>
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="workspace-nav">
+            {navCards.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`workspace-nav-card${view === item.key ? " workspace-nav-card-active" : ""}`}
+                onClick={() => setView(item.key)}
+              >
+                <div className="workspace-nav-icon">{item.icon}</div>
+                <div className="workspace-nav-copy">
+                  <strong>{item.label}</strong>
+                  <span>{item.description}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {error ? (
+            <Alert
+              showIcon
+              type="error"
+              className="status-alert"
+              message="面板加载失败"
+              description={error}
+            />
+          ) : null}
+
+          {loadingShell ? (
+            <Card className="panel-card loading-card">
+              <Skeleton active paragraph={{ rows: 6 }} />
+            </Card>
+          ) : null}
+
+          {!loadingShell && view === "candidates" ? (
+            <div className="panel-stack">
+              <Card
+                className="panel-card focus-summary-card"
+                title={activeRow ? `当前焦点 · ${activeRow.name}` : "当前焦点"}
+                extra={
+                  activeRow ? (
+                    <Space wrap>
+                      <Button type="link" onClick={() => handleCandidateSelect(activeRow.symbol, "stock")}>
+                        打开单票分析
+                      </Button>
+                      {activeRow.source_kind !== "candidate_only" ? (
+                        <Button
+                          type="link"
+                          icon={<SyncOutlined />}
+                          loading={mutatingWatchlist && watchlistMutationSymbol === activeRow.symbol}
+                          onClick={() => void handleRefreshWatchlist(activeRow.symbol)}
+                        >
+                          重分析
+                        </Button>
+                      ) : null}
+                    </Space>
+                  ) : null
+                }
+              >
+                {activeRow ? (
+                  <>
+                    <Space wrap className="inline-tags">
+                      {activeCandidate ? <Tag color={directionColor(activeCandidate.direction)}>{activeCandidate.direction_label}</Tag> : null}
+                      {activeCandidate ? <Tag>{`${activeCandidate.confidence_label}置信`}</Tag> : null}
+                      {activeCandidate ? <Tag>{activeCandidate.applicable_period}</Tag> : null}
+                      <Tag>{activeRow.symbol}</Tag>
+                      <Tag>
+                        {activeRow.source_kind === "default_seed"
+                          ? "默认样本"
+                          : activeRow.source_kind === "candidate_only"
+                            ? "候选补齐"
+                            : "手动加入"}
+                      </Tag>
+                    </Space>
+                    <Paragraph className="panel-description">
+                      {activeCandidate?.summary ?? "当前标的已经在关注池中，但还没有最新候选信号，可在右侧操作里触发重分析。"}
+                    </Paragraph>
+                    <Descriptions size="small" column={{ xs: 1, md: 2, xl: 4 }}>
+                      <Descriptions.Item label="当前触发点">{activeCandidate?.why_now ?? "等待更新"}</Descriptions.Item>
+                      <Descriptions.Item label="主要风险">{activeCandidate?.primary_risk ?? activeRow.last_error ?? "暂无额外风险提示"}</Descriptions.Item>
+                      <Descriptions.Item label="最近变化">{activeCandidate?.change_summary ?? activeRow.analysis_status}</Descriptions.Item>
+                      <Descriptions.Item label="最近分析">{formatDate(activeRow.last_analyzed_at ?? activeRow.updated_at)}</Descriptions.Item>
+                    </Descriptions>
+                  </>
+                ) : (
+                  <Empty description="当前没有可展示的标的" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                )}
+              </Card>
+
+              <Card
+                className="panel-card"
+                title="候选股与自选池"
+                extra={(
+                  <Space wrap>
+                    <Text type="secondary">{`共 ${candidateRows.length} 只`}</Text>
+                    <Popover
+                      open={addPopoverOpen}
+                      onOpenChange={setAddPopoverOpen}
+                      trigger="click"
+                      placement={isMobile ? "bottom" : "bottomRight"}
+                      content={addWatchlistOverlay}
+                    >
+                      <Button shape="circle" type="primary" icon={<PlusOutlined />} />
+                    </Popover>
+                  </Space>
+                )}
+              >
+                {candidateRows.length === 0 ? (
+                  <Empty description="当前自选池为空，请先添加股票代码" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                ) : isMobile ? (
                   <List
-                    size="small"
-                    dataSource={runtimeSettings?.field_mappings ?? []}
+                    className="candidate-mobile-list"
+                    dataSource={candidateRows}
                     renderItem={(item) => (
                       <List.Item>
-                        <div>
-                          <strong>{`${item.dataset} · ${item.canonical_field}`}</strong>
-                          <div className="muted-line">{`AKShare: ${item.akshare_field} / Tushare: ${item.tushare_field}`}</div>
-                          <div className="muted-line">{item.notes}</div>
-                        </div>
+                        <Card className={`candidate-mobile-card${item.symbol === activeRow?.symbol ? " candidate-mobile-card-active" : ""}`}>
+                          <div className="candidate-mobile-head">
+                            <div>
+                              <div className="candidate-mobile-rank">{`#${item.candidate?.rank ?? "--"}`}</div>
+                              <Title level={5}>{item.name}</Title>
+                              <Text type="secondary">{item.symbol}</Text>
+                            </div>
+                            {item.candidate ? (
+                              <Tag color={directionColor(item.candidate.direction)}>{item.candidate.direction_label}</Tag>
+                            ) : (
+                              <Tag>{item.analysis_status}</Tag>
+                            )}
+                          </div>
+                          <div className="candidate-mobile-metrics">
+                            <div>
+                              <span>价格</span>
+                              <strong>{formatNumber(item.candidate?.last_close)}</strong>
+                            </div>
+                            <div>
+                              <span>20日</span>
+                              <strong>{formatPercent(item.candidate?.price_return_20d)}</strong>
+                            </div>
+                            <div>
+                              <span>分析</span>
+                              <strong>{formatDate(item.last_analyzed_at ?? item.updated_at)}</strong>
+                            </div>
+                          </div>
+                          <Paragraph className="panel-description">{item.candidate?.summary ?? "等待候选分析结果。"}</Paragraph>
+                          <Descriptions size="small" column={1}>
+                            <Descriptions.Item label="当前触发点">{item.candidate?.why_now ?? "暂无"}</Descriptions.Item>
+                            <Descriptions.Item label="主要风险">{item.candidate?.primary_risk ?? item.last_error ?? "暂无"}</Descriptions.Item>
+                          </Descriptions>
+                          <div className="candidate-mobile-actions">
+                            <Button type="default" onClick={() => handleCandidateSelect(item.symbol, "stock")}>
+                              打开
+                            </Button>
+                            <Button
+                              icon={<SyncOutlined />}
+                              disabled={item.source_kind === "candidate_only"}
+                              loading={mutatingWatchlist && watchlistMutationSymbol === item.symbol}
+                              onClick={() => void handleRefreshWatchlist(item.symbol)}
+                            >
+                              重分析
+                            </Button>
+                            <Button danger disabled={item.source_kind === "candidate_only"} onClick={() => setPendingRemoval(item)}>
+                              移除
+                            </Button>
+                          </div>
+                        </Card>
                       </List.Item>
                     )}
                   />
-                  <Card size="small" className="sub-panel-card">
-                    <Title level={5}>抗击穿策略</Title>
-                    <ul className="plain-list">
-                      <li>{`单飞刷新：${runtimeSettings?.anti_stampede.singleflight ? "开启" : "关闭"}`}</li>
-                      <li>{`失败读旧值：${runtimeSettings?.anti_stampede.serve_stale_on_error ? "开启" : "关闭"}`}</li>
-                      <li>{`空结果 TTL：${runtimeSettings?.anti_stampede.empty_result_ttl_seconds ?? "--"} 秒`}</li>
-                      <li>{`锁超时：${runtimeSettings?.anti_stampede.lock_timeout_seconds ?? "--"} 秒`}</li>
-                    </ul>
-                  </Card>
+                ) : (
+                  <Table
+                    rowKey="symbol"
+                    size="middle"
+                    pagination={false}
+                    dataSource={candidateRows}
+                    columns={candidateColumns}
+                    scroll={{ x: 1240 }}
+                    tableLayout="fixed"
+                    onRow={(record) => ({
+                      onClick: () => handleCandidateSelect(record.symbol),
+                    })}
+                    rowClassName={(record) => (record.symbol === activeRow?.symbol ? "candidate-row-active" : "")}
+                    locale={{ emptyText: "当前没有候选股" }}
+                  />
+                )}
+              </Card>
+            </div>
+          ) : null}
+
+          {!loadingShell && view === "stock" ? (
+            loadingDetail || !dashboard ? (
+              <Card className="panel-card loading-card">
+                <Skeleton active paragraph={{ rows: 10 }} />
+              </Card>
+            ) : (
+              <div className="panel-stack">
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="最新收盘" value={formatNumber(dashboard.hero.latest_close)} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="日涨跌" value={formatPercent(dashboard.hero.day_change_pct)} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="置信表达" value={dashboard.recommendation.confidence_expression} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="最近刷新" value={formatDate(dashboard.hero.last_updated)} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={16}>
+                    <Card
+                      className="panel-card"
+                      title={`${dashboard.stock.name} · ${dashboard.stock.symbol}`}
+                      extra={
+                        <Space wrap className="inline-tags">
+                          <Tag color={directionColor(dashboard.recommendation.direction)}>{dashboard.hero.direction_label}</Tag>
+                          <Tag>{`${dashboard.recommendation.confidence_label}置信`}</Tag>
+                        </Space>
+                      }
+                    >
+                      <Paragraph className="panel-description">{dashboard.recommendation.summary}</Paragraph>
+                      <div className="chart-shell">
+                        <PriceSparkline points={dashboard.price_chart} />
+                      </div>
+                      <div className="chart-meta-row">
+                        <span>{`区间高点 ${formatNumber(dashboard.hero.high_price)}`}</span>
+                        <span>{`区间低点 ${formatNumber(dashboard.hero.low_price)}`}</span>
+                        <span>{`换手率 ${dashboard.hero.turnover_rate ? formatPercent(dashboard.hero.turnover_rate / 100) : "未提供"}`}</span>
+                      </div>
+                      <Space wrap className="inline-tags">
+                        {dashboard.hero.sector_tags.map((tag) => (
+                          <Tag key={tag} color="blue">
+                            {tag}
+                          </Tag>
+                        ))}
+                      </Space>
+                    </Card>
+                  </Col>
+                  <Col xs={24} xl={8}>
+                    <Card className="panel-card" title="当前建议摘要">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="适用周期">{dashboard.recommendation.applicable_period}</Descriptions.Item>
+                        <Descriptions.Item label="数据时间">{formatDate(dashboard.recommendation.as_of_data_time)}</Descriptions.Item>
+                        <Descriptions.Item label="生成时间">{formatDate(dashboard.recommendation.generated_at)}</Descriptions.Item>
+                        <Descriptions.Item label="模型版本">{dashboard.model.version}</Descriptions.Item>
+                      </Descriptions>
+                      <Card size="small" className="sub-panel-card">
+                        <Title level={5}>核心驱动</Title>
+                        <ul className="plain-list">
+                          {dashboard.recommendation.core_drivers.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </Card>
+                      <Card size="small" className="sub-panel-card">
+                        <Title level={5}>反向风险</Title>
+                        <ul className="plain-list">
+                          {dashboard.recommendation.reverse_risks.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </Card>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Card className="panel-card">
+                  <Tabs items={stockTabItems} />
                 </Card>
-              </Col>
-            </Row>
-          </div>
-        ) : null}
+              </div>
+            )
+          ) : null}
+
+          {!loadingShell && view === "operations" ? (
+            loadingDetail || !operations ? (
+              <Card className="panel-card loading-card">
+                <Skeleton active paragraph={{ rows: 10 }} />
+              </Card>
+            ) : (
+              <div className="panel-stack">
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="手动模拟仓" value={operations.overview.manual_portfolio_count} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="自动持仓仓" value={operations.overview.auto_portfolio_count} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="建议命中率" value={formatPercent(operations.overview.recommendation_replay_hit_rate)} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} md={12} xl={6}>
+                    <Card className="panel-card metric-card">
+                      <Statistic title="规则通过率" value={formatPercent(operations.overview.rule_pass_rate)} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={16}>
+                    <Card
+                      className="panel-card"
+                      title="分离式模拟交易运营台"
+                      extra={<Tag color={statusColor(operations.overview.beta_readiness)}>{operations.overview.beta_readiness}</Tag>}
+                    >
+                      <Paragraph className="panel-description">
+                        手动模拟与模型自动持仓已分账运行，收益归因、回撤监控、规则审计与建议命中复盘在同一运营面板查看。
+                      </Paragraph>
+                      <Tabs items={portfolioTabs} />
+                    </Card>
+                  </Col>
+                  <Col xs={24} xl={8}>
+                    <Card className="panel-card" title="访问控制与刷新">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="内测阶段">{operations.access_control.beta_phase}</Descriptions.Item>
+                        <Descriptions.Item label="鉴权模式">{operations.access_control.auth_mode}</Descriptions.Item>
+                        <Descriptions.Item label="Header">{operations.access_control.required_header}</Descriptions.Item>
+                        <Descriptions.Item label="活跃用户">{operations.access_control.active_users}</Descriptions.Item>
+                      </Descriptions>
+                      <Card size="small" className="sub-panel-card">
+                        <Title level={5}>刷新策略</Title>
+                        <List
+                          size="small"
+                          dataSource={operations.refresh_policy.schedules}
+                          renderItem={(item) => (
+                            <List.Item>
+                              <div>
+                                <div className="list-item-row">
+                                  <strong>{item.scope}</strong>
+                                  <Tag>{`${item.cadence_minutes} 分钟`}</Tag>
+                                </div>
+                                <div className="muted-line">{item.trigger}</div>
+                              </div>
+                            </List.Item>
+                          )}
+                        />
+                      </Card>
+                      <Card size="small" className="sub-panel-card">
+                        <Title level={5}>上线门槛</Title>
+                        <List
+                          size="small"
+                          dataSource={operations.launch_gates}
+                          renderItem={(item) => (
+                            <List.Item>
+                              <div className="list-item-row">
+                                <div>
+                                  <strong>{item.gate}</strong>
+                                  <div className="muted-line">{`${item.current_value} / ${item.threshold}`}</div>
+                                </div>
+                                <Tag color={statusColor(item.status)}>{item.status}</Tag>
+                              </div>
+                            </List.Item>
+                          )}
+                        />
+                      </Card>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={10}>
+                    <Card className="panel-card" title="性能阈值">
+                      <List
+                        dataSource={operations.performance_thresholds}
+                        renderItem={(item) => (
+                          <List.Item>
+                            <div className="list-item-row">
+                              <div>
+                                <strong>{item.metric}</strong>
+                                <div className="muted-line">{item.note}</div>
+                              </div>
+                              <Tag color={statusColor(item.status)}>{`${item.observed}${item.unit}`}</Tag>
+                            </div>
+                          </List.Item>
+                        )}
+                      />
+                    </Card>
+                  </Col>
+                  <Col xs={24} xl={14}>
+                    <Card className="panel-card" title="建议命中复盘">
+                      <Table
+                        rowKey="recommendation_id"
+                        size="small"
+                        pagination={false}
+                        dataSource={operations.recommendation_replay}
+                        columns={replayColumns}
+                        locale={{ emptyText: "暂无复盘数据" }}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+              </div>
+            )
+          ) : null}
+
+          {!loadingShell && view === "settings" ? (
+            <div className="panel-stack">
+              <Card className="panel-card" title="设置">
+                <Tabs items={settingsTabItems} />
+              </Card>
+            </div>
+          ) : null}
+        </div>
       </div>
+
+      <Modal
+        open={Boolean(pendingRemoval)}
+        title={pendingRemoval ? `移除 ${pendingRemoval.name}` : "移除标的"}
+        okText="确认移除"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+        confirmLoading={mutatingWatchlist && watchlistMutationSymbol === pendingRemoval?.symbol}
+        onCancel={() => setPendingRemoval(null)}
+        onOk={() => void handleConfirmRemoveWatchlist()}
+      >
+        <Paragraph className="panel-description">
+          该标的会从共享自选池中移除，相关候选缓存也会失去预热资格。确认继续吗？
+        </Paragraph>
+      </Modal>
     </>
   );
 }
