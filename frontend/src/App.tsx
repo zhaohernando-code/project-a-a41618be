@@ -750,38 +750,20 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     setOperationsLoading(true);
     setOperationsError(null);
     try {
-      const [operationsResult, simulationResult] = await Promise.allSettled([
-        api.getOperationsDashboard(symbol),
-        api.getSimulationWorkspace(),
-      ]);
+      const operationsResult = await api.getOperationsDashboard(symbol);
+      setOperations(operationsResult.data);
+      setSourceInfo(operationsResult.source);
 
-      let nextSource: DataSourceInfo | null = null;
-      let nextError: string | null = null;
-
-      if (operationsResult.status === "fulfilled") {
-        setOperations(operationsResult.value.data);
-        nextSource = operationsResult.value.source;
-      } else {
-        setOperations(null);
-        nextError = operationsResult.reason instanceof Error ? operationsResult.reason.message : "加载运营复盘概览失败。";
-      }
-
-      if (simulationResult.status === "fulfilled") {
-        applySimulationWorkspace(simulationResult.value.data);
-        nextSource = nextSource ? mergeSourceInfo(nextSource, simulationResult.value.source) : simulationResult.value.source;
+      if (operationsResult.data.simulation_workspace) {
+        applySimulationWorkspace(operationsResult.data.simulation_workspace);
       } else {
         setSimulation(null);
-        if (!nextError) {
-          nextError = simulationResult.reason instanceof Error ? simulationResult.reason.message : "加载双轨模拟台失败。";
-        }
+        setOperationsError("运营复盘接口未返回双轨模拟工作区数据。");
       }
-
-      if (nextSource) {
-        setSourceInfo(nextSource);
-      }
-      if (nextError) {
-        setOperationsError(nextError);
-      }
+    } catch (loadError) {
+      setOperations(null);
+      setSimulation(null);
+      setOperationsError(loadError instanceof Error ? loadError.message : "加载运营复盘工作区失败。");
     } finally {
       setOperationsLoading(false);
     }
@@ -2237,7 +2219,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                     type="warning"
                     showIcon
                     className="panel-card"
-                    message="运营复盘工作区加载不完整"
+                    message="运营复盘工作区加载失败"
                     description={operationsError}
                     action={selectedSymbol ? <Button size="small" onClick={() => void loadOperationsData(selectedSymbol)}>重试</Button> : undefined}
                   />
@@ -2662,17 +2644,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                       </Col>
                     </Row>
                   </>
-                ) : (
-                  <Card className="panel-card">
-                    <Alert
-                      type="warning"
-                      showIcon
-                      message="双轨模拟台暂时不可用"
-                      description="运营概览已经加载完成，但模拟工作区本次未返回。可以先查看组合复盘和命中率，再点击重试恢复模拟台。"
-                      action={selectedSymbol ? <Button size="small" onClick={() => void loadOperationsData(selectedSymbol)}>重试</Button> : undefined}
-                    />
-                  </Card>
-                )}
+                ) : null}
 
                 {operations ? (
                   <>

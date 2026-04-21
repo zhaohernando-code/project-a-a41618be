@@ -525,6 +525,7 @@ export interface OperationsDashboardResponse {
   refresh_policy: RefreshPolicyView;
   performance_thresholds: PerformanceThresholdView[];
   launch_gates: LaunchGateView[];
+  simulation_workspace?: SimulationWorkspaceResponse | null;
 }
 
 export interface SimulationConfigRequest {

@@ -235,3 +235,10 @@
 - Prevention: 以后聚合型工作区不能把次级面板的失败伪装成全页 loading；所有重算链路都要先按当前上下文裁剪数据范围，再考虑展示层拼装。
 - Validation: `cd frontend && npm run build`; `python3 -m py_compile src/ashare_evidence/operations.py src/ashare_evidence/simulation.py src/ashare_evidence/api.py`
 - Commit ID: pending
+
+## 2026-04-21
+
+- Problem: 运营复盘页首次进入时并发请求 `/dashboard/operations` 和带写入副作用的 `/simulation/workspace`；在 SQLite/低 IOPS 场景下，这种“读面板 + GET 内建档”并发很容易放大成锁等待或超时，最终前端只能看到“双轨模拟台暂时不可用”的假降级。
+- Resolution: 运营复盘首屏改为单次工作区请求，由 `/dashboard/operations` 直接内嵌模拟工作区；同时模拟工作区内部复用同一份行情上下文，不再为用户轨道和模型轨道重复扫描一次历史价格。
+- Prevention: 以后只要 GET 接口会隐式建档、补状态或写留痕，就不能和同页其他聚合 GET 并发触发；这类首屏工作区要么合并成单个 contract，要么先消除 GET 写入副作用，再谈并发加载。
+- Commit ID: pending

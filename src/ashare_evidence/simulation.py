@@ -344,12 +344,15 @@ def _portfolio_summary(
     session: Session,
     simulation_session: SimulationSession,
     portfolio: PaperPortfolio,
+    *,
+    context: tuple[dict[str, list[tuple[Any, float]]], list[Any], dict[Any, float]] | None = None,
+    watch_symbols: set[str] | None = None,
 ) -> dict[str, Any]:
-    watch_symbols = set(_watch_symbols(session, simulation_session))
-    price_history, trade_days, benchmark_close_map = _portfolio_context(session, simulation_session)
+    active_watch_symbols = watch_symbols or set(_watch_symbols(session, simulation_session))
+    price_history, trade_days, benchmark_close_map = context or _portfolio_context(session, simulation_session)
     return _portfolio_payload(
         portfolio,
-        active_symbols=watch_symbols,
+        active_symbols=active_watch_symbols,
         price_history=price_history,
         trade_days=trade_days,
         benchmark_close_map=benchmark_close_map,
@@ -596,11 +599,26 @@ def _last_reason_for_track(events: list[SimulationEvent], track: str) -> str | N
 
 def _workspace_payload(session: Session, simulation_session: SimulationSession) -> dict[str, Any]:
     manual_portfolio, model_portfolio = _ensure_session_portfolios(session, simulation_session)
-    manual_summary = _portfolio_summary(session, simulation_session, manual_portfolio)
-    model_summary = _portfolio_summary(session, simulation_session, model_portfolio)
+    watch_symbols = _watch_symbols(session, simulation_session)
+    portfolio_context = _portfolio_context(session, simulation_session)
+    active_watch_symbols = set(watch_symbols)
+    manual_summary = _portfolio_summary(
+        session,
+        simulation_session,
+        manual_portfolio,
+        context=portfolio_context,
+        watch_symbols=active_watch_symbols,
+    )
+    model_summary = _portfolio_summary(
+        session,
+        simulation_session,
+        model_portfolio,
+        context=portfolio_context,
+        watch_symbols=active_watch_symbols,
+    )
     events = _session_events(session, simulation_session)
     model_advices = _model_advices(session, simulation_session, model_summary)
-    focus_symbol = simulation_session.focus_symbol or (_watch_symbols(session, simulation_session)[0] if _watch_symbols(session, simulation_session) else None)
+    focus_symbol = simulation_session.focus_symbol or (watch_symbols[0] if watch_symbols else None)
 
     return {
         "session": {
@@ -609,7 +627,7 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
             "status": simulation_session.status,
             "status_label": SESSION_STATUSES.get(simulation_session.status, simulation_session.status),
             "focus_symbol": focus_symbol,
-            "watch_symbols": _watch_symbols(session, simulation_session),
+            "watch_symbols": watch_symbols,
             "benchmark_symbol": simulation_session.benchmark_symbol,
             "initial_cash": simulation_session.initial_cash,
             "current_step": simulation_session.current_step,
@@ -636,7 +654,7 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
         },
         "configuration": {
             "focus_symbol": focus_symbol,
-            "watch_symbols": _watch_symbols(session, simulation_session),
+            "watch_symbols": watch_symbols,
             "initial_cash": simulation_session.initial_cash,
             "benchmark_symbol": simulation_session.benchmark_symbol,
             "step_interval_seconds": simulation_session.step_interval_seconds,

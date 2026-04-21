@@ -81,6 +81,25 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("分离式模拟交易", first_gate)
         self.assertIn("A 股规则合规", first_gate)
 
+    def test_operations_dashboard_can_embed_simulation_workspace(self) -> None:
+        with session_scope(self.database_url) as session:
+            bootstrap_dashboard_demo(session)
+
+        with session_scope(self.database_url) as session:
+            operations = build_operations_dashboard(
+                session,
+                sample_symbol="600519.SH",
+                include_simulation_workspace=True,
+            )
+
+        workspace = operations["simulation_workspace"]
+        self.assertIsNotNone(workspace)
+        assert workspace is not None
+        self.assertEqual(workspace["session"]["status"], "draft")
+        self.assertTrue(workspace["controls"]["can_start"])
+        self.assertGreaterEqual(len(workspace["kline"]["points"]), 24)
+        self.assertEqual(workspace["manual_track"]["portfolio"]["starting_cash"], workspace["session"]["initial_cash"])
+
     def test_operations_dashboard_scopes_simulation_to_active_watchlist(self) -> None:
         with session_scope(self.database_url) as session:
             bootstrap_dashboard_demo(session)

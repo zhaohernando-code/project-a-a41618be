@@ -536,6 +536,7 @@ class OperationsDashboardResponse(BaseModel):
     refresh_policy: RefreshPolicyView
     performance_thresholds: list[PerformanceThresholdView] = Field(default_factory=list)
     launch_gates: list[LaunchGateView] = Field(default_factory=list)
+    simulation_workspace: SimulationWorkspaceResponse | None = None
 
 
 class SimulationConfigRequest(BaseModel):

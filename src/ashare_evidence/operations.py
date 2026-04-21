@@ -691,7 +691,12 @@ def _recommendation_replay_payload(
     return replay_items
 
 
-def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH") -> dict[str, Any]:
+def build_operations_dashboard(
+    session: Session,
+    sample_symbol: str = "600519.SH",
+    *,
+    include_simulation_workspace: bool = False,
+) -> dict[str, Any]:
     started_at = perf_counter()
     active_symbols = set(active_watchlist_symbols(session))
     price_history, _stock_names, trade_days = _market_history(session, active_symbols)
@@ -711,6 +716,7 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
             "refresh_policy": {"schedules": []},
             "performance_thresholds": [],
             "launch_gates": [],
+            "simulation_workspace": None,
         }
 
     benchmark_close_map = _benchmark_close_map(trade_days)
@@ -782,6 +788,12 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
         "schedules": REFRESH_SCHEDULE,
     }
 
+    simulation_workspace: dict[str, Any] | None = None
+    if include_simulation_workspace:
+        from ashare_evidence.simulation import get_simulation_workspace
+
+        simulation_workspace = get_simulation_workspace(session)
+
     from ashare_evidence.dashboard import get_stock_dashboard, list_candidate_recommendations
 
     _, candidate_ms, candidate_kb = _measure_payload(lambda: list_candidate_recommendations(session, limit=8))
@@ -812,6 +824,7 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
         "recommendation_replay": replay_items,
         "access_control": access_control,
         "refresh_policy": refresh_policy,
+        "simulation_workspace": simulation_workspace,
     }
     operations_ms = round((perf_counter() - started_at) * 1000, 1)
     operations_kb = round(len(json.dumps(partial_payload, ensure_ascii=False, default=str).encode("utf-8")) / 1024, 1)
@@ -947,4 +960,5 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
         "refresh_policy": refresh_policy,
         "performance_thresholds": performance_thresholds,
         "launch_gates": launch_gates,
+        "simulation_workspace": simulation_workspace,
     }

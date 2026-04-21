@@ -350,7 +350,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         sample_symbol: str = Query(default="600519.SH"),
         session: Session = Depends(get_session),
     ) -> dict[str, object]:
-        return build_operations_dashboard(session, sample_symbol)
+        return build_operations_dashboard(session, sample_symbol, include_simulation_workspace=True)
 
     @app.get("/simulation/workspace", response_model=SimulationWorkspaceResponse)
     def simulation_workspace(
