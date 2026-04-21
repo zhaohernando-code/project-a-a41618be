@@ -183,3 +183,10 @@
 - Resolution: 恢复前端 `API Base` 的路径回退策略：对每个候选基址先尝试 `base/api/{path}` 再尝试 `base/{path}`，并在无显式基址时保留当前的 `/api` 回退，以减少“静态路由误伤”导致的线上红屏。
 - Prevention: 任何服务端模式前端在无显式基址时，都应保留 `/<api-prefix>` 与 `/<raw>` 的双探测路径；仅在基址明确且稳定后才允许缩减探测。
 - Commit ID: pending
+
+## 2026-04-21
+
+- Problem: `404 JSON` 响应（含 `Not Found` / `tool not found`）在仍有备选 API 地址时会被直接抛错，导致基址前缀猜测失败后没有继续尝试下一条请求。
+- Resolution: 前端 `request` 改为对 `404` 与可疑“未找到”响应统一走探测回退，并放宽 `HTML` 回退条件，不再仅依赖未显式基址。
+- Prevention: API 层只要存在多个候选地址，路由级 404 应按“继续探测”处理；`/api` 与非 `/api` 前缀应同时保留，直到确认后端稳定。
+- Commit ID: pending

@@ -118,10 +118,18 @@ function buildRequestUrls(path: string): string[] {
 
   for (const base of basesToUse) {
     if (base) {
-      if (!base.endsWith("/api")) {
+      if (base.endsWith("/api")) {
+        const baseWithoutApi = base.slice(0, -4);
+        urls.push(`${base}${normalizedPath}`);
+        if (!baseWithoutApi) {
+          urls.push(normalizedPath);
+        } else {
+          urls.push(`${baseWithoutApi}${normalizedPath}`);
+        }
+      } else {
         urls.push(`${base}/api${normalizedPath}`);
+        urls.push(`${base}${normalizedPath}`);
       }
-      urls.push(`${base}${normalizedPath}`);
       continue;
     }
 
@@ -262,7 +270,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const timer = window.setTimeout(() => controller.abort(), requestTimeoutMs);
   const betaAccessKey = getBetaAccessKey();
   const requestUrls = buildRequestUrls(path);
-  const hasExplicitBase = hasExplicitApiBase();
 
   try {
     for (let index = 0; index < requestUrls.length; index += 1) {
@@ -280,6 +287,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
         if (!response.ok) {
           let detail = `${response.status} ${response.statusText}`;
+          const canTryNext = index < requestUrls.length - 1;
           try {
             const contentType = response.headers.get("content-type");
             if (isJsonContent(contentType)) {
@@ -287,16 +295,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
               if (payload.detail) {
                 detail = payload.detail;
               }
-            } else {
-              const preview = await readTextPreview(response);
-              if (isLikelyServiceNotFoundText(preview) && !hasExplicitBase && index < requestUrls.length - 1) {
+              if (response.status === 404 && canTryNext) {
                 continue;
               }
+            } else {
+              const preview = await readTextPreview(response);
               if (
-                preview
-                && !hasExplicitBase
-                && index < requestUrls.length - 1
-                && isLikelyHtmlText(preview)
+                (response.status === 404 || isLikelyServiceNotFoundText(preview) || isLikelyHtmlText(preview))
+                && canTryNext
               ) {
                 continue;
               }
@@ -305,7 +311,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
               }
             }
           } catch (error) {
-            if (isHtmlResponseError(error) && !hasExplicitBase && index < requestUrls.length - 1) {
+            if (isHtmlResponseError(error) && index < requestUrls.length - 1) {
               continue;
             }
             throw error;
@@ -317,13 +323,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         try {
           return await parseJsonResponse<T>(response, path);
         } catch (error) {
-          if (isHtmlResponseError(error) && !hasExplicitBase && index < requestUrls.length - 1) {
+          if (isHtmlResponseError(error) && index < requestUrls.length - 1) {
             continue;
           }
           throw error;
         }
       } catch (error) {
-        if (isHtmlResponseError(error) && !hasExplicitBase && index < requestUrls.length - 1) {
+        if (isHtmlResponseError(error) && index < requestUrls.length - 1) {
           continue;
         }
         throw error;
