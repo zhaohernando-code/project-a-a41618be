@@ -493,15 +493,23 @@ function App() {
     setLoadingDetail(true);
     setError(null);
     try {
-      const [stockResult, operationsResult] = await Promise.all([
-        api.getStockDashboard(symbol),
-        api.getOperationsDashboard(symbol),
-      ]);
+      const stockResult = await api.getStockDashboard(symbol);
+      let operationsPayload: OperationsDashboardResponse | null = null;
+      let operationsSource: DataSourceInfo = stockResult.source;
+
+      try {
+        const operationsResult = await api.getOperationsDashboard(symbol);
+        operationsPayload = operationsResult.data;
+        operationsSource = mergeSourceInfo(stockResult.source, operationsResult.source);
+      } catch (operationsError) {
+        // eslint-disable-next-line no-console
+        console.warn("运营面板加载失败（已降级）：", operationsError);
+      }
       setDashboard(stockResult.data);
-      setOperations(operationsResult.data);
+      setOperations(operationsPayload);
       setQuestionDraft(stockResult.data.follow_up.suggested_questions[0] ?? "");
       setAnalysisAnswer(null);
-      setSourceInfo(mergeSourceInfo(stockResult.source, operationsResult.source));
+      setSourceInfo(operationsPayload ? operationsSource : stockResult.source);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "加载单票与运营面板失败。");
     } finally {

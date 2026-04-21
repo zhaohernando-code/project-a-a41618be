@@ -25,6 +25,7 @@ const requestTimeoutMs = 10000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
 const notFoundSignatures = ["tool not found", "tool_not_found", "404 not found"];
 const localApiBaseStorageKey = "ashare-api-base-url";
+const queryApiBaseParam = "apiBase";
 
 type ApiResult<T> = {
   data: T;
@@ -66,6 +67,27 @@ function inferLocationBasedBase(): string {
   return normalizeApiBase(`/${segments.slice(0, -1).join("/")}`);
 }
 
+function inferApiBaseFromQuery(): string {
+  const source = window.location.search;
+  if (!source) {
+    return "";
+  }
+  const query = new URLSearchParams(source);
+  return normalizeApiBase(query.get(queryApiBaseParam));
+}
+
+function inferOriginBase(): string {
+  return normalizeApiBase(window.location.origin);
+}
+
+function inferSiblingPortBackendBase(): string {
+  const host = window.location.hostname.toLowerCase();
+  if (!host || host === "localhost" || host === "127.0.0.1" || host === "::1") {
+    return "";
+  }
+  return normalizeApiBase(`${window.location.protocol}//${host}:8000`);
+}
+
 function inferLocalBackendBase(): string {
   const host = window.location.hostname.toLowerCase();
   if (!host) {
@@ -89,16 +111,19 @@ function dedupe(values: string[]): string[] {
 
 function getApiBases(): string[] {
   return dedupe([
+    inferApiBaseFromQuery(),
     envApiBase,
     readApiBaseFromStorage(),
     inferAssetMountedBase(),
     inferLocationBasedBase(),
+    inferOriginBase(),
+    inferSiblingPortBackendBase(),
     inferLocalBackendBase(),
   ]).filter(Boolean);
 }
 
 function hasExplicitApiBase(): boolean {
-  return Boolean(envApiBase || readApiBaseFromStorage());
+  return Boolean(inferApiBaseFromQuery() || envApiBase || readApiBaseFromStorage());
 }
 
 function getApiBase(): string {
