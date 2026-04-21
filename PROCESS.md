@@ -208,6 +208,14 @@
 
 ## 2026-04-21
 
+- Problem: 原来的“运营复盘/手动模拟”只有两个静态组合快照和聚合审计指标，没有真正的模拟会话、共享时间线和控制按钮，用户虽然能看结果，却无法在同一时间节点下把“我怎么做”与“模型怎么做”持续对比，也无法恢复暂停中的进程。
+- Resolution: 新增持久化 `simulation_sessions + simulation_events` 状态机，把双轨模拟收口为单个可恢复会话；前端运营页也改成围绕该会话的启动/暂停/单步推进/重启/结束、手动下单、模型建议、K 线和时点差异工作台。
+- Prevention: 以后凡是“手动 vs 模型”这类长期模拟需求，不能再只用两个 `paper_portfolios` 拼出结果页；必须先定义会话实体、共享时间线、控制动作和统一事件留痕，再让组合汇总挂在会话之下。
+- Validation: `PYTHONPATH=src .venv/bin/python -m unittest tests.test_dashboard_views tests.test_simulation_workspace`; `cd frontend && npm run build`
+- Commit ID: pending
+
+## 2026-04-21
+
 - Problem: 用户新增自选股时，未知代码会落入演示用动态场景生成器的随机行业模板，导致真实股票可能被错误展示为 `医药生物` 等无关板块；而且一旦错误板块已写入库，后续修正后旧 `sector_membership` 仍可能继续参与候选页排序与展示。
 - Resolution: 自选新增链路现在先走主数据解析层，优先读取本地已知映射并支持按已配置 `Tushare` 凭据调用 `stock_basic` 获取真实 `name / industry / list_date`；拿不到真实行业时改用中性“待确认行业”而不是随机板块；重分析前还会把当前股票上不再属于新结果的旧行业归属标记失效。
 - Prevention: 以后任何“用户输入证券代码 -> 自动生成分析”的链路，都不能直接把演示模板当真实主数据；未知标的宁可明确标记“待确认”，也不能随机给出具体行业；同时修正主数据时必须同步处理历史残留归属，避免“新旧行业并存”。

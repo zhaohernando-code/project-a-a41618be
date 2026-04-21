@@ -26,11 +26,23 @@ from ashare_evidence.runtime_config import (
     upsert_provider_credential,
     update_model_api_key,
 )
+from ashare_evidence.simulation import (
+    end_simulation_session,
+    get_simulation_workspace,
+    pause_simulation_session,
+    place_manual_order,
+    restart_simulation_session,
+    resume_simulation_session,
+    start_simulation_session,
+    step_simulation_session,
+    update_simulation_config,
+)
 from ashare_evidence.schemas import (
     FollowUpAnalysisRequest,
     FollowUpAnalysisResponse,
     CandidateListResponse,
     DashboardBootstrapResponse,
+    ManualSimulationOrderRequest,
     LatestRecommendationResponse,
     ModelApiKeyCreateRequest,
     ModelApiKeyDeleteResponse,
@@ -39,6 +51,10 @@ from ashare_evidence.schemas import (
     ProviderCredentialUpsertRequest,
     RecommendationTraceResponse,
     RuntimeSettingsResponse,
+    SimulationConfigRequest,
+    SimulationControlActionResponse,
+    SimulationEndRequest,
+    SimulationWorkspaceResponse,
     StockDashboardResponse,
     WatchlistCreateRequest,
     WatchlistDeleteResponse,
@@ -335,6 +351,135 @@ def create_app(database_url: str | None = None) -> FastAPI:
         session: Session = Depends(get_session),
     ) -> dict[str, object]:
         return build_operations_dashboard(session, sample_symbol)
+
+    @app.get("/simulation/workspace", response_model=SimulationWorkspaceResponse)
+    def simulation_workspace(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        payload = get_simulation_workspace(session)
+        session.commit()
+        return payload
+
+    @app.put("/simulation/config", response_model=SimulationControlActionResponse)
+    def simulation_config(
+        payload: SimulationConfigRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = update_simulation_config(
+                session,
+                initial_cash=payload.initial_cash,
+                watch_symbols=payload.watch_symbols,
+                focus_symbol=payload.focus_symbol,
+                step_interval_seconds=payload.step_interval_seconds,
+                auto_execute_model=payload.auto_execute_model,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "模拟参数已更新。"}
+
+    @app.post("/simulation/start", response_model=SimulationControlActionResponse)
+    def simulation_start(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = start_simulation_session(session)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "双轨模拟已启动。"}
+
+    @app.post("/simulation/pause", response_model=SimulationControlActionResponse)
+    def simulation_pause(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = pause_simulation_session(session)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "双轨模拟已暂停。"}
+
+    @app.post("/simulation/resume", response_model=SimulationControlActionResponse)
+    def simulation_resume(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = resume_simulation_session(session)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "双轨模拟已恢复。"}
+
+    @app.post("/simulation/step", response_model=SimulationControlActionResponse)
+    def simulation_step(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = step_simulation_session(session)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "已推进一个刷新步。"}
+
+    @app.post("/simulation/restart", response_model=SimulationControlActionResponse)
+    def simulation_restart(
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        workspace = restart_simulation_session(session)
+        session.commit()
+        return {"workspace": workspace, "message": "已重启为新的双轨模拟进程。"}
+
+    @app.post("/simulation/end", response_model=SimulationControlActionResponse)
+    def simulation_end(
+        payload: SimulationEndRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = end_simulation_session(session, confirm=payload.confirm)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "双轨模拟已结束。"}
+
+    @app.post("/simulation/manual-order", response_model=SimulationControlActionResponse)
+    def simulation_manual_order(
+        payload: ManualSimulationOrderRequest,
+        _access: BetaAccessContext = Depends(require_beta_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_beta_write_access(_access)
+        try:
+            workspace = place_manual_order(
+                session,
+                symbol=payload.symbol,
+                side=payload.side,
+                quantity=payload.quantity,
+                reason=payload.reason,
+                limit_price=payload.limit_price,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        session.commit()
+        return {"workspace": workspace, "message": "用户轨道模拟单已成交。"}
 
     @app.get("/recommendations/{recommendation_id}/trace", response_model=RecommendationTraceResponse)
     def recommendation_trace(

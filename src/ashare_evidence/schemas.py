@@ -327,6 +327,137 @@ class PortfolioSummaryView(BaseModel):
     recent_orders: list[PortfolioOrderAuditView] = Field(default_factory=list)
 
 
+class SimulationRiskExposureView(BaseModel):
+    invested_ratio: float
+    cash_ratio: float
+    max_position_weight: float
+    drawdown: float
+    active_position_count: int
+
+
+class SimulationTrackStateView(BaseModel):
+    role: str
+    label: str
+    portfolio: PortfolioSummaryView
+    risk_exposure: SimulationRiskExposureView
+    latest_reason: str | None = None
+
+
+class SimulationSessionView(BaseModel):
+    session_key: str
+    name: str
+    status: str
+    status_label: str
+    focus_symbol: str | None = None
+    watch_symbols: list[str] = Field(default_factory=list)
+    benchmark_symbol: str | None = None
+    initial_cash: float
+    current_step: int
+    step_interval_seconds: int
+    step_trigger_label: str
+    fill_rule_label: str
+    auto_execute_model: bool
+    restart_count: int
+    started_at: datetime | None = None
+    last_resumed_at: datetime | None = None
+    paused_at: datetime | None = None
+    ended_at: datetime | None = None
+    last_data_time: datetime | None = None
+    resumable: bool
+
+
+class SimulationControlStateView(BaseModel):
+    can_start: bool
+    can_pause: bool
+    can_resume: bool
+    can_step: bool
+    can_restart: bool
+    can_end: bool
+    end_requires_confirmation: bool
+
+
+class SimulationConfigView(BaseModel):
+    focus_symbol: str | None = None
+    watch_symbols: list[str] = Field(default_factory=list)
+    initial_cash: float
+    benchmark_symbol: str | None = None
+    step_interval_seconds: int
+    auto_execute_model: bool
+    editable_fields: list[str] = Field(default_factory=list)
+
+
+class SimulationTimelineEventView(BaseModel):
+    event_key: str
+    step_index: int
+    track: str
+    track_label: str
+    event_type: str
+    happened_at: datetime
+    symbol: str | None = None
+    title: str
+    detail: str
+    severity: str
+    reason_tags: list[str] = Field(default_factory=list)
+    payload: dict[str, Any] = Field(default_factory=dict)
+    lineage: LineageRecord
+
+
+class SimulationDecisionDiffView(BaseModel):
+    step_index: int
+    happened_at: datetime
+    symbol: str | None = None
+    manual_action: str
+    manual_reason: str
+    model_action: str
+    model_reason: str
+    difference_summary: str
+    risk_focus: list[str] = Field(default_factory=list)
+
+
+class SimulationComparisonMetricView(BaseModel):
+    label: str
+    unit: str
+    manual_value: float
+    model_value: float
+    difference: float
+    leader: str
+
+
+class SimulationModelAdviceView(BaseModel):
+    symbol: str
+    stock_name: str
+    direction: str
+    direction_label: str
+    action: str
+    quantity: int
+    reference_price: float
+    confidence_label: str
+    generated_at: datetime
+    reason: str
+    risk_flags: list[str] = Field(default_factory=list)
+    score: int
+
+
+class SimulationKlineView(BaseModel):
+    symbol: str | None = None
+    stock_name: str | None = None
+    last_updated: datetime | None = None
+    points: list[PricePointView] = Field(default_factory=list)
+
+
+class SimulationWorkspaceResponse(BaseModel):
+    session: SimulationSessionView
+    controls: SimulationControlStateView
+    configuration: SimulationConfigView
+    manual_track: SimulationTrackStateView
+    model_track: SimulationTrackStateView
+    comparison_metrics: list[SimulationComparisonMetricView] = Field(default_factory=list)
+    model_advices: list[SimulationModelAdviceView] = Field(default_factory=list)
+    timeline: list[SimulationTimelineEventView] = Field(default_factory=list)
+    decision_differences: list[SimulationDecisionDiffView] = Field(default_factory=list)
+    kline: SimulationKlineView
+
+
 class RecommendationReplayView(BaseModel):
     recommendation_id: int
     symbol: str
@@ -405,6 +536,31 @@ class OperationsDashboardResponse(BaseModel):
     refresh_policy: RefreshPolicyView
     performance_thresholds: list[PerformanceThresholdView] = Field(default_factory=list)
     launch_gates: list[LaunchGateView] = Field(default_factory=list)
+
+
+class SimulationConfigRequest(BaseModel):
+    initial_cash: float = Field(gt=0)
+    watch_symbols: list[str] = Field(default_factory=list)
+    focus_symbol: str | None = None
+    step_interval_seconds: int = Field(default=300, ge=60, le=86400)
+    auto_execute_model: bool = True
+
+
+class SimulationControlActionResponse(BaseModel):
+    workspace: SimulationWorkspaceResponse
+    message: str
+
+
+class ManualSimulationOrderRequest(BaseModel):
+    symbol: str
+    side: str
+    quantity: int = Field(ge=100)
+    reason: str
+    limit_price: float | None = None
+
+
+class SimulationEndRequest(BaseModel):
+    confirm: bool
 
 
 class RuntimeDataSourceView(BaseModel):

@@ -448,3 +448,50 @@ class ModelApiKey(TimestampedMixin, Base):
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     metadata_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class SimulationSession(TimestampedMixin, LineageMixin, Base):
+    __tablename__ = "simulation_sessions"
+    __table_args__ = (UniqueConstraint("session_key", name="uq_simulation_session_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    session_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    focus_symbol: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    benchmark_symbol: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    initial_cash: Mapped[float] = mapped_column(Float, nullable=False)
+    current_step: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    step_interval_seconds: Mapped[int] = mapped_column(Integer, default=300, nullable=False)
+    auto_execute_model: Mapped[bool] = mapped_column(default=True, nullable=False)
+    restart_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_resumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    paused_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_data_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    manual_portfolio_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    model_portfolio_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    session_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+    events: Mapped[list["SimulationEvent"]] = relationship(back_populates="session")
+
+
+class SimulationEvent(TimestampedMixin, LineageMixin, Base):
+    __tablename__ = "simulation_events"
+    __table_args__ = (UniqueConstraint("event_key", name="uq_simulation_event_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_key: Mapped[str] = mapped_column(String(96), nullable=False, index=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("simulation_sessions.id"), nullable=False, index=True)
+    step_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    track: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
+    event_type: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    happened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    symbol: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    detail: Mapped[str] = mapped_column(Text, nullable=False)
+    severity: Mapped[str] = mapped_column(String(16), default="info", nullable=False)
+    event_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+    session: Mapped[SimulationSession] = relationship(back_populates="events")

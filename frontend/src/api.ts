@@ -10,9 +10,14 @@ import type {
   ModelApiKeyCreateRequest,
   ModelApiKeyDeleteResponse,
   ModelApiKeyUpdateRequest,
+  ManualSimulationOrderRequest,
   OperationsDashboardResponse,
   ProviderCredentialUpsertRequest,
   RuntimeSettingsResponse,
+  SimulationConfigRequest,
+  SimulationControlActionResponse,
+  SimulationEndRequest,
+  SimulationWorkspaceResponse,
   StockDashboardResponse,
   WatchlistDeleteResponse,
   WatchlistMutationResponse,
@@ -464,6 +469,47 @@ export const api = {
     ),
     source: buildSourceInfo(),
   }),
+  getSimulationWorkspace: async (): Promise<ApiResult<SimulationWorkspaceResponse>> => ({
+    data: await request<SimulationWorkspaceResponse>("/simulation/workspace"),
+    source: buildSourceInfo(),
+  }),
+  updateSimulationConfig: async (payload: SimulationConfigRequest): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/config", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  startSimulation: async (): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/start", {
+      method: "POST",
+    }),
+  pauseSimulation: async (): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/pause", {
+      method: "POST",
+    }),
+  resumeSimulation: async (): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/resume", {
+      method: "POST",
+    }),
+  stepSimulation: async (): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/step", {
+      method: "POST",
+    }),
+  restartSimulation: async (): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/restart", {
+      method: "POST",
+    }),
+  endSimulation: async (payload: SimulationEndRequest): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/end", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  submitManualSimulationOrder: async (
+    payload: ManualSimulationOrderRequest,
+  ): Promise<SimulationControlActionResponse> =>
+    request<SimulationControlActionResponse>("/simulation/manual-order", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   getRuntimeSettings: async (): Promise<RuntimeSettingsResponse> =>
     request<RuntimeSettingsResponse>("/settings/runtime"),
   upsertProviderCredential: async (

@@ -22,6 +22,7 @@ import {
   Form,
   Grid,
   Input,
+  InputNumber,
   List,
   Modal,
   Popover,
@@ -49,6 +50,7 @@ import type {
   FollowUpAnalysisResponse,
   GlossaryEntryView,
   ModelApiKeyView,
+  ManualSimulationOrderRequest,
   OperationsDashboardResponse,
   PortfolioNavPointView,
   PortfolioSummaryView,
@@ -56,6 +58,9 @@ import type {
   RecommendationReplayView,
   RuntimeDataSourceView,
   RuntimeSettingsResponse,
+  SimulationConfigRequest,
+  SimulationTrackStateView,
+  SimulationWorkspaceResponse,
   StockDashboardResponse,
   WatchlistItemView,
 } from "./types";
@@ -289,6 +294,46 @@ function PriceSparkline({ points }: { points: PricePointView[] }) {
   );
 }
 
+function KlinePanel({
+  title,
+  points,
+  lastUpdated,
+  stockName,
+}: {
+  title: string;
+  points: PricePointView[];
+  lastUpdated?: string | null;
+  stockName?: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <div className="chart-shell compact-chart">
+        <PriceSparkline points={points} />
+      </div>
+      <div className="chart-meta-row">
+        <span>{stockName ?? "--"}</span>
+        <span>{`K 线刷新 ${formatDate(lastUpdated)}`}</span>
+        <Button type="link" onClick={() => setOpen(true)}>
+          弹窗查看
+        </Button>
+      </div>
+      <Modal
+        open={open}
+        width={960}
+        footer={null}
+        title={title}
+        onCancel={() => setOpen(false)}
+      >
+        <div className="chart-shell">
+          <PriceSparkline points={points} />
+        </div>
+      </Modal>
+    </>
+  );
+}
+
 function NavSparkline({ points }: { points: PortfolioNavPointView[] }) {
   if (points.length === 0) {
     return <Empty description="暂无净值轨迹" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
@@ -313,6 +358,43 @@ function NavSparkline({ points }: { points: PortfolioNavPointView[] }) {
       <path className="nav-benchmark-line" d={benchmarkPath} />
       <path className="nav-line" d={navPath} />
     </svg>
+  );
+}
+
+function SimulationTrackCard({ track }: { track: SimulationTrackStateView }) {
+  return (
+    <Card
+      className="panel-card"
+      title={track.label}
+      extra={
+        <Space wrap className="inline-tags">
+          <Tag color="blue">{track.portfolio.mode_label}</Tag>
+          <Tag color={statusColor(track.portfolio.total_return >= 0 ? "pass" : "warn")}>
+            {`收益 ${formatPercent(track.portfolio.total_return)}`}
+          </Tag>
+          <Tag color={statusColor(track.risk_exposure.max_position_weight <= 0.35 ? "pass" : "warn")}>
+            {`单票 ${formatPercent(track.risk_exposure.max_position_weight)}`}
+          </Tag>
+        </Space>
+      }
+    >
+      {track.latest_reason ? (
+        <Alert
+          className="sub-alert"
+          type={track.role === "model" ? "info" : "success"}
+          showIcon
+          message="最近动作理由"
+          description={track.latest_reason}
+        />
+      ) : null}
+      <Descriptions size="small" column={{ xs: 1, md: 2 }} className="info-grid">
+        <Descriptions.Item label="当前净值">{formatNumber(track.portfolio.net_asset_value)}</Descriptions.Item>
+        <Descriptions.Item label="可用现金">{formatNumber(track.portfolio.available_cash)}</Descriptions.Item>
+        <Descriptions.Item label="仓位">{formatPercent(track.risk_exposure.invested_ratio)}</Descriptions.Item>
+        <Descriptions.Item label="回撤">{formatPercent(track.risk_exposure.drawdown)}</Descriptions.Item>
+      </Descriptions>
+      <PortfolioWorkspace portfolio={track.portfolio} />
+    </Card>
   );
 }
 
@@ -487,6 +569,17 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<StockDashboardResponse | null>(null);
   const [operations, setOperations] = useState<OperationsDashboardResponse | null>(null);
+  const [simulation, setSimulation] = useState<SimulationWorkspaceResponse | null>(null);
+  const [simulationConfigDraft, setSimulationConfigDraft] = useState<SimulationConfigRequest | null>(null);
+  const [manualOrderDraft, setManualOrderDraft] = useState<ManualSimulationOrderRequest>({
+    symbol: "",
+    side: "buy",
+    quantity: 100,
+    reason: "",
+    limit_price: null,
+  });
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationAction, setSimulationAction] = useState<string | null>(null);
   const [questionDraft, setQuestionDraft] = useState("");
   const [analysisAnswer, setAnalysisAnswer] = useState<FollowUpAnalysisResponse | null>(null);
   const [analysisKeyId, setAnalysisKeyId] = useState<number | undefined>(undefined);
@@ -592,6 +685,22 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     });
   }
 
+  function applySimulationWorkspace(workspace: SimulationWorkspaceResponse): void {
+    setSimulation(workspace);
+    setSimulationConfigDraft({
+      initial_cash: workspace.configuration.initial_cash,
+      watch_symbols: workspace.configuration.watch_symbols,
+      focus_symbol: workspace.configuration.focus_symbol ?? null,
+      step_interval_seconds: workspace.configuration.step_interval_seconds,
+      auto_execute_model: workspace.configuration.auto_execute_model,
+    });
+    setManualOrderDraft((current) => ({
+      ...current,
+      symbol: current.symbol || workspace.configuration.focus_symbol || workspace.configuration.watch_symbols[0] || "",
+      reason: current.reason,
+    }));
+  }
+
   async function loadShellData(preferredSymbol?: string | null): Promise<string | null> {
     setLoadingShell(true);
     setError(null);
@@ -622,29 +731,35 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
 
   async function loadDetailData(symbol: string): Promise<void> {
     setLoadingDetail(true);
+    setSimulationLoading(true);
     setError(null);
     try {
       const stockResult = await api.getStockDashboard(symbol);
-      let operationsPayload: OperationsDashboardResponse | null = null;
+      let simulationPayload: SimulationWorkspaceResponse | null = null;
       let operationsSource: DataSourceInfo = stockResult.source;
 
       try {
-        const operationsResult = await api.getOperationsDashboard(symbol);
-        operationsPayload = operationsResult.data;
-        operationsSource = mergeSourceInfo(stockResult.source, operationsResult.source);
-      } catch (operationsError) {
+        const simulationResult = await api.getSimulationWorkspace();
+        simulationPayload = simulationResult.data;
+        operationsSource = mergeSourceInfo(stockResult.source, simulationResult.source);
+      } catch (simulationError) {
         // eslint-disable-next-line no-console
-        console.warn("运营面板加载失败（已降级）：", operationsError);
+        console.warn("双轨模拟台加载失败（已降级）：", simulationError);
       }
       setDashboard(stockResult.data);
-      setOperations(operationsPayload);
+      setOperations(null);
+      setSimulation(simulationPayload);
+      if (simulationPayload) {
+        applySimulationWorkspace(simulationPayload);
+      }
       setQuestionDraft(stockResult.data.follow_up.suggested_questions[0] ?? "");
       setAnalysisAnswer(null);
-      setSourceInfo(operationsPayload ? operationsSource : stockResult.source);
+      setSourceInfo(simulationPayload ? operationsSource : stockResult.source);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "加载单票与运营面板失败。");
+      setError(loadError instanceof Error ? loadError.message : "加载单票与双轨模拟台失败。");
     } finally {
       setLoadingDetail(false);
+      setSimulationLoading(false);
     }
   }
 
@@ -663,6 +778,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     if (!selectedSymbol) {
       setDashboard(null);
       setOperations(null);
+      setSimulation(null);
       return;
     }
     let cancelled = false;
@@ -676,6 +792,16 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
       cancelled = true;
     };
   }, [selectedSymbol]);
+
+  useEffect(() => {
+    if (!simulation) return;
+    const fallbackSymbol = selectedSymbol ?? simulation.configuration.focus_symbol ?? simulation.configuration.watch_symbols[0];
+    if (!fallbackSymbol) return;
+    setManualOrderDraft((current) => ({
+      ...current,
+      symbol: current.symbol || fallbackSymbol,
+    }));
+  }, [selectedSymbol, simulation]);
 
   async function reloadEverything(preferredSymbol?: string | null): Promise<void> {
     await loadRuntimeSettings();
@@ -696,6 +822,60 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
 
   async function handleRefresh() {
     await reloadEverything();
+  }
+
+  async function runSimulationAction(
+    actionKey: string,
+    runner: () => Promise<{ workspace: SimulationWorkspaceResponse; message: string }>,
+  ) {
+    setSimulationAction(actionKey);
+    setError(null);
+    try {
+      const response = await runner();
+      applySimulationWorkspace(response.workspace);
+      messageApi.success(response.message);
+    } catch (actionError) {
+      const messageText = actionError instanceof Error ? actionError.message : "双轨模拟操作失败。";
+      setError(messageText);
+      messageApi.error(messageText);
+    } finally {
+      setSimulationAction(null);
+    }
+  }
+
+  async function handleSaveSimulationConfig() {
+    if (!simulationConfigDraft) return;
+    await runSimulationAction("config", () => api.updateSimulationConfig(simulationConfigDraft));
+  }
+
+  async function handleSubmitManualOrder() {
+    if (!manualOrderDraft.symbol || !manualOrderDraft.reason.trim()) {
+      messageApi.warning("请先补齐下单标的和交易理由。");
+      return;
+    }
+    await runSimulationAction("manual-order", () => api.submitManualSimulationOrder({
+      ...manualOrderDraft,
+      reason: manualOrderDraft.reason.trim(),
+      limit_price: manualOrderDraft.limit_price ?? null,
+    }));
+    setManualOrderDraft((current) => ({
+      ...current,
+      reason: "",
+      limit_price: null,
+    }));
+  }
+
+  function handleEndSimulation() {
+    Modal.confirm({
+      title: "结束当前双轨模拟？",
+      content: "结束后时间线会停止推进，但当前留痕会保留用于复盘。",
+      okText: "确认结束",
+      cancelText: "取消",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await runSimulationAction("end", () => api.endSimulation({ confirm: true }));
+      },
+    });
   }
 
   async function handleAddWatchlist() {
@@ -1940,9 +2120,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                       }
                     >
                       <Paragraph className="panel-description">{dashboard.recommendation.summary}</Paragraph>
-                      <div className="chart-shell">
-                        <PriceSparkline points={dashboard.price_chart} />
-                      </div>
+                      <KlinePanel
+                        title={`${dashboard.stock.name} · ${dashboard.stock.symbol} K 线`}
+                        points={dashboard.price_chart}
+                        lastUpdated={dashboard.hero.last_updated}
+                        stockName={dashboard.stock.name}
+                      />
                       <div className="chart-meta-row">
                         <span>{`区间高点 ${formatNumber(dashboard.hero.high_price)}`}</span>
                         <span>{`区间低点 ${formatNumber(dashboard.hero.low_price)}`}</span>
@@ -1993,7 +2176,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
           ) : null}
 
           {!loadingShell && view === "operations" ? (
-            loadingDetail || !operations ? (
+            loadingDetail || simulationLoading || !simulation ? (
               <Card className="panel-card loading-card">
                 <Skeleton active paragraph={{ rows: 10 }} />
               </Card>
@@ -2002,22 +2185,22 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} xl={6}>
                     <Card className="panel-card metric-card">
-                      <Statistic title="手动模拟仓" value={operations.overview.manual_portfolio_count} />
+                      <Statistic title="当前状态" value={simulation.session.status_label} />
                     </Card>
                   </Col>
                   <Col xs={24} md={12} xl={6}>
                     <Card className="panel-card metric-card">
-                      <Statistic title="自动持仓仓" value={operations.overview.auto_portfolio_count} />
+                      <Statistic title="当前步数" value={simulation.session.current_step} />
                     </Card>
                   </Col>
                   <Col xs={24} md={12} xl={6}>
                     <Card className="panel-card metric-card">
-                      <Statistic title="建议命中率" value={formatPercent(operations.overview.recommendation_replay_hit_rate)} />
+                      <Statistic title="最近数据时间" value={formatDate(simulation.session.last_data_time)} />
                     </Card>
                   </Col>
                   <Col xs={24} md={12} xl={6}>
                     <Card className="panel-card metric-card">
-                      <Statistic title="规则通过率" value={formatPercent(operations.overview.rule_pass_rate)} />
+                      <Statistic title="模型自动执行" value={simulation.session.auto_execute_model ? "开启" : "关闭"} />
                     </Card>
                   </Col>
                 </Row>
@@ -2026,76 +2209,271 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                   <Col xs={24} xl={16}>
                     <Card
                       className="panel-card"
-                      title="分离式模拟交易运营台"
-                      extra={<Tag color={statusColor(operations.overview.beta_readiness)}>{operations.overview.beta_readiness}</Tag>}
+                      title="双轨同步模拟台"
+                      extra={<Tag color={statusColor(simulation.session.status)}>{simulation.session.status_label}</Tag>}
                     >
                       <Paragraph className="panel-description">
-                        手动模拟与模型自动持仓已分账运行，收益归因、回撤监控、规则审计与建议命中复盘在同一运营面板查看。
+                        从同一时间点、同一初始资金和同一股票池开始，用户轨道与模型轨道共享时间线推进。用户保留人工下单主导权，模型轨道按刷新步给出建议并可直接执行模拟单。
                       </Paragraph>
-                      <Tabs items={portfolioTabs} />
+                      <Space wrap className="deck-actions">
+                        <Button
+                          type="primary"
+                          icon={<ThunderboltOutlined />}
+                          disabled={!simulation.controls.can_start}
+                          loading={simulationAction === "start"}
+                          onClick={() => void runSimulationAction("start", () => api.startSimulation())}
+                        >
+                          启动
+                        </Button>
+                        <Button
+                          icon={<SyncOutlined />}
+                          disabled={!simulation.controls.can_pause}
+                          loading={simulationAction === "pause"}
+                          onClick={() => void runSimulationAction("pause", () => api.pauseSimulation())}
+                        >
+                          暂停
+                        </Button>
+                        <Button
+                          icon={<ReloadOutlined />}
+                          disabled={!simulation.controls.can_resume}
+                          loading={simulationAction === "resume"}
+                          onClick={() => void runSimulationAction("resume", () => api.resumeSimulation())}
+                        >
+                          恢复
+                        </Button>
+                        <Button
+                          type="default"
+                          disabled={!simulation.controls.can_step}
+                          loading={simulationAction === "step"}
+                          onClick={() => void runSimulationAction("step", () => api.stepSimulation())}
+                        >
+                          单步推进
+                        </Button>
+                        <Button
+                          disabled={!simulation.controls.can_restart}
+                          loading={simulationAction === "restart"}
+                          onClick={() => void runSimulationAction("restart", () => api.restartSimulation())}
+                        >
+                          重启
+                        </Button>
+                        <Button
+                          danger
+                          disabled={!simulation.controls.can_end}
+                          loading={simulationAction === "end"}
+                          onClick={handleEndSimulation}
+                        >
+                          结束
+                        </Button>
+                      </Space>
+                      <Descriptions size="small" column={{ xs: 1, md: 2, xl: 3 }} className="info-grid">
+                        <Descriptions.Item label="初始资金">{formatNumber(simulation.session.initial_cash)}</Descriptions.Item>
+                        <Descriptions.Item label="股票池">{`${simulation.session.watch_symbols.length} 只`}</Descriptions.Item>
+                        <Descriptions.Item label="焦点标的">{simulation.session.focus_symbol ?? "--"}</Descriptions.Item>
+                        <Descriptions.Item label="推进规则">{simulation.session.step_trigger_label}</Descriptions.Item>
+                        <Descriptions.Item label="成交口径">{simulation.session.fill_rule_label}</Descriptions.Item>
+                        <Descriptions.Item label="重启次数">{simulation.session.restart_count}</Descriptions.Item>
+                      </Descriptions>
                     </Card>
                   </Col>
                   <Col xs={24} xl={8}>
-                    <Card className="panel-card" title="访问控制与刷新">
-                      <Descriptions size="small" column={1}>
-                        <Descriptions.Item label="内测阶段">{operations.access_control.beta_phase}</Descriptions.Item>
-                        <Descriptions.Item label="鉴权模式">{operations.access_control.auth_mode}</Descriptions.Item>
-                        <Descriptions.Item label="Header">{operations.access_control.required_header}</Descriptions.Item>
-                        <Descriptions.Item label="活跃用户">{operations.access_control.active_users}</Descriptions.Item>
-                      </Descriptions>
-                      <Card size="small" className="sub-panel-card">
-                        <Title level={5}>刷新策略</Title>
-                        <List
-                          size="small"
-                          dataSource={operations.refresh_policy.schedules}
-                          renderItem={(item) => (
-                            <List.Item>
-                              <div>
-                                <div className="list-item-row">
-                                  <strong>{item.scope}</strong>
-                                  <Tag>{`${item.cadence_minutes} 分钟`}</Tag>
-                                </div>
-                                <div className="muted-line">{item.trigger}</div>
-                              </div>
-                            </List.Item>
-                          )}
-                        />
-                      </Card>
-                      <Card size="small" className="sub-panel-card">
-                        <Title level={5}>上线门槛</Title>
-                        <List
-                          size="small"
-                          dataSource={operations.launch_gates}
-                          renderItem={(item) => (
-                            <List.Item>
-                              <div className="list-item-row">
-                                <div>
-                                  <strong>{item.gate}</strong>
-                                  <div className="muted-line">{`${item.current_value} / ${item.threshold}`}</div>
-                                </div>
-                                <Tag color={statusColor(item.status)}>{item.status}</Tag>
-                              </div>
-                            </List.Item>
-                          )}
-                        />
-                      </Card>
+                    <Card className="panel-card" title="通用 K 线组件">
+                      <KlinePanel
+                        title={`${simulation.kline.stock_name ?? simulation.kline.symbol ?? "焦点标的"} K 线`}
+                        points={simulation.kline.points}
+                        lastUpdated={simulation.kline.last_updated}
+                        stockName={simulation.kline.stock_name ?? simulation.kline.symbol}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={12}>
+                    <Card className="panel-card" title="模拟参数">
+                      <Form layout="vertical">
+                        <Form.Item label="初始资金">
+                          <InputNumber
+                            className="full-width"
+                            min={1000}
+                            step={10000}
+                            value={simulationConfigDraft?.initial_cash}
+                            onChange={(value) =>
+                              setSimulationConfigDraft((current) => (
+                                current
+                                  ? { ...current, initial_cash: Number(value ?? current.initial_cash) }
+                                  : current
+                              ))
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="关注股票池">
+                          <Select
+                            mode="multiple"
+                            value={simulationConfigDraft?.watch_symbols ?? []}
+                            options={candidateRows.map((item) => ({
+                              value: item.symbol,
+                              label: `${item.name} · ${item.symbol}`,
+                            }))}
+                            onChange={(value) =>
+                              setSimulationConfigDraft((current) => (
+                                current
+                                  ? { ...current, watch_symbols: value }
+                                  : current
+                              ))
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="焦点标的">
+                          <Select
+                            value={simulationConfigDraft?.focus_symbol ?? undefined}
+                            options={(simulationConfigDraft?.watch_symbols ?? simulation.session.watch_symbols).map((symbol) => ({
+                              value: symbol,
+                              label: candidateRows.find((item) => item.symbol === symbol)
+                                ? `${candidateRows.find((item) => item.symbol === symbol)?.name} · ${symbol}`
+                                : symbol,
+                            }))}
+                            onChange={(value) =>
+                              setSimulationConfigDraft((current) => (
+                                current
+                                  ? { ...current, focus_symbol: value }
+                                  : current
+                              ))
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="刷新步长（秒）">
+                          <InputNumber
+                            className="full-width"
+                            min={60}
+                            max={86400}
+                            step={60}
+                            value={simulationConfigDraft?.step_interval_seconds}
+                            onChange={(value) =>
+                              setSimulationConfigDraft((current) => (
+                                current
+                                  ? { ...current, step_interval_seconds: Number(value ?? current.step_interval_seconds) }
+                                  : current
+                              ))
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="模型轨道自动执行">
+                          <Switch
+                            checked={simulationConfigDraft?.auto_execute_model ?? false}
+                            onChange={(checked) =>
+                              setSimulationConfigDraft((current) => (
+                                current
+                                  ? { ...current, auto_execute_model: checked }
+                                  : current
+                              ))
+                            }
+                          />
+                        </Form.Item>
+                      </Form>
+                      <div className="deck-actions">
+                        <Button
+                          type="primary"
+                          loading={simulationAction === "config"}
+                          onClick={() => void handleSaveSimulationConfig()}
+                        >
+                          保存参数
+                        </Button>
+                      </div>
+                    </Card>
+                  </Col>
+                  <Col xs={24} xl={12}>
+                    <Card className="panel-card" title="用户轨道手动下单">
+                      <Form layout="vertical">
+                        <Form.Item label="标的">
+                          <Select
+                            value={manualOrderDraft.symbol || undefined}
+                            options={simulation.session.watch_symbols.map((symbol) => ({
+                              value: symbol,
+                              label: candidateRows.find((item) => item.symbol === symbol)
+                                ? `${candidateRows.find((item) => item.symbol === symbol)?.name} · ${symbol}`
+                                : symbol,
+                            }))}
+                            onChange={(value) => setManualOrderDraft((current) => ({ ...current, symbol: value }))}
+                          />
+                        </Form.Item>
+                        <Form.Item label="方向">
+                          <Select
+                            value={manualOrderDraft.side}
+                            options={[
+                              { value: "buy", label: "买入" },
+                              { value: "sell", label: "卖出" },
+                            ]}
+                            onChange={(value) => setManualOrderDraft((current) => ({ ...current, side: value }))}
+                          />
+                        </Form.Item>
+                        <Form.Item label="数量">
+                          <InputNumber
+                            className="full-width"
+                            min={100}
+                            step={100}
+                            value={manualOrderDraft.quantity}
+                            onChange={(value) =>
+                              setManualOrderDraft((current) => ({ ...current, quantity: Number(value ?? current.quantity) }))
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="交易理由">
+                          <TextArea
+                            rows={4}
+                            value={manualOrderDraft.reason}
+                            onChange={(event) => setManualOrderDraft((current) => ({ ...current, reason: event.target.value }))}
+                            placeholder="记录你基于右侧建议、K 线和证据做出该笔交易的理由"
+                          />
+                        </Form.Item>
+                      </Form>
+                      <Alert
+                        className="sub-alert"
+                        type="info"
+                        showIcon
+                        message="一期成交规则"
+                        description="当前按最新价即时成交，用于快速对比用户和模型在同一步上的决策差异。"
+                      />
+                      <div className="deck-actions">
+                        <Button
+                          type="primary"
+                          loading={simulationAction === "manual-order"}
+                          onClick={() => void handleSubmitManualOrder()}
+                        >
+                          提交模拟单
+                        </Button>
+                      </div>
                     </Card>
                   </Col>
                 </Row>
 
                 <Row gutter={[16, 16]}>
                   <Col xs={24} xl={10}>
-                    <Card className="panel-card" title="性能阈值">
+                    <Card className="panel-card" title="模型轨道建议">
                       <List
-                        dataSource={operations.performance_thresholds}
+                        dataSource={simulation.model_advices}
+                        locale={{ emptyText: "当前没有新的模型动作建议" }}
                         renderItem={(item) => (
                           <List.Item>
-                            <div className="list-item-row">
-                              <div>
-                                <strong>{item.metric}</strong>
-                                <div className="muted-line">{item.note}</div>
+                            <div className="watchlist-entry">
+                              <div className="list-item-row">
+                                <div>
+                                  <strong>{item.stock_name}</strong>
+                                  <div className="muted-line">{`${item.symbol} · ${formatDate(item.generated_at)}`}</div>
+                                </div>
+                                <Space wrap>
+                                  <Tag color={directionColor(item.direction)}>{item.direction_label}</Tag>
+                                  <Tag>{item.confidence_label}</Tag>
+                                </Space>
                               </div>
-                              <Tag color={statusColor(item.status)}>{`${item.observed}${item.unit}`}</Tag>
+                              <Paragraph className="panel-description">{item.reason}</Paragraph>
+                              <div className="watchlist-meta">
+                                <Text type="secondary">{`建议动作 ${item.action} · ${item.quantity} 股 · 参考价 ${formatNumber(item.reference_price)}`}</Text>
+                              </div>
+                              <Space wrap className="inline-tags">
+                                {item.risk_flags.map((risk) => (
+                                  <Tag key={`${item.symbol}-${risk}`}>{risk}</Tag>
+                                ))}
+                              </Space>
                             </div>
                           </List.Item>
                         )}
@@ -2103,14 +2481,113 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                     </Card>
                   </Col>
                   <Col xs={24} xl={14}>
-                    <Card className="panel-card" title="建议命中复盘">
+                    <Card className="panel-card" title="双轨核心差异">
                       <Table
-                        rowKey="recommendation_id"
+                        rowKey="label"
                         size="small"
                         pagination={false}
-                        dataSource={operations.recommendation_replay}
-                        columns={replayColumns}
-                        locale={{ emptyText: "暂无复盘数据" }}
+                        dataSource={simulation.comparison_metrics}
+                        columns={[
+                          { title: "指标", dataIndex: "label" },
+                          {
+                            title: "用户轨道",
+                            dataIndex: "manual_value",
+                            render: (value: number, record) => (record.unit === "pct" ? formatPercent(value) : formatNumber(value)),
+                          },
+                          {
+                            title: "模型轨道",
+                            dataIndex: "model_value",
+                            render: (value: number, record) => (record.unit === "pct" ? formatPercent(value) : formatNumber(value)),
+                          },
+                          {
+                            title: "差值",
+                            dataIndex: "difference",
+                            render: (value: number, record) => (record.unit === "pct" ? formatPercent(value) : formatNumber(value)),
+                          },
+                          {
+                            title: "领先方",
+                            dataIndex: "leader",
+                            render: (value: string) => (
+                              <Tag color={value === "manual" ? "green" : value === "model" ? "blue" : "default"}>
+                                {value === "manual" ? "用户" : value === "model" ? "模型" : "持平"}
+                              </Tag>
+                            ),
+                          },
+                        ]}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={12}>
+                    <SimulationTrackCard track={simulation.manual_track} />
+                  </Col>
+                  <Col xs={24} xl={12}>
+                    <SimulationTrackCard track={simulation.model_track} />
+                  </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} xl={10}>
+                    <Card className="panel-card" title="时点决策差异">
+                      <List
+                        dataSource={simulation.decision_differences}
+                        locale={{ emptyText: "还没有产生足够的双轨差异记录" }}
+                        renderItem={(item) => (
+                          <List.Item>
+                            <div className="watchlist-entry">
+                              <div className="list-item-row">
+                                <div>
+                                  <strong>{`第 ${item.step_index} 步 · ${item.symbol ?? "未指定标的"}`}</strong>
+                                  <div className="muted-line">{formatDate(item.happened_at)}</div>
+                                </div>
+                              </div>
+                              <Descriptions size="small" column={1}>
+                                <Descriptions.Item label="用户动作">{`${item.manual_action} · ${item.manual_reason}`}</Descriptions.Item>
+                                <Descriptions.Item label="模型动作">{`${item.model_action} · ${item.model_reason}`}</Descriptions.Item>
+                              </Descriptions>
+                              <Paragraph className="panel-description">{item.difference_summary}</Paragraph>
+                              <Space wrap className="inline-tags">
+                                {item.risk_focus.map((risk) => (
+                                  <Tag key={`${item.step_index}-${risk}`}>{risk}</Tag>
+                                ))}
+                              </Space>
+                            </div>
+                          </List.Item>
+                        )}
+                      />
+                    </Card>
+                  </Col>
+                  <Col xs={24} xl={14}>
+                    <Card className="panel-card" title="共享时间线留痕">
+                      <Descriptions size="small" column={1}>
+                        <Descriptions.Item label="启动时间">{formatDate(simulation.session.started_at)}</Descriptions.Item>
+                        <Descriptions.Item label="最近恢复">{formatDate(simulation.session.last_resumed_at)}</Descriptions.Item>
+                        <Descriptions.Item label="最近暂停">{formatDate(simulation.session.paused_at)}</Descriptions.Item>
+                        <Descriptions.Item label="结束时间">{formatDate(simulation.session.ended_at)}</Descriptions.Item>
+                      </Descriptions>
+                      <Timeline
+                        items={simulation.timeline.map((item) => ({
+                          color: statusColor(item.severity),
+                          children: (
+                            <div className="watchlist-entry">
+                              <div className="list-item-row">
+                                <div>
+                                  <strong>{item.title}</strong>
+                                  <div className="muted-line">{`第 ${item.step_index} 步 · ${item.track_label} · ${formatDate(item.happened_at)}`}</div>
+                                </div>
+                                {item.symbol ? <Tag>{item.symbol}</Tag> : null}
+                              </div>
+                              <Paragraph className="panel-description">{item.detail}</Paragraph>
+                              <Space wrap className="inline-tags">
+                                {item.reason_tags.map((tag) => (
+                                  <Tag key={`${item.event_key}-${tag}`}>{tag}</Tag>
+                                ))}
+                              </Space>
+                            </div>
+                          ),
+                        }))}
                       />
                     </Card>
                   </Col>
