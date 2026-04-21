@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from ashare_evidence.access import load_beta_access_config
 from ashare_evidence.models import MarketBar, ModelVersion, PaperOrder, PaperPortfolio, Recommendation, Stock
+from ashare_evidence.watchlist import active_watchlist_symbols
 
 MODE_LABELS = {
     "manual": "手动模拟",
@@ -313,6 +314,7 @@ def _measure_payload(builder: Any) -> tuple[dict[str, Any], float, float]:
 def _portfolio_payload(
     portfolio: PaperPortfolio,
     *,
+    active_symbols: set[str],
     price_history: dict[str, list[tuple[date, float]]],
     trade_days: list[date],
     benchmark_close_map: dict[date, float],
@@ -330,7 +332,11 @@ def _portfolio_payload(
     pass_count = 0
     total_checks = 0
 
-    orders = sorted(portfolio.orders, key=lambda item: item.requested_at)
+    orders = [
+        order
+        for order in sorted(portfolio.orders, key=lambda item: item.requested_at)
+        if order.stock.symbol in active_symbols
+    ]
     for order in orders:
         checks = _order_checks(
             order,
@@ -580,6 +586,7 @@ def _portfolio_payload(
 def _recommendation_replay_payload(
     session: Session,
     *,
+    active_symbols: set[str],
     price_history: dict[str, list[tuple[date, float]]],
     benchmark_close_map: dict[date, float],
 ) -> list[dict[str, Any]]:
@@ -587,6 +594,8 @@ def _recommendation_replay_payload(
     histories = _recommendation_histories(session)
     benchmark_days = sorted(benchmark_close_map)
     for symbol, records in histories.items():
+        if symbol not in active_symbols:
+            continue
         if len(records) < 2:
             continue
         reviewed = records[1]
@@ -647,6 +656,7 @@ def _recommendation_replay_payload(
 
 def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH") -> dict[str, Any]:
     started_at = perf_counter()
+    active_symbols = set(active_watchlist_symbols(session))
     price_history, _stock_names, trade_days = _market_history(session)
     if not trade_days:
         return {
@@ -685,6 +695,7 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
 
     replay_items = _recommendation_replay_payload(
         session,
+        active_symbols=active_symbols,
         price_history=price_history,
         benchmark_close_map=benchmark_close_map,
     )
@@ -697,6 +708,7 @@ def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH
     portfolio_payloads = [
         _portfolio_payload(
             portfolio,
+            active_symbols=active_symbols,
             price_history=price_history,
             trade_days=trade_days,
             benchmark_close_map=benchmark_close_map,

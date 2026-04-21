@@ -81,6 +81,29 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("分离式模拟交易", first_gate)
         self.assertIn("A 股规则合规", first_gate)
 
+    def test_operations_dashboard_scopes_simulation_to_active_watchlist(self) -> None:
+        with session_scope(self.database_url) as session:
+            bootstrap_dashboard_demo(session)
+            add_watchlist_symbol(session, "688981", stock_name="中芯国际")
+            remove_watchlist_symbol(session, "600519")
+
+        with session_scope(self.database_url) as session:
+            operations = build_operations_dashboard(session, sample_symbol="688981.SH")
+
+        active_watchlist_symbols = {"300750.SZ", "601318.SH", "002594.SZ", "688981.SH"}
+        replay_symbols = {item["symbol"] for item in operations["recommendation_replay"]}
+        portfolio_symbols = {
+            item["symbol"]
+            for portfolio in operations["portfolios"]
+            for item in [*portfolio["holdings"], *portfolio["recent_orders"]]
+        }
+
+        self.assertIn("688981.SH", replay_symbols)
+        self.assertNotIn("600519.SH", replay_symbols)
+        self.assertTrue(replay_symbols.issubset(active_watchlist_symbols))
+        self.assertNotIn("600519.SH", portfolio_symbols)
+        self.assertTrue(portfolio_symbols.issubset(active_watchlist_symbols))
+
     def test_glossary_entries_cover_key_user_terms(self) -> None:
         glossary = get_glossary_entries()
         terms = {item["term"] for item in glossary}
