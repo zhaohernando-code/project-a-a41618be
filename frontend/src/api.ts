@@ -19,11 +19,11 @@ import type {
   WatchlistResponse,
 } from "./types";
 
-const envApiBase = normalizeApiBase(import.meta.env.VITE_API_BASE_URL ?? "");
 const betaHeaderName = import.meta.env.VITE_BETA_ACCESS_HEADER ?? "X-Ashare-Beta-Key";
 const betaStorageKey = "ashare-beta-access-key";
 const requestTimeoutMs = 10000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
+const localApiBaseStorageKey = "ashare-api-base-url";
 
 type ApiResult<T> = {
   data: T;
@@ -34,22 +34,95 @@ function normalizeApiBase(value: string | null | undefined): string {
   return (value ?? "").trim().replace(/\/$/, "");
 }
 
+const envApiBase = normalizeApiBase(import.meta.env.VITE_API_BASE_URL ?? "");
+
+function readApiBaseFromStorage(): string {
+  if (typeof window === "undefined") {
+    return "";
+  }
+  return normalizeApiBase(window.localStorage.getItem(localApiBaseStorageKey));
+}
+
+function inferAssetMountedBase(): string {
+  const modulePath = new URL(import.meta.url).pathname;
+  const markerIndex = modulePath.lastIndexOf("/assets/");
+  if (markerIndex < 0) {
+    return "";
+  }
+  return normalizeApiBase(modulePath.slice(0, markerIndex));
+}
+
+function inferLocationBasedBase(): string {
+  const path = window.location.pathname;
+  const segments = path.split("?")[0].split("/").filter(Boolean);
+  const hasTrailingSlash = path.endsWith("/");
+  if (segments.length <= 1) {
+    return normalizeApiBase(hasTrailingSlash ? `/${segments.join("/")}` : "");
+  }
+  if (hasTrailingSlash) {
+    return normalizeApiBase(`/${segments.join("/")}`);
+  }
+  return normalizeApiBase(`/${segments.slice(0, -1).join("/")}`);
+}
+
+function dedupe(values: string[]): string[] {
+  const out: string[] = [];
+  for (const value of values) {
+    if (!out.includes(value)) {
+      out.push(value);
+    }
+  }
+  return out;
+}
+
+function getApiBases(): string[] {
+  return dedupe([
+    envApiBase,
+    readApiBaseFromStorage(),
+    inferAssetMountedBase(),
+    inferLocationBasedBase(),
+  ]).filter(Boolean);
+}
+
+function hasExplicitApiBase(): boolean {
+  return Boolean(envApiBase || readApiBaseFromStorage());
+}
+
 function getApiBase(): string {
-  return envApiBase;
+  const bases = getApiBases();
+  return bases[0] ?? "";
 }
 
 function buildRequestUrls(path: string): string[] {
-  const apiBase = getApiBase();
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const urls = apiBase ? [`${apiBase}${normalizedPath}`] : [normalizedPath];
+  const bases = getApiBases();
+  const explicitBase = hasExplicitApiBase();
+  const urls: string[] = [];
+  const basesToUse = [...bases];
+  if (!explicitBase && !basesToUse.includes("")) {
+    basesToUse.push("");
+  }
 
-  if (!apiBase) {
-    const apiPrefixed = `/api${normalizedPath}`;
-    if (apiPrefixed !== normalizedPath) {
-      urls.push(apiPrefixed);
+  for (const base of basesToUse) {
+    if (base) {
+      const basePath = `${base}${normalizedPath}`;
+      const apiPrefixed = `${base}/api${normalizedPath}`;
+      if (apiPrefixed !== basePath && !base.endsWith("/api")) {
+        urls.push(apiPrefixed);
+      }
+      urls.push(basePath);
+      continue;
+    }
+
+    urls.push(normalizedPath);
+    if (!explicitBase) {
+      const apiPrefixed = `/api${normalizedPath}`;
+      if (apiPrefixed !== normalizedPath) {
+        urls.push(apiPrefixed);
+      }
     }
   }
-  return urls;
+  return dedupe(urls);
 }
 
 type HtmlErrorContext = {
@@ -92,10 +165,11 @@ function getBetaAccessKey(): string {
 
 function getRuntimeConfig(): DashboardRuntimeConfig {
   const apiBase = getApiBase();
+  const storageBase = readApiBaseFromStorage();
   return {
     apiBase,
     apiBaseDefault: envApiBase,
-    apiBaseOverrideActive: false,
+    apiBaseOverrideActive: Boolean(storageBase),
     betaHeaderName,
     onlineConfigured: true,
     preferredMode: "online",
@@ -172,7 +246,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const timer = window.setTimeout(() => controller.abort(), requestTimeoutMs);
   const betaAccessKey = getBetaAccessKey();
   const requestUrls = buildRequestUrls(path);
-  const hasExplicitBase = Boolean(getApiBase());
+  const hasExplicitBase = hasExplicitApiBase();
 
   try {
     for (let index = 0; index < requestUrls.length; index += 1) {
