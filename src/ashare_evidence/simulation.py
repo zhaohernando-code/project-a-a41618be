@@ -335,7 +335,7 @@ def ensure_simulation_session(session: Session) -> SimulationSession:
 
 
 def _portfolio_context(session: Session, simulation_session: SimulationSession) -> tuple[dict[str, list[tuple[Any, float]]], list[Any], dict[Any, float]]:
-    price_history, _stock_names, trade_days = _market_history(session)
+    price_history, _stock_names, trade_days = _market_history(session, _watch_symbols(session, simulation_session))
     benchmark_close_map = _benchmark_close_map(trade_days)
     return price_history, trade_days, benchmark_close_map
 

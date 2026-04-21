@@ -227,3 +227,11 @@
 - Resolution: 前端当前焦点改为优先从实际自选池续接；后端运营面板对 `sample_symbol` 做了自选池内回退，不再让仅用于体积测量的 symbol 选择影响组合看板主响应。
 - Prevention: 以后凡是“自选池 + 候选排序 + 单票详情/运营面板”并存的页面，焦点 symbol 的真相必须来自当前自选池；榜单排序只能影响展示顺序，不能决定状态续接或让无效 symbol 打断主面板。
 - Commit ID: pending
+
+## 2026-04-21
+
+- Problem: 运营复盘页把双轨模拟台当成必成功的阻塞依赖；一旦 `/simulation/workspace` 失败，前端会吞掉错误后一直停在骨架屏。同时后端在构建模拟工作区时会按全量 `MarketBar` 重算行情历史，数据量一上来就容易把“看起来卡住”放大成真实超时。
+- Resolution: 运营复盘改成“运营概览”和“双轨模拟台”分开加载，任何一侧失败都要在页面内明确提示并允许重试，而不是继续假装加载中；后端行情历史聚合也收窄到当前自选池/会话股票池，并对缺失价格序列做容错。
+- Prevention: 以后聚合型工作区不能把次级面板的失败伪装成全页 loading；所有重算链路都要先按当前上下文裁剪数据范围，再考虑展示层拼装。
+- Validation: `cd frontend && npm run build`; `python3 -m py_compile src/ashare_evidence/operations.py src/ashare_evidence/simulation.py src/ashare_evidence/api.py`
+- Commit ID: pending

@@ -139,14 +139,22 @@ def _recommendation_histories(session: Session) -> dict[str, list[Recommendation
     return histories
 
 
-def _market_history(session: Session) -> tuple[dict[str, list[tuple[date, float]]], dict[str, str], list[date]]:
+def _market_history(
+    session: Session,
+    symbols: set[str] | list[str] | tuple[str, ...] | None = None,
+) -> tuple[dict[str, list[tuple[date, float]]], dict[str, str], list[date]]:
     price_history: dict[str, list[tuple[date, float]]] = defaultdict(list)
     stock_names: dict[str, str] = {}
-    bars = session.scalars(
+    query = (
         select(MarketBar)
+        .join(Stock)
         .options(joinedload(MarketBar.stock))
         .order_by(MarketBar.observed_at.asc())
-    ).all()
+    )
+    active_symbols = sorted({symbol for symbol in symbols or [] if symbol})
+    if active_symbols:
+        query = query.where(Stock.symbol.in_(active_symbols))
+    bars = session.scalars(query).all()
     trade_days: list[date] = []
     seen_days: set[date] = set()
     for bar in bars:
@@ -245,7 +253,7 @@ def _order_checks(
     limit_status = "pass"
     limit_detail = "限价单价格位于对应板块的涨跌停约束范围内。"
     if order.limit_price is not None:
-        reference_close = _close_on_or_before(price_history[order.stock.symbol], fill_day)
+        reference_close = _close_on_or_before(price_history.get(order.stock.symbol, []), fill_day)
         if reference_close is None:
             limit_status = "warn"
             limit_detail = "缺少参考收盘价，未能验证涨跌停边界。"
@@ -443,7 +451,7 @@ def _portfolio_payload(
         for symbol, position in positions.items():
             if position.quantity <= 0:
                 continue
-            latest_close = _close_on_or_before(price_history[symbol], trade_day)
+            latest_close = _close_on_or_before(price_history.get(symbol, []), trade_day)
             if latest_close is None:
                 continue
             market_value += latest_close * position.quantity
@@ -481,7 +489,7 @@ def _portfolio_payload(
     for symbol, position in positions.items():
         if position.quantity < 0:
             continue
-        last_price = _close_on_or_before(price_history[symbol], trade_days[-1]) if trade_days else None
+        last_price = _close_on_or_before(price_history.get(symbol, []), trade_days[-1]) if trade_days else None
         if last_price is None:
             continue
         current_market_value = last_price * position.quantity
@@ -686,7 +694,7 @@ def _recommendation_replay_payload(
 def build_operations_dashboard(session: Session, sample_symbol: str = "600519.SH") -> dict[str, Any]:
     started_at = perf_counter()
     active_symbols = set(active_watchlist_symbols(session))
-    price_history, _stock_names, trade_days = _market_history(session)
+    price_history, _stock_names, trade_days = _market_history(session, active_symbols)
     if not trade_days:
         return {
             "overview": {
