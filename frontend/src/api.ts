@@ -22,6 +22,7 @@ import type {
 const betaHeaderName = import.meta.env.VITE_BETA_ACCESS_HEADER ?? "X-Ashare-Beta-Key";
 const betaStorageKey = "ashare-beta-access-key";
 const requestTimeoutMs = 10000;
+const requestAttemptTimeoutMs = 3000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
 const notFoundSignatures = ["tool not found", "tool_not_found", "404 not found"];
 const localApiBaseStorageKey = "ashare-api-base-url";
@@ -131,10 +132,9 @@ function getApiBase(): string {
   return bases[0] ?? "";
 }
 
-function buildRequestUrls(path: string): string[] {
+function buildRequestUrls(path: string, explicitBase = hasExplicitApiBase()): string[] {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const bases = getApiBases();
-  const explicitBase = hasExplicitApiBase();
   const urls: string[] = [];
   const basesToUse = [...bases];
   if (!explicitBase && !basesToUse.includes("")) {
@@ -245,7 +245,11 @@ function isLikelyServiceNotFoundText(text: string): boolean {
 }
 
 function isRetryableNetworkError(error: unknown): boolean {
-  return error instanceof TypeError || error instanceof SyntaxError;
+  return (
+    error instanceof TypeError
+    || error instanceof SyntaxError
+    || (error instanceof DOMException && error.name === "AbortError")
+  );
 }
 
 function toPreview(text: string, maxChars = 220): string {
@@ -295,13 +299,36 @@ function buildSourceInfo(): DataSourceInfo {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+  const startedAt = Date.now();
   const betaAccessKey = getBetaAccessKey();
-  const requestUrls = buildRequestUrls(path);
+  const explicit = hasExplicitApiBase();
+  const requestUrls = dedupe([
+    ...buildRequestUrls(path, explicit),
+    ...(explicit ? buildRequestUrls(path, false) : []),
+  ]);
+
+  function remainingMs(): number {
+    return requestTimeoutMs - (Date.now() - startedAt);
+  }
+
+  function nextAttemptTimeout(): number {
+    const remaining = remainingMs();
+    if (remaining <= 0) {
+      return 0;
+    }
+    return Math.min(requestAttemptTimeoutMs, remaining);
+  }
 
   try {
     for (let index = 0; index < requestUrls.length; index += 1) {
+      const attemptTimeout = nextAttemptTimeout();
+      if (attemptTimeout <= 0) {
+        throw new Error(`请求超时（>${requestTimeoutMs / 1000}s）`);
+      }
+
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), attemptTimeout);
+
       const requestUrl = requestUrls[index];
       try {
         const response = await fetch(requestUrl, {
@@ -363,6 +390,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         }
         throw error;
       }
+      finally {
+        window.clearTimeout(timer);
+      }
     }
 
     throw new Error(
@@ -373,8 +403,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       throw new Error(`请求超时（>${requestTimeoutMs / 1000}s）`);
     }
     throw error;
-  } finally {
-    window.clearTimeout(timer);
   }
 }
 
