@@ -176,3 +176,10 @@
 - Note: `PYTHONPATH=src python3 -m unittest discover -s tests` 仍无法执行，原因是当前沙箱缺少 `fastapi`、`sqlalchemy` 等依赖且网络受限，无法安装。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=deployment-migration refactor
+
+## 2026-04-21
+
+- Problem: 前端 API 探测只命中单一路径时，遇到代理/部署基址偏差会返回 `Tool not found`（被当作致命错误），导致看板持续“面板加载失败”。
+- Resolution: 恢复前端 `API Base` 的路径回退策略：对每个候选基址先尝试 `base/api/{path}` 再尝试 `base/{path}`，并在无显式基址时保留当前的 `/api` 回退，以减少“静态路由误伤”导致的线上红屏。
+- Prevention: 任何服务端模式前端在无显式基址时，都应保留 `/<api-prefix>` 与 `/<raw>` 的双探测路径；仅在基址明确且稳定后才允许缩减探测。
+- Commit ID: pending

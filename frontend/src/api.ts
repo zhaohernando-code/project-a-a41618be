@@ -23,7 +23,7 @@ const betaHeaderName = import.meta.env.VITE_BETA_ACCESS_HEADER ?? "X-Ashare-Beta
 const betaStorageKey = "ashare-beta-access-key";
 const requestTimeoutMs = 10000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
-const notFoundSignatures = ["tool not found", "tool_not_found"];
+const notFoundSignatures = ["tool not found", "tool_not_found", "404 not found"];
 const localApiBaseStorageKey = "ashare-api-base-url";
 
 type ApiResult<T> = {
@@ -118,11 +118,17 @@ function buildRequestUrls(path: string): string[] {
 
   for (const base of basesToUse) {
     if (base) {
+      if (!base.endsWith("/api")) {
+        urls.push(`${base}/api${normalizedPath}`);
+      }
       urls.push(`${base}${normalizedPath}`);
       continue;
     }
 
     urls.push(normalizedPath);
+    if (!explicitBase) {
+      urls.push(`/api${normalizedPath}`);
+    }
   }
   return dedupe(urls);
 }
