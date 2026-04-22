@@ -352,6 +352,7 @@ def _portfolio_payload(
     portfolio: PaperPortfolio,
     *,
     active_symbols: set[str],
+    stock_names: dict[str, str],
     price_history: dict[str, list[tuple[date, float]]],
     trade_days: list[date],
     benchmark_close_map: dict[date, float],
@@ -486,15 +487,31 @@ def _portfolio_payload(
     market_value = 0.0
     realized_pnl_total = 0.0
     unrealized_pnl_total = 0.0
-    for symbol, position in positions.items():
+    latest_trade_day = trade_days[-1] if trade_days else None
+    previous_trade_day = trade_days[-2] if len(trade_days) >= 2 else None
+    holding_symbols = sorted(set(active_symbols) | set(positions))
+    for symbol in holding_symbols:
+        position = positions.get(symbol, PositionState(symbol=symbol, name=stock_names.get(symbol, symbol)))
         if position.quantity < 0:
             continue
-        last_price = _close_on_or_before(price_history.get(symbol, []), trade_days[-1]) if trade_days else None
+        last_price = _close_on_or_before(price_history.get(symbol, []), latest_trade_day) if latest_trade_day else None
         if last_price is None:
             continue
+        prev_close = _close_on_or_before(price_history.get(symbol, []), previous_trade_day) if previous_trade_day else None
         current_market_value = last_price * position.quantity
         unrealized_pnl = current_market_value - position.cost_value
         total_pnl = position.realized_pnl + unrealized_pnl
+        holding_pnl_pct = (current_market_value / position.cost_value - 1) if position.cost_value > 0 else None
+        today_pnl_amount = (
+            (last_price - prev_close) * position.quantity
+            if prev_close is not None and position.quantity > 0
+            else 0.0
+        )
+        today_pnl_pct = (
+            last_price / prev_close - 1
+            if prev_close not in {None, 0} and position.quantity > 0
+            else 0.0
+        )
         market_value += current_market_value
         realized_pnl_total += position.realized_pnl
         unrealized_pnl_total += unrealized_pnl
@@ -505,22 +522,27 @@ def _portfolio_payload(
                 "quantity": position.quantity,
                 "avg_cost": round(position.avg_cost, 2),
                 "last_price": round(last_price, 2),
+                "prev_close": round(prev_close, 2) if prev_close is not None else None,
                 "market_value": round(current_market_value, 2),
                 "unrealized_pnl": round(unrealized_pnl, 2),
                 "realized_pnl": round(position.realized_pnl, 2),
                 "total_pnl": round(total_pnl, 2),
+                "holding_pnl_pct": round(holding_pnl_pct, 4) if holding_pnl_pct is not None else None,
+                "today_pnl_amount": round(today_pnl_amount, 2),
+                "today_pnl_pct": round(today_pnl_pct, 4) if today_pnl_pct is not None else None,
                 "portfolio_weight": round(current_market_value / latest_nav, 4) if latest_nav else 0.0,
                 "pnl_contribution": round(total_pnl / starting_cash, 4) if starting_cash else 0.0,
             }
         )
-        attribution.append(
-            {
-                "label": position.name,
-                "amount": round(total_pnl, 2),
-                "contribution_pct": round(total_pnl / starting_cash, 4) if starting_cash else 0.0,
-                "detail": f"{symbol} 持仓贡献，包含已实现与未实现盈亏。",
-            }
-        )
+        if position.quantity > 0 or abs(total_pnl) > 0:
+            attribution.append(
+                {
+                    "label": position.name,
+                    "amount": round(total_pnl, 2),
+                    "contribution_pct": round(total_pnl / starting_cash, 4) if starting_cash else 0.0,
+                    "detail": f"{symbol} 持仓贡献，包含已实现与未实现盈亏。",
+                }
+            )
 
     attribution.extend(
         [
@@ -539,7 +561,7 @@ def _portfolio_payload(
         ]
     )
 
-    holdings.sort(key=lambda item: item["market_value"], reverse=True)
+    holdings.sort(key=lambda item: (-int(item["quantity"] > 0), -item["market_value"], item["symbol"]))
     attribution.sort(key=lambda item: abs(float(item["amount"])), reverse=True)
 
     weight_limit = 0.35 if portfolio.mode == "manual" else 0.30
@@ -699,7 +721,7 @@ def build_operations_dashboard(
 ) -> dict[str, Any]:
     started_at = perf_counter()
     active_symbols = set(active_watchlist_symbols(session))
-    price_history, _stock_names, trade_days = _market_history(session, active_symbols)
+    price_history, stock_names, trade_days = _market_history(session, active_symbols)
     if not trade_days:
         return {
             "overview": {
@@ -752,6 +774,7 @@ def build_operations_dashboard(
         _portfolio_payload(
             portfolio,
             active_symbols=active_symbols,
+            stock_names=stock_names,
             price_history=price_history,
             trade_days=trade_days,
             benchmark_close_map=benchmark_close_map,

@@ -334,10 +334,13 @@ def ensure_simulation_session(session: Session) -> SimulationSession:
     )
 
 
-def _portfolio_context(session: Session, simulation_session: SimulationSession) -> tuple[dict[str, list[tuple[Any, float]]], list[Any], dict[Any, float]]:
-    price_history, _stock_names, trade_days = _market_history(session, _watch_symbols(session, simulation_session))
+def _portfolio_context(
+    session: Session,
+    simulation_session: SimulationSession,
+) -> tuple[dict[str, list[tuple[Any, float]]], dict[str, str], list[Any], dict[Any, float]]:
+    price_history, stock_names, trade_days = _market_history(session, _watch_symbols(session, simulation_session))
     benchmark_close_map = _benchmark_close_map(trade_days)
-    return price_history, trade_days, benchmark_close_map
+    return price_history, stock_names, trade_days, benchmark_close_map
 
 
 def _portfolio_summary(
@@ -345,14 +348,15 @@ def _portfolio_summary(
     simulation_session: SimulationSession,
     portfolio: PaperPortfolio,
     *,
-    context: tuple[dict[str, list[tuple[Any, float]]], list[Any], dict[Any, float]] | None = None,
+    context: tuple[dict[str, list[tuple[Any, float]]], dict[str, str], list[Any], dict[Any, float]] | None = None,
     watch_symbols: set[str] | None = None,
 ) -> dict[str, Any]:
     active_watch_symbols = watch_symbols or set(_watch_symbols(session, simulation_session))
-    price_history, trade_days, benchmark_close_map = context or _portfolio_context(session, simulation_session)
+    price_history, stock_names, trade_days, benchmark_close_map = context or _portfolio_context(session, simulation_session)
     return _portfolio_payload(
         portfolio,
         active_symbols=active_watch_symbols,
+        stock_names=stock_names,
         price_history=price_history,
         trade_days=trade_days,
         benchmark_close_map=benchmark_close_map,
@@ -582,6 +586,9 @@ def _kline_payload(session: Session, simulation_session: SimulationSession) -> d
         "points": [
             {
                 "observed_at": bar.observed_at,
+                "open_price": bar.open_price,
+                "high_price": bar.high_price,
+                "low_price": bar.low_price,
                 "close_price": bar.close_price,
                 "volume": bar.volume,
             }

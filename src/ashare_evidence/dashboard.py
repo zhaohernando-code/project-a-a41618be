@@ -272,6 +272,9 @@ def _price_chart_payload(bars: list[MarketBar]) -> list[dict[str, Any]]:
     return [
         {
             "observed_at": bar.observed_at,
+            "open_price": bar.open_price,
+            "high_price": bar.high_price,
+            "low_price": bar.low_price,
             "close_price": bar.close_price,
             "volume": bar.volume,
         }

@@ -116,6 +116,9 @@ class HeroView(BaseModel):
 
 class PricePointView(BaseModel):
     observed_at: datetime
+    open_price: float
+    high_price: float
+    low_price: float
     close_price: float
     volume: float
 
@@ -255,10 +258,14 @@ class PortfolioHoldingView(BaseModel):
     quantity: int
     avg_cost: float
     last_price: float
+    prev_close: float | None = None
     market_value: float
     unrealized_pnl: float
     realized_pnl: float
     total_pnl: float
+    holding_pnl_pct: float | None = None
+    today_pnl_amount: float
+    today_pnl_pct: float | None = None
     portfolio_weight: float
     pnl_contribution: float
 

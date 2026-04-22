@@ -439,6 +439,9 @@ function generateSeries(symbol: string): GeneratedSeries {
     latestTurnoverRate = round(0.038 + (seed % 80) / 1000 + index * (0.0007 + (seed % 25) / 10000), 4);
     pricePoints.push({
       observed_at: formatNoZone(tradeDay),
+      open_price: previousClose,
+      high_price: latestHigh,
+      low_price: latestLow,
       close_price: closePrice,
       volume,
     });

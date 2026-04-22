@@ -104,6 +104,9 @@ export interface HeroView {
 
 export interface PricePointView {
   observed_at: string;
+  open_price: number;
+  high_price: number;
+  low_price: number;
   close_price: number;
   volume: number;
 }
@@ -244,10 +247,14 @@ export interface PortfolioHoldingView {
   quantity: number;
   avg_cost: number;
   last_price: number;
+  prev_close?: number | null;
   market_value: number;
   unrealized_pnl: number;
   realized_pnl: number;
   total_pnl: number;
+  holding_pnl_pct?: number | null;
+  today_pnl_amount: number;
+  today_pnl_pct?: number | null;
   portfolio_weight: number;
   pnl_contribution: number;
 }
