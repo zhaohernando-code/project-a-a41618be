@@ -15,6 +15,12 @@
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog publish-state remediation
 
+- Problem: 前端依赖 `echarts` 在当前镜像源安装结果里缺少 `package.json` 声明的 `index.d.ts`，`npm install` 虽然成功，但 `tsc` 在发布校验阶段会把 `import "echarts"` 判成“无声明文件”，导致任务被错误卡在 build gate。
+- Resolution: 在前端源码内补了显式 `echarts` 类型 shim，让 TypeScript 直接落到包内实际存在的 `echarts/types/dist/echarts.d.ts`，不再依赖镜像产物里缺失的顶层类型入口。
+- Prevention: 后续新增前端库时，不能只看 `package.json` 的 `types` 字段；如果发布链路依赖镜像或缓存包，必须确认声明文件真实存在，或在仓内提供稳定的本地类型入口，避免把第三方包体漂移放大成发布阻塞。
+- Commit ID: pending
+- Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog build remediation
+
 ## 2026-04-14
 
 - Problem: 免费 A 股数据源在授权、稳定性、字段覆盖和新闻可分发性上差异很大，若不先做基线评估，后续数据底座和建议引擎会反复返工。
