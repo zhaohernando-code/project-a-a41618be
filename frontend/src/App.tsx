@@ -40,7 +40,7 @@ import {
   message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import * as echarts from "echarts";
+import { init } from "echarts";
 import type { ReactNode } from "react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
@@ -331,7 +331,7 @@ function KlineChart({ points, compact = false }: { points: PricePointView[]; com
     }
 
     const container = chartRef.current;
-    const chart = echarts.init(container, undefined, { renderer: "canvas" });
+    const chart = init(container, undefined, { renderer: "canvas" });
     const styles = getComputedStyle(container);
     const textColor = styles.getPropertyValue("--text-main").trim() || "#10233c";
     const mutedColor = styles.getPropertyValue("--text-muted").trim() || "#64748b";

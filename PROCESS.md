@@ -15,9 +15,9 @@
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog publish-state remediation
 
-- Problem: 前端依赖 `echarts` 在当前镜像源安装结果里缺少 `package.json` 声明的 `index.d.ts`，`npm install` 虽然成功，但 `tsc` 在发布校验阶段会把 `import "echarts"` 判成“无声明文件”，导致任务被错误卡在 build gate。
-- Resolution: 在前端源码内补了显式 `echarts` 类型 shim，让 TypeScript 直接落到包内实际存在的 `echarts/types/dist/echarts.d.ts`，不再依赖镜像产物里缺失的顶层类型入口。
-- Prevention: 后续新增前端库时，不能只看 `package.json` 的 `types` 字段；如果发布链路依赖镜像或缓存包，必须确认声明文件真实存在，或在仓内提供稳定的本地类型入口，避免把第三方包体漂移放大成发布阻塞。
+- Problem: 前端依赖 `echarts` 在当前镜像源安装结果里缺少 `package.json` 声明的顶层 `index.d.ts`；若只补一个宽泛的 `export *` shim，`tsc` 仍可能在 `import * as echarts` 这类命名空间导入上丢失 `init` 等成员，继续把发布卡在 build gate。
+- Resolution: 在仓内保留显式 `echarts` 类型 shim，把声明直接落到包内真实存在的 `echarts/types/dist/echarts.d.ts`，并在业务代码里优先使用与该声明一致的命名导入，而不是继续依赖脆弱的命名空间导入推断。
+- Prevention: 后续为第三方库补本地类型入口时，不能只验证“声明文件能找到”；还必须用项目里的真实导入方式跑一次最小化类型检查，确认命名空间导入、命名导入或默认导入和 shim 形态一致，避免把不完整的兜底声明再次带进发布链路。
 - Commit ID: pending
 - Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog build remediation
 
