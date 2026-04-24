@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
 import math
 import random
 from typing import Any
 
+from ashare_evidence.market_clock import latest_completed_trade_day
 from ashare_evidence.providers import EvidenceBundle, with_lineage
 from ashare_evidence.signal_engine import SignalArtifacts, build_signal_artifacts
 
 UTC = timezone.utc
-LATEST_TRADE_DAY = date(2026, 4, 14)
+STATIC_SCENARIO_ANCHOR = date(2026, 4, 14)
 WATCHLIST_SYMBOLS = ("600519.SH", "300750.SZ", "601318.SH", "002594.SZ")
 PREVIOUS_OFFSET = 5
 
@@ -60,6 +61,10 @@ def _business_days(end_day: date, count: int) -> list[date]:
 
 def _bar_timestamp(trade_day: date) -> datetime:
     return datetime(trade_day.year, trade_day.month, trade_day.day, 7, 0, tzinfo=UTC)
+
+
+def _latest_trade_day() -> date:
+    return latest_completed_trade_day()
 
 
 SCENARIOS: dict[str, ScenarioConfig] = {
@@ -893,11 +898,11 @@ def _dynamic_sector_configs(template: dict[str, str], seed: int) -> tuple[Sector
     )
 
 
-def _news_timestamp(days_before_latest: int, hour: int, minute: int) -> datetime:
+def _news_timestamp(latest_trade_day: date, days_before_latest: int, hour: int, minute: int) -> datetime:
     return datetime(
-        LATEST_TRADE_DAY.year,
-        LATEST_TRADE_DAY.month,
-        LATEST_TRADE_DAY.day,
+        latest_trade_day.year,
+        latest_trade_day.month,
+        latest_trade_day.day,
         hour,
         minute,
         tzinfo=UTC,
@@ -910,6 +915,7 @@ def _dynamic_news_events(
     stock_name: str,
     template: dict[str, str],
     tier: int,
+    latest_trade_day: date,
 ) -> tuple[dict[str, Any], ...]:
     ticker = symbol.split(".", 1)[0]
     stock_direction = "positive" if tier in {0, 1} else "negative"
@@ -920,17 +926,17 @@ def _dynamic_news_events(
     latest_topic = template["positive_topic"] if latest_direction == "positive" else template["negative_topic"]
     return (
         {
-            "news_key": f"news-{ticker}-ops-{LATEST_TRADE_DAY:%Y%m%d}",
+            "news_key": f"news-{ticker}-ops-{latest_trade_day:%Y%m%d}",
             "provider_name": "cninfo",
-            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-ops",
+            "external_id": f"cninfo-{ticker}-{latest_trade_day:%Y%m%d}-ops",
             "headline": f"{stock_name}披露经营更新，{stock_topic}",
             "summary": f"公司层面最新经营信息显示，{stock_topic}。",
             "content_excerpt": f"系统将该事件映射为个股层证据，重点关注 {stock_name} 的经营节奏。",
-            "published_at": _news_timestamp(5, 9, 20),
+            "published_at": _news_timestamp(latest_trade_day, 5, 9, 20),
             "event_scope": "stock",
-            "dedupe_key": f"{ticker}-ops-update-{LATEST_TRADE_DAY:%Y%m%d}",
+            "dedupe_key": f"{ticker}-ops-update-{latest_trade_day:%Y%m%d}",
             "raw_payload": {"provider": "巨潮资讯", "announcement_type": "operating_update"},
-            "source_uri": f"cninfo://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-ops",
+            "source_uri": f"cninfo://announcements/{ticker}/{latest_trade_day:%Y%m%d}-ops",
             "license_tag": "cninfo-public-disclosure",
             "links": (
                 {
@@ -940,24 +946,24 @@ def _dynamic_news_events(
                     "market_tag": None,
                     "relevance_score": 0.86,
                     "impact_direction": stock_direction,
-                    "effective_at": _news_timestamp(5, 9, 20),
+                    "effective_at": _news_timestamp(latest_trade_day, 5, 9, 20),
                     "decay_half_life_hours": 96.0,
                     "mapping_payload": {"layer": "stock", "dedupe_stage": "post-entity-map"},
                 },
             ),
         },
         {
-            "news_key": f"news-{ticker}-ops-repost-{LATEST_TRADE_DAY:%Y%m%d}",
+            "news_key": f"news-{ticker}-ops-repost-{latest_trade_day:%Y%m%d}",
             "provider_name": "exchange",
-            "external_id": f"exchange-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-ops-repost",
+            "external_id": f"exchange-{ticker}-{latest_trade_day:%Y%m%d}-ops-repost",
             "headline": f"{stock_name}经营更新摘要转载：{stock_topic}",
             "summary": "交易所摘要重述经营更新要点，属于同一事件的重复传播。",
             "content_excerpt": "用于验证新闻事件去重是否生效。",
-            "published_at": _news_timestamp(5, 13, 40),
+            "published_at": _news_timestamp(latest_trade_day, 5, 13, 40),
             "event_scope": "stock",
-            "dedupe_key": f"{ticker}-ops-update-{LATEST_TRADE_DAY:%Y%m%d}",
+            "dedupe_key": f"{ticker}-ops-update-{latest_trade_day:%Y%m%d}",
             "raw_payload": {"provider": "交易所披露", "announcement_type": "operating_update_summary"},
-            "source_uri": f"exchange://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-ops-summary",
+            "source_uri": f"exchange://announcements/{ticker}/{latest_trade_day:%Y%m%d}-ops-summary",
             "license_tag": "exchange-public-disclosure",
             "links": (
                 {
@@ -967,24 +973,24 @@ def _dynamic_news_events(
                     "market_tag": None,
                     "relevance_score": 0.71,
                     "impact_direction": stock_direction,
-                    "effective_at": _news_timestamp(5, 13, 40),
+                    "effective_at": _news_timestamp(latest_trade_day, 5, 13, 40),
                     "decay_half_life_hours": 96.0,
                     "mapping_payload": {"layer": "stock", "dedupe_stage": "pre-dedup"},
                 },
             ),
         },
         {
-            "news_key": f"news-{ticker}-sector-{LATEST_TRADE_DAY:%Y%m%d}",
+            "news_key": f"news-{ticker}-sector-{latest_trade_day:%Y%m%d}",
             "provider_name": "cninfo",
-            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-sector",
+            "external_id": f"cninfo-{ticker}-{latest_trade_day:%Y%m%d}-sector",
             "headline": f"{template['primary_sector_name']}板块跟踪：{sector_topic}",
             "summary": f"行业层面最新跟踪显示，{sector_topic}。",
             "content_excerpt": "系统会把行业事件按有效期衰减并映射回个股。",
-            "published_at": _news_timestamp(3, 10, 10),
+            "published_at": _news_timestamp(latest_trade_day, 3, 10, 10),
             "event_scope": "sector",
-            "dedupe_key": f"{template['primary_sector_code']}-sector-{LATEST_TRADE_DAY:%Y%m%d}",
+            "dedupe_key": f"{template['primary_sector_code']}-sector-{latest_trade_day:%Y%m%d}",
             "raw_payload": {"provider": "巨潮资讯", "announcement_type": "sector_news"},
-            "source_uri": f"cninfo://news/{template['primary_sector_code']}/{LATEST_TRADE_DAY:%Y%m%d}-sector",
+            "source_uri": f"cninfo://news/{template['primary_sector_code']}/{latest_trade_day:%Y%m%d}-sector",
             "license_tag": "cninfo-public-disclosure",
             "links": (
                 {
@@ -994,24 +1000,24 @@ def _dynamic_news_events(
                     "market_tag": None,
                     "relevance_score": 0.63,
                     "impact_direction": sector_direction,
-                    "effective_at": _news_timestamp(3, 10, 10),
+                    "effective_at": _news_timestamp(latest_trade_day, 3, 10, 10),
                     "decay_half_life_hours": 48.0,
                     "mapping_payload": {"layer": "sector", "dedupe_stage": "post-entity-map"},
                 },
             ),
         },
         {
-            "news_key": f"news-{ticker}-roadshow-{LATEST_TRADE_DAY:%Y%m%d}",
+            "news_key": f"news-{ticker}-roadshow-{latest_trade_day:%Y%m%d}",
             "provider_name": "cninfo",
-            "external_id": f"cninfo-{ticker}-{LATEST_TRADE_DAY:%Y%m%d}-roadshow",
+            "external_id": f"cninfo-{ticker}-{latest_trade_day:%Y%m%d}-roadshow",
             "headline": f"机构调研聚焦{stock_name}，{latest_topic}",
             "summary": f"最新调研纪要显示，市场关注点集中在 {latest_topic}。",
             "content_excerpt": "该事件用于解释最新一版建议相较上一版为何变化。",
-            "published_at": _news_timestamp(0, 11, 5),
+            "published_at": _news_timestamp(latest_trade_day, 0, 11, 5),
             "event_scope": "stock",
-            "dedupe_key": f"{ticker}-roadshow-{LATEST_TRADE_DAY:%Y%m%d}",
+            "dedupe_key": f"{ticker}-roadshow-{latest_trade_day:%Y%m%d}",
             "raw_payload": {"provider": "巨潮资讯", "announcement_type": "investor_relation"},
-            "source_uri": f"cninfo://announcements/{ticker}/{LATEST_TRADE_DAY:%Y%m%d}-roadshow",
+            "source_uri": f"cninfo://announcements/{ticker}/{latest_trade_day:%Y%m%d}-roadshow",
             "license_tag": "cninfo-public-disclosure",
             "links": (
                 {
@@ -1021,7 +1027,7 @@ def _dynamic_news_events(
                     "market_tag": None,
                     "relevance_score": 0.88,
                     "impact_direction": latest_direction,
-                    "effective_at": _news_timestamp(0, 11, 5),
+                    "effective_at": _news_timestamp(latest_trade_day, 0, 11, 5),
                     "decay_half_life_hours": 72.0,
                     "mapping_payload": {"layer": "stock", "dedupe_stage": "post-entity-map"},
                 },
@@ -1032,7 +1038,7 @@ def _dynamic_news_events(
                     "market_tag": None,
                     "relevance_score": 0.52,
                     "impact_direction": latest_direction,
-                    "effective_at": _news_timestamp(0, 11, 5),
+                    "effective_at": _news_timestamp(latest_trade_day, 0, 11, 5),
                     "decay_half_life_hours": 48.0,
                     "mapping_payload": {"layer": "sector", "dedupe_stage": "post-entity-map"},
                 },
@@ -1055,6 +1061,7 @@ def build_dynamic_scenario(
 
     ticker, _, suffix = normalized_symbol.partition(".")
     seed = _symbol_seed(normalized_symbol)
+    latest_trade_day = _latest_trade_day()
     effective_template_key = template_key or "unclassified"
     template = SECTOR_TEMPLATES.get(effective_template_key, SECTOR_TEMPLATES["unclassified"])
     tier = (seed // len(DYNAMIC_TEMPLATE_ORDER)) % 4
@@ -1088,6 +1095,59 @@ def build_dynamic_scenario(
             stock_name=name,
             template=template,
             tier=tier,
+            latest_trade_day=latest_trade_day,
+        ),
+    )
+
+
+def _collect_event_dates(value: Any, dates: set[date]) -> None:
+    if isinstance(value, datetime):
+        dates.add(value.date())
+        return
+    if isinstance(value, dict):
+        for item in value.values():
+            _collect_event_dates(item, dates)
+        return
+    if isinstance(value, (tuple, list)):
+        for item in value:
+            _collect_event_dates(item, dates)
+
+
+def _shift_embedded_dates(value: Any, *, delta: timedelta, token_map: dict[str, str]) -> Any:
+    if isinstance(value, datetime):
+        return value + delta
+    if isinstance(value, dict):
+        return {key: _shift_embedded_dates(item, delta=delta, token_map=token_map) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return tuple(_shift_embedded_dates(item, delta=delta, token_map=token_map) for item in value)
+    if isinstance(value, list):
+        return [_shift_embedded_dates(item, delta=delta, token_map=token_map) for item in value]
+    if isinstance(value, str):
+        shifted = value
+        for old_token, new_token in token_map.items():
+            shifted = shifted.replace(old_token, new_token)
+        return shifted
+    return value
+
+
+def _roll_static_scenario(config: ScenarioConfig) -> ScenarioConfig:
+    latest_trade_day = _latest_trade_day()
+    if latest_trade_day == STATIC_SCENARIO_ANCHOR:
+        return config
+    delta = latest_trade_day - STATIC_SCENARIO_ANCHOR
+    event_dates: set[date] = set()
+    for event in config.news_events:
+        _collect_event_dates(event, event_dates)
+    token_map: dict[str, str] = {}
+    for event_date in event_dates:
+        shifted_date = event_date + delta
+        token_map[event_date.strftime("%Y%m%d")] = shifted_date.strftime("%Y%m%d")
+        token_map[event_date.isoformat()] = shifted_date.isoformat()
+    return replace(
+        config,
+        news_events=tuple(
+            _shift_embedded_dates(event, delta=delta, token_map=token_map)
+            for event in config.news_events
         ),
     )
 
@@ -1102,7 +1162,7 @@ def resolve_scenario(
 ) -> ScenarioConfig:
     normalized_symbol = normalize_symbol(symbol)
     if normalized_symbol in SCENARIOS:
-        return SCENARIOS[normalized_symbol]
+        return _roll_static_scenario(SCENARIOS[normalized_symbol])
     return build_dynamic_scenario(
         normalized_symbol,
         stock_name=stock_name,
@@ -1182,7 +1242,7 @@ def _membership_records(config: ScenarioConfig) -> list[dict[str, Any]]:
 
 
 def _market_bars(config: ScenarioConfig) -> list[dict[str, Any]]:
-    trade_days = _business_days(LATEST_TRADE_DAY, len(config.daily_returns))
+    trade_days = _business_days(_latest_trade_day(), len(config.daily_returns))
     previous_close = config.start_close
     bars: list[dict[str, Any]] = []
     for idx, trade_day in enumerate(trade_days):

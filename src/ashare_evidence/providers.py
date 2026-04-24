@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Any, Protocol
 
 from ashare_evidence.lineage import build_lineage
+from ashare_evidence.market_clock import latest_completed_trade_day
 from ashare_evidence.signal_engine import SignalArtifacts, build_signal_artifacts
 
 
@@ -86,7 +87,7 @@ def _bar_timestamp(trade_day: date, tz: timezone) -> datetime:
 
 
 def _build_demo_market_bars(symbol: str, tz: timezone) -> list[dict[str, Any]]:
-    trade_days = _business_days(date(2026, 4, 14), 28)
+    trade_days = _business_days(latest_completed_trade_day(), 28)
     daily_returns = [
         -0.0040,
         0.0060,
@@ -370,6 +371,7 @@ def _build_demo_simulation_artifacts(
     seed_bar = market_bars[-11] if len(market_bars) >= 11 else market_bars[0]
     seed_at = seed_bar["observed_at"]
     seed_trade_token = seed_at.strftime("%Y%m%d")
+    trade_token = generated_at.strftime("%Y%m%d")
     seed_price = round(float(seed_bar["close_price"]) * 1.001, 2)
     seed_manual_quantity = 100
     seed_auto_quantity = 200
@@ -459,7 +461,7 @@ def _build_demo_simulation_artifacts(
         ),
         with_lineage(
             {
-                "order_key": "order-manual-600519-20260414",
+                "order_key": f"order-manual-600519-{trade_token}",
                 "portfolio_key": "portfolio-manual-sandbox",
                 "stock_symbol": symbol,
                 "recommendation_key": recommendation_key,
@@ -474,12 +476,12 @@ def _build_demo_simulation_artifacts(
                 "order_payload": {"execution_mode": "manual"},
             },
             payload_key="order_payload",
-            source_uri="simulation://order/manual/600519/20260414",
+            source_uri=f"simulation://order/manual/600519/{trade_token}",
             license_tag="internal-derived",
         ),
         with_lineage(
             {
-                "order_key": "order-auto-600519-20260414",
+                "order_key": f"order-auto-600519-{trade_token}",
                 "portfolio_key": "portfolio-auto-wave",
                 "stock_symbol": symbol,
                 "recommendation_key": recommendation_key,
@@ -494,7 +496,7 @@ def _build_demo_simulation_artifacts(
                 "order_payload": {"execution_mode": "auto_model"},
             },
             payload_key="order_payload",
-            source_uri="simulation://order/auto/600519/20260414",
+            source_uri=f"simulation://order/auto/600519/{trade_token}",
             license_tag="internal-derived",
         ),
     ]
@@ -535,8 +537,8 @@ def _build_demo_simulation_artifacts(
         ),
         with_lineage(
             {
-                "fill_key": "fill-manual-600519-20260414",
-                "order_key": "order-manual-600519-20260414",
+                "fill_key": f"fill-manual-600519-{trade_token}",
+                "order_key": f"order-manual-600519-{trade_token}",
                 "stock_symbol": symbol,
                 "filled_at": generated_at,
                 "price": manual_limit,
@@ -547,13 +549,13 @@ def _build_demo_simulation_artifacts(
                 "fill_payload": {"matching_rule": "t+1-paper"},
             },
             payload_key="fill_payload",
-            source_uri="simulation://fill/manual/600519/20260414",
+            source_uri=f"simulation://fill/manual/600519/{trade_token}",
             license_tag="internal-derived",
         ),
         with_lineage(
             {
-                "fill_key": "fill-auto-600519-20260414",
-                "order_key": "order-auto-600519-20260414",
+                "fill_key": f"fill-auto-600519-{trade_token}",
+                "order_key": f"order-auto-600519-{trade_token}",
                 "stock_symbol": symbol,
                 "filled_at": generated_at,
                 "price": auto_fill,
@@ -564,7 +566,7 @@ def _build_demo_simulation_artifacts(
                 "fill_payload": {"matching_rule": "t+1-paper"},
             },
             payload_key="fill_payload",
-            source_uri="simulation://fill/auto/600519/20260414",
+            source_uri=f"simulation://fill/auto/600519/{trade_token}",
             license_tag="internal-derived",
         ),
     ]

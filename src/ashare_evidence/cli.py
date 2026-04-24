@@ -9,6 +9,8 @@ from ashare_evidence.dashboard import bootstrap_dashboard_demo, get_glossary_ent
 from ashare_evidence.frontend_snapshot import export_frontend_snapshot
 from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.services import bootstrap_demo_data, get_latest_recommendation_summary, get_recommendation_trace
+from ashare_evidence.simulation import restart_simulation_session
+from ashare_evidence.watchlist import active_watchlist_symbols, refresh_watchlist_symbol
 
 
 def _print_json(payload: Any) -> None:
@@ -61,6 +63,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     export_snapshot.add_argument("--database-url", default=None)
     export_snapshot.add_argument("--output", required=True)
+
+    refresh_runtime = subparsers.add_parser(
+        "refresh-runtime-data",
+        help="Refresh current watchlist analysis and restart the local simulation session.",
+    )
+    refresh_runtime.add_argument("--database-url", default=None)
+    refresh_runtime.add_argument("--skip-simulation", action="store_true")
 
     return parser
 
@@ -133,6 +142,22 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "export-frontend-snapshot":
         output_path = export_frontend_snapshot(args.output, args.database_url)
         print(output_path)
+        return 0
+
+    if args.command == "refresh-runtime-data":
+        init_database(args.database_url)
+        with session_scope(args.database_url) as session:
+            symbols = active_watchlist_symbols(session)
+            refreshed = [refresh_watchlist_symbol(session, symbol) for symbol in symbols]
+            simulation = None if args.skip_simulation else restart_simulation_session(session)
+        _print_json({
+            "refreshed_symbols": [item["symbol"] for item in refreshed],
+            "latest_generated_at": {
+                item["symbol"]: item.get("latest_generated_at")
+                for item in refreshed
+            },
+            "simulation_last_data_time": None if simulation is None else simulation["session"]["last_data_time"],
+        })
         return 0
 
     parser.error(f"Unsupported command: {args.command}")

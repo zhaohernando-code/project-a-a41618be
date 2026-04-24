@@ -10,7 +10,8 @@
     "frontend/node_modules"
   ],
   "postSyncCommands": [
-    "if [ -f frontend/package-lock.json ] && [ ! -d frontend/node_modules ]; then npm ci --prefix frontend; fi"
+    "if [ -f frontend/package-lock.json ] && [ ! -d frontend/node_modules ]; then npm ci --prefix frontend; fi",
+    "PYTHONPATH=src python3 -m ashare_evidence.cli refresh-runtime-data"
   ],
   "restartLaunchAgents": [
     "com.codex.${PROJECT_ID}.backend",
