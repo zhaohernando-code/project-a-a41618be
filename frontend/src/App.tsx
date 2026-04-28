@@ -82,6 +82,8 @@ import { CompactAnalysisReport } from "./components/CompactAnalysisReport";
 import { PortfolioWorkspace } from "./components/PortfolioWorkspace";
 import { buildSettingsTabs } from "./components/SettingsView";
 import { buildCandidateColumns } from "./components/CandidateColumns";
+import { buildReplayColumns } from "./components/ReplayColumns";
+import { buildAddWatchlistOverlay } from "./components/AddWatchlistOverlay";
 
 import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
 import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, statusColor, valueTone } from "./utils/format";
@@ -885,68 +887,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     watchlistSymbolDraft, watchlistNameDraft,
     selectedSymbol, view, canMutateWatchlist, watchlistMutationSymbol, handleRefreshWatchlist,
   });
-  const replayColumns: ColumnsType<RecommendationReplayView> = [
-    {
-      title: "标的",
-      key: "stock",
-      render: (_, record) => (
-        <div className="table-primary-cell">
-          <strong>{record.stock_name}</strong>
-          <Text type="secondary">
-            {`${record.symbol} · ${displayWindowLabel(record.review_window_definition)}`}
-          </Text>
-          <Space wrap className="inline-tags">
-            {record.benchmark_definition ? <Tag>{displayBenchmarkLabel(record.benchmark_definition)}</Tag> : null}
-          </Space>
-        </div>
-      ),
-    },
-    {
-      title: "方向",
-      dataIndex: "direction",
-      render: (value: string) => <Tag color={directionColor(value)}>{directionLabels[value] ?? value}</Tag>,
-    },
-    {
-      title: "结果",
-      dataIndex: "hit_status",
-      render: (value: string, record) => (
-        <Tag color={record.validation_status === "verified" ? statusColor(value) : "gold"}>
-          {record.validation_status === "verified" ? value : validationStatusLabel(record.validation_status)}
-        </Tag>
-      ),
-    },
-    {
-      title: "标的 / 基准 / 超额",
-      key: "performance",
-      render: (_, record) => (
-        <Space direction="vertical" size={2}>
-          <Text>{`标的 ${formatPercent(record.stock_return)}`}</Text>
-          <Text type="secondary">
-            {record.validation_status === "verified"
-              ? `基准 ${formatPercent(record.benchmark_return)} / 超额 ${formatPercent(record.excess_return)}`
-              : publicValidationSummary(record.validation_note, record.validation_status, "复盘口径仍在补齐")}
-          </Text>
-        </Space>
-      ),
-    },
-    {
-      title: "摘要",
-      dataIndex: "summary",
-      render: (value: string, record) => (
-        <Space direction="vertical" size={2}>
-          <span className="truncate-cell">{sanitizeDisplayText(value)}</span>
-          <Text type="secondary">
-            {record.validation_status === "verified"
-              ? sanitizeDisplayText(record.hit_definition)
-              : publicValidationSummary(record.validation_note, record.validation_status, sanitizeDisplayText(record.hit_definition))}
-          </Text>
-          {record.validation_status !== "verified" && record.source_classification === "artifact_backed" ? (
-            <Text type="secondary">复盘结果已接入研究产物，补充验证完成前仅作辅助参考。</Text>
-          ) : null}
-        </Space>
-      ),
-    },
-  ];
+  const replayColumns = buildReplayColumns({ glossary: mergedGlossary });
 
   const stockTabItems = dashboard
     ? [
@@ -2162,41 +2103,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     },
   ] : [];
 
-  const addWatchlistOverlay = (
-    <div className="watchlist-add-popover">
-      <Form layout="vertical" size="small">
-        <Form.Item label="股票代码">
-          <Input
-            value={watchlistSymbolDraft}
-            onChange={(event) => setWatchlistSymbolDraft(event.target.value)}
-            placeholder="如 600519 或 300750.SZ"
-          />
-        </Form.Item>
-        <Form.Item label="显示名称">
-          <Input
-            value={watchlistNameDraft}
-            onChange={(event) => setWatchlistNameDraft(event.target.value)}
-            placeholder="可选：自定义显示名称"
-          />
-        </Form.Item>
-      </Form>
-      <div className="watchlist-add-actions">
-        <Button size="small" onClick={() => setAddPopoverOpen(false)}>
-          取消
-        </Button>
-        <Button
-          type="primary"
-          size="small"
-          icon={<PlusOutlined />}
-          loading={mutatingWatchlist}
-          onClick={() => void handleAddWatchlist()}
-        >
-          加入并分析
-        </Button>
-      </div>
-    </div>
-  );
-
+  const addWatchlistOverlay = buildAddWatchlistOverlay({
+    addPopoverOpen, setAddPopoverOpen,
+    watchlistSymbolDraft, setWatchlistSymbolDraft,
+    watchlistNameDraft, setWatchlistNameDraft,
+    handleAddWatchlist, canMutateWatchlist, mutatingWatchlist,
+  });
   const settingsTabItems = buildSettingsTabs({
     runtimeSettings,
     sourceInfo,
