@@ -16,6 +16,7 @@ from ashare_evidence.intraday_market import (
     INTRADAY_MARKET_TIMEFRAME,
     get_intraday_market_status,
 )
+from ashare_evidence.operations_helpers import _benchmark_close_map, _close_on_or_before, _distinct_trade_days, _price_map_from_history, _source_classification, _validation_mode
 from ashare_evidence.operations_portfolio_payload import _portfolio_payload, _measure_payload, _preferred_measurement_symbol
 from ashare_evidence.manual_research_workflow import list_manual_research_requests
 from ashare_evidence.models import MarketBar, ModelVersion, PaperOrder, PaperPortfolio, Recommendation, Stock
@@ -197,11 +198,6 @@ def _market_history(
     return price_history, stock_names, observed_points
 
 
-def _distinct_trade_days(observed_points: list[datetime]) -> list[date]:
-    trade_days = sorted({item.date() for item in observed_points})
-    return trade_days
-
-
 def _price_map_from_history(
     price_history: dict[str, list[tuple[datetime, float]]],
 ) -> dict[str, dict[date, float]]:
@@ -215,29 +211,10 @@ def _price_map_from_history(
     return close_maps
 
 
-def _benchmark_close_map(
-    trade_days: list[date],
-    *,
-    price_history: dict[str, list[tuple[datetime, float]]],
-    active_symbols: set[str] | list[str] | tuple[str, ...],
-) -> dict[date, float]:
-    close_maps = _price_map_from_history(price_history)
-    proxy = build_equal_weight_proxy(close_maps, sorted({symbol for symbol in active_symbols if symbol}))
-    if proxy:
-        return {trade_day: float(proxy[trade_day]) for trade_day in trade_days if trade_day in proxy}
-    if not trade_days:
-        return {}
-    return {trade_day: 100.0 for trade_day in trade_days}
-
-
 def _source_classification(*, source: str | None, artifact_id: str | None = None) -> str:
     if artifact_id or (source and source.endswith("_artifact")):
         return "artifact_backed"
     return "migration_placeholder"
-
-
-def _validation_mode(*, validation_status: str) -> str:
-    return "artifact_backed" if validation_status == "verified" else "migration_placeholder"
 
 
 def _close_on_or_before(series: list[tuple[datetime, float]], point: datetime | date | None) -> float | None:
