@@ -4,8 +4,8 @@
   "files": {
     "frontend/src/App.tsx": {
       "lines": 3675,
-      "reason": "Main app component with 4 page sections (candidates, stock detail, operations, settings). Partially extracted — utils and chart components moved out. Page-level extraction planned.",
-      "status": "accepted",
+      "reason": "Main app component with 4 page sections (candidates, stock detail, operations, settings). Reduced from 5199 to 3675 via utility and component extraction. Page-level extraction planned — requires shared state context or prop interface design.",
+      "status": "planned_refactor",
       "reviewed_at": "2026-04-28"
     },
     "frontend/src/styles.css": {
@@ -16,13 +16,13 @@
     },
     "src/ashare_evidence/analysis_pipeline.py": {
       "lines": 892,
-      "reason": "Analysis pipeline stages with tight coupling between steps. Cohesive pipeline definition.",
+      "reason": "Analysis pipeline stages with sequential step coupling. Cohesive pipeline definition — splitting would fragment the flow logic.",
       "status": "accepted",
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/api.py": {
       "lines": 706,
-      "reason": "FastAPI application with 4 route groups (dashboard, simulation, settings, manual-research). Router extraction planned.",
+      "reason": "FastAPI application with 25+ endpoints across 6 route groups (dashboard, simulation, settings, manual-research, watchlist, stocks). 706 lines is proportional to API surface — ~28 lines per endpoint average. Router extraction would add boilerplate without reducing complexity.",
       "status": "accepted",
       "reviewed_at": "2026-04-28"
     },
@@ -88,7 +88,7 @@
     },
     "src/ashare_evidence/schemas.py": {
       "lines": 1128,
-      "reason": "60+ Pydantic models with cross-references. Domain split planned (similar to TypeScript types.ts barrel pattern).",
+      "reason": "60+ Pydantic models with cross-references (StockDashboardResponse, OperationsDashboardResponse aggregate types from all domains). Domain split carries medium risk due to model inheritance chains and runtime validation dependencies. Planned but deferred for test coverage.",
       "status": "accepted",
       "reviewed_at": "2026-04-28"
     },
@@ -106,7 +106,7 @@
     },
     "src/ashare_evidence/simulation.py": {
       "lines": 1508,
-      "reason": "Simulation engine: position sizing, performance metrics, scenario config, order execution. Highly cohesive domain logic.",
+      "reason": "Cohesive simulation engine: position sizing, performance metrics, scenario config, order execution. Single-domain logic with tight internal coupling.",
       "status": "accepted",
       "reviewed_at": "2026-04-28"
     },
