@@ -1,5 +1,4 @@
 """S t o c k domain schemas."""
-from __future__ import annotations
 
 from ashare_evidence.lineage import LineageRecord
 from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
@@ -8,10 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .operations import PricePointView
-    from .simulation import SimulationOrderView
+from .operations import PricePointView
+from .simulation import SimulationOrderView
 
 
 class StockView(BaseModel):
