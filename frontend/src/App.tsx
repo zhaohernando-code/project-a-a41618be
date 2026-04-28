@@ -1891,24 +1891,46 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
   async function loadOperationsData(symbol: string): Promise<void> {
     setOperationsLoading(true);
     setOperationsError(null);
-    try {
-      const operationsResult = await api.getOperationsDashboard(symbol);
-      setOperations(operationsResult.data);
-      setSourceInfo(operationsResult.source);
 
-      if (operationsResult.data.simulation_workspace) {
-        applySimulationWorkspace(operationsResult.data.simulation_workspace);
-      } else {
+    const maxRetries = 2;
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        const operationsResult = await api.getOperationsDashboard(symbol);
+        setOperations(operationsResult.data);
+        setSourceInfo(operationsResult.source);
+
+        if (operationsResult.data.simulation_workspace) {
+          applySimulationWorkspace(operationsResult.data.simulation_workspace);
+        } else {
+          setSimulation(null);
+          setOperationsError("运营复盘接口未返回双轨模拟工作区数据。");
+        }
+        setOperationsLoading(false);
+        return;
+      } catch (loadError) {
+        lastError = loadError;
+        const message = loadError instanceof Error ? loadError.message : "";
+        const isTimeout = message.includes("请求超时");
+
+        if (isTimeout && attempt < maxRetries) {
+          continue;
+        }
+
+        setOperations(null);
         setSimulation(null);
-        setOperationsError("运营复盘接口未返回双轨模拟工作区数据。");
+        setOperationsError(message || "加载运营复盘工作区失败。");
+        setOperationsLoading(false);
+        return;
       }
-    } catch (loadError) {
-      setOperations(null);
-      setSimulation(null);
-      setOperationsError(loadError instanceof Error ? loadError.message : "加载运营复盘工作区失败。");
-    } finally {
-      setOperationsLoading(false);
     }
+
+    setOperations(null);
+    setSimulation(null);
+    const fallbackMessage = lastError instanceof Error ? lastError.message : "加载运营复盘工作区失败。";
+    setOperationsError(fallbackMessage);
+    setOperationsLoading(false);
   }
 
   useEffect(() => {

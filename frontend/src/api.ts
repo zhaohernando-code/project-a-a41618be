@@ -36,6 +36,8 @@ const defaultRequestTimeoutMs = 10000;
 const defaultRequestAttemptTimeoutMs = 3000;
 const longRunningRequestTimeoutMs = 180000;
 const longRunningRequestAttemptTimeoutMs = 60000;
+const operationsDashboardTimeoutMs = 30000;
+const operationsDashboardAttemptTimeoutMs = 10000;
 const htmlPrefixes = ["<!doctype", "<html", "<?xml"];
 const notFoundSignatures = ["tool not found", "tool_not_found", "404 not found"];
 const localApiBaseStorageKey = "ashare-api-base-url";
@@ -449,6 +451,11 @@ const manualResearchRequestBehavior: RequestBehavior = {
   attemptTimeoutMs: longRunningRequestAttemptTimeoutMs,
 };
 
+const operationsDashboardRequestBehavior: RequestBehavior = {
+  timeoutMs: operationsDashboardTimeoutMs,
+  attemptTimeoutMs: operationsDashboardAttemptTimeoutMs,
+};
+
 export const api = {
   getApiBase,
   getBetaAccessKey,
@@ -495,6 +502,8 @@ export const api = {
   getOperationsDashboard: async (sampleSymbol: string): Promise<ApiResult<OperationsDashboardResponse>> => ({
     data: await request<OperationsDashboardResponse>(
       `/dashboard/operations?sample_symbol=${encodeURIComponent(sampleSymbol)}`,
+      undefined,
+      operationsDashboardRequestBehavior,
     ),
     source: buildSourceInfo(),
   }),
