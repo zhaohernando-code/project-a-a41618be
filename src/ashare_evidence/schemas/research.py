@@ -1,14 +1,11 @@
 """R e s e a r c h domain schemas."""
-from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .stock import ManualLlmReviewView
+from .stock import ManualLlmReviewView
 
 
 class AnalysisAttemptView(BaseModel):

@@ -7,10 +7,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from .portfolio import PortfolioSummaryView
+from .research import ManualResearchRequestView
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .portfolio import PortfolioSummaryView
-    from .research import ManualResearchRequestView
     from .simulation import SimulationWorkspaceResponse
 
 
@@ -232,4 +233,9 @@ class OperationsDashboardResponse(BaseModel):
     manual_research_queue: ManualResearchQueueView
     simulation_workspace: SimulationWorkspaceResponse | None = None
 
+
+from .simulation import SimulationWorkspaceResponse  # noqa: E402
+
+ManualResearchQueueView.model_rebuild()
+OperationsDashboardResponse.model_rebuild()
 

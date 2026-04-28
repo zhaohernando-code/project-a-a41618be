@@ -1,5 +1,4 @@
 """P o r t f o l i o domain schemas."""
-from __future__ import annotations
 
 from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
 from datetime import date, datetime

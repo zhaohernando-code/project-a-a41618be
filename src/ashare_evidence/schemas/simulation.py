@@ -8,10 +8,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from .portfolio import PortfolioSummaryView
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .operations import PricePointView
-    from .portfolio import PortfolioSummaryView
 
 
 class SimulationFillView(BaseModel):
@@ -212,4 +213,9 @@ class ManualSimulationOrderRequest(BaseModel):
 class SimulationEndRequest(BaseModel):
     confirm: bool
 
+
+from .operations import PricePointView  # noqa: E402
+
+SimulationTrackStateView.model_rebuild()
+SimulationKlineView.model_rebuild()
 
