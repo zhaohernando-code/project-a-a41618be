@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Button, Select, Space, Tag, Typography } from "antd";
+import { Button, Select, Space, Tag, Typography, Modal, Descriptions, Empty } from "antd";
+const { Text } = Typography;
 import type { PricePointView } from "../types";
 import { KlineChart } from "./KlineChart";
 import { PnlStack } from "./PnlStack";
 import { formatDate, formatPercent, formatNumber, formatSignedNumber } from "../utils/format";
 import { formatMarketFreshness, sanitizeDisplayText } from "../utils/labels";
 import { numberFormatter } from "../utils/constants";
+import { valueTone } from "../utils/format";
+
+
 
 export function KlinePanel({
   title,

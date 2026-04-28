@@ -1,12 +1,17 @@
 import { useEffect, useRef } from "react";
-import { Button, Descriptions, Empty, Space, Table, Tag, Typography } from "antd";
+import { Button, Descriptions, Empty, Space, Table, Tag, Typography, Skeleton, Alert } from "antd";
 const { Paragraph } = Typography;
 import type { ColumnsType } from "antd/es/table";
 import { init } from "echarts";
-import type { CandidateItemView, ClaimGateView, GlossaryEntryView, ManualResearchRequestView, RecommendationReplayView, StockDashboardResponse } from "../types";
+import type { CandidateItemView, CandidateWorkspaceRow, ClaimGateView, GlossaryEntryView, ManualResearchRequestView, RecommendationReplayView, StockDashboardResponse } from "../types";
 import { formatDate, formatNumber, formatPercent, formatSignedNumber, statusColor } from "../utils/format";
 import { compactValidationNote, sanitizeDisplayText, publicValidationSummary, candidateValidationSummary, claimGateDescription, claimGateAlertType, claimGateStatusLabel, displayBenchmarkLabel, displayLabelDefinition, displayWindowLabel, validationStatusLabel, manualReviewStatusLabel } from "../utils/labels";
 import { manualResearchVerdictOptions } from "../utils/constants";
+import { directionColor } from "../utils/format";
+
+import { buildPendingDetailMessage, horizonLabel, validationMetricSummary } from "../utils/labels";
+
+
 
 export function CompactAnalysisReport({
   row,

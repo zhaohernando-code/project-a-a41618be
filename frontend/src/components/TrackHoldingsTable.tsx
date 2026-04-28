@@ -1,9 +1,13 @@
-import { Button, Table, Tag } from "antd";
-const { Text } = Typography;
+import { useMemo, type MouseEvent as ReactMouseEvent } from "react";
+import { Button, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { CandidateWorkspaceRow, PortfolioHoldingView, SimulationModelAdviceView, SimulationTrackStateView } from "../types";
+import { PnlStack } from "./PnlStack";
 import { formatNumber, formatSignedNumber, formatPercent, directionColor, valueTone } from "../utils/format";
 import { sanitizeDisplayText } from "../utils/labels";
+import { buildTrackTableRows } from "../utils/data";
+
+
 
 export function TrackHoldingsTable({
   track,
@@ -53,7 +57,7 @@ export function TrackHoldingsTable({
             render: (_, record) => (
               <div className="table-primary-cell">
                 <strong>{record.name}</strong>
-                <Text type="secondary">{record.symbol}</Text>
+                <Typography.Text type="secondary">{record.symbol}</Typography.Text>
               </div>
             ),
           },
@@ -115,7 +119,7 @@ export function TrackHoldingsTable({
               <div className="table-action-group table-action-group-tight">
                 <Button
                   type="link"
-                  onClick={(event: MouseEvent<HTMLElement>) => {
+                  onClick={(event: ReactMouseEvent<HTMLElement>) => {
                     event.stopPropagation();
                     onViewKline(record.symbol);
                   }}
@@ -124,7 +128,7 @@ export function TrackHoldingsTable({
                 </Button>
                 <Button
                   type="link"
-                  onClick={(event: MouseEvent<HTMLElement>) => {
+                  onClick={(event: ReactMouseEvent<HTMLElement>) => {
                     event.stopPropagation();
                     onOpenReport(record.symbol);
                   }}
@@ -134,7 +138,7 @@ export function TrackHoldingsTable({
                 {isUserTrack && onOpenOrder ? (
                   <Button
                     type="link"
-                    onClick={(event: MouseEvent<HTMLElement>) => {
+                    onClick={(event: ReactMouseEvent<HTMLElement>) => {
                       event.stopPropagation();
                       onOpenOrder(record.symbol);
                     }}
@@ -151,4 +155,5 @@ export function TrackHoldingsTable({
     </div>
   );
 }
+
 

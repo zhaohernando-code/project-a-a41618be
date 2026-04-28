@@ -307,6 +307,13 @@ export interface CandidateListResponse {
   items: CandidateItemView[];
 }
 
+
+
+/** View-model combining watchlist item with its candidate analysis data. */
+export type CandidateWorkspaceRow = WatchlistItemView & {
+  candidate: CandidateItemView | null;
+};
+
 export interface WatchlistItemView {
   symbol: string;
   name: string;

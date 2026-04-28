@@ -1,8 +1,8 @@
 // data helper functions
 import type { CandidateItemView, CandidateWorkspaceRow, DataSourceInfo, SimulationModelAdviceView, SimulationTrackStateView, SimulationWorkspaceResponse, WatchlistItemView } from "../types";
 import { api } from "../api";
-import { formatNumber, formatPercent, formatSignedNumber, sanitizeDisplayText } from "./format";
-import { compactValidationNote, validationStatusLabel } from "./labels";
+import { formatNumber, formatPercent, formatSignedNumber } from "./format";
+import { compactValidationNote, sanitizeDisplayText, validationStatusLabel } from "./labels";
 
 export function buildInitialSourceInfo(): DataSourceInfo {
   const runtimeConfig = api.getRuntimeConfig();

@@ -1,6 +1,10 @@
 import { useRef, useEffect } from "react";
+import { Empty } from "antd";
 import { init } from "echarts";
 import type { PricePointView } from "../types";
+import { formatNumber, formatPercent } from "../utils/format";
+
+
 
 export function KlineChart({ points, compact = false }: { points: PricePointView[]; compact?: boolean }) {
   const chartRef = useRef<HTMLDivElement | null>(null);

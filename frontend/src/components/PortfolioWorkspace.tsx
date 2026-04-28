@@ -1,9 +1,12 @@
-import {Descriptions, Empty, Space, Tag } from "antd";
+import { Alert, Card, Col, Descriptions, Empty, List, Row, Space, Table, Tag, Typography } from "antd";
 const { Paragraph, Text } = Typography;
 import type { PortfolioSummaryView } from "../types";
 import { NavSparkline } from "./NavSparkline";
 import { formatNumber, formatPercent, formatSignedNumber, statusColor, simulationAdviceActionLabel, simulationAdvicePolicyLabel } from "../utils/format";
 import { portfolioTrackLabel, portfolioTrackSummary, displayBenchmarkLabel, validationStatusLabel, sanitizeDisplayText, compactValidationNote, formatMarketFreshness } from "../utils/labels";
+import { formatDate } from "../utils/format";
+
+
 
 export function PortfolioWorkspace({ portfolio }: { portfolio: PortfolioSummaryView }) {
   const benchmarkContext = portfolio.benchmark_context;

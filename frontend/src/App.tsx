@@ -41,7 +41,6 @@ import {
   message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { init } from "echarts";
 import type { MouseEvent, ReactNode } from "react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
@@ -70,6 +69,7 @@ import type {
   SimulationTrackStateView,
   SimulationWorkspaceResponse,
   StockDashboardResponse,
+  CandidateWorkspaceRow,
   WatchlistItemView,
 } from "./types";
 import { KlineChart } from "./components/KlineChart";
@@ -80,9 +80,12 @@ import { TrackHoldingsTable } from "./components/TrackHoldingsTable";
 import { SimulationTrackCard } from "./components/SimulationTrackCard";
 import { CompactAnalysisReport } from "./components/CompactAnalysisReport";
 import { PortfolioWorkspace } from "./components/PortfolioWorkspace";
-import { formatDate, formatNumber, formatSignedNumber, formatPercent, valueTone, directionColor, statusColor, simulationAdviceActionLabel, simulationAdvicePolicyLabel } from "./utils/format";
-import { validationStatusLabel, sanitizeDisplayText, formatMarketFreshness, compactValidationNote, publicValidationSummary } from "./utils/labels";
-import {  } from "./utils/format";
+
+import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
+import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, statusColor, valueTone } from "./utils/format";
+import { buildPendingDetailMessage, canCompleteManualResearch, canExecuteManualResearch, canFailManualResearch, canRetryManualResearch, candidateValidationSummary, claimGateAlertType, claimGateDescription, claimGateStatusLabel, dataSourceStatusColor, deploymentModeLabel, displayBenchmarkLabel, displayLabelDefinition, displayWindowLabel, fieldMappingLabel, formatMarketFreshness, horizonLabel, manualResearchActionStatusMessage, manualReviewModelLabel, manualReviewStatusLabel, operationsValidationDescription, operationsValidationMessage, parseMultilineItems, portfolioTrackLabel, providerSelectionModeLabel, publicValidationSummary, sanitizeDisplayText, validationStatusLabel, watchlistScopeLabel } from "./utils/labels";
+import { directionLabels, factorLabels, manualResearchVerdictOptions } from "./utils/constants";
+
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -90,9 +93,6 @@ const { TextArea } = Input;
 type ViewMode = "candidates" | "stock" | "operations" | "settings";
 type ThemeMode = "light" | "dark";
 
-type CandidateWorkspaceRow = WatchlistItemView & {
-  candidate: CandidateItemView | null;
-};
 
 type ViewCard = {
   key: ViewMode;

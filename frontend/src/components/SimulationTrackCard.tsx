@@ -1,10 +1,13 @@
-import { Button, Descriptions, Space, Tag } from "antd";
+import { Alert, Button, Card, Descriptions, Space, Tag } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import type { CandidateWorkspaceRow, SimulationModelAdviceView, SimulationTrackStateView } from "../types";
 import { KlinePanel } from "./KlinePanel";
 import { TrackHoldingsTable } from "./TrackHoldingsTable";
 import { formatNumber, formatPercent, formatSignedNumber, statusColor, simulationAdviceActionLabel, simulationAdvicePolicyLabel } from "../utils/format";
 import { sanitizeDisplayText } from "../utils/labels";
+import { portfolioTrackLabel } from "../utils/labels";
+
+
 
 export function SimulationTrackCard({
   track,

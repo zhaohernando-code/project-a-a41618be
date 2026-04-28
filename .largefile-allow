@@ -1,0 +1,3 @@
+# Type definition catalogs naturally grow with API surface.
+# Individual model files can be split when a domain has >10 models.
+frontend/src/types.ts
