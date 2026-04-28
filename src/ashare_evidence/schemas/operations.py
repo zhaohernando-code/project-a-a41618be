@@ -1,5 +1,4 @@
 """O p e r a t i o n s domain schemas."""
-from __future__ import annotations
 
 from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
 from datetime import date, datetime
@@ -9,10 +8,7 @@ from pydantic import BaseModel, Field
 
 from .portfolio import PortfolioSummaryView
 from .research import ManualResearchRequestView
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .simulation import SimulationWorkspaceResponse
+from .simulation import SimulationWorkspaceResponse
 
 
 class PricePointView(BaseModel):
@@ -214,8 +210,8 @@ class ManualResearchQueueView(BaseModel):
     generated_at: datetime
     focus_symbol: str | None = None
     counts: dict[str, int] = Field(default_factory=dict)
-    focus_request: "ManualResearchRequestView | None" = None
-    recent_items: list["ManualResearchRequestView"] = Field(default_factory=list)
+    focus_request: ManualResearchRequestView | None = None
+    recent_items: list[ManualResearchRequestView] = Field(default_factory=list)
 
 
 class OperationsDashboardResponse(BaseModel):
@@ -232,10 +228,4 @@ class OperationsDashboardResponse(BaseModel):
     launch_gates: list[LaunchGateView] = Field(default_factory=list)
     manual_research_queue: ManualResearchQueueView
     simulation_workspace: SimulationWorkspaceResponse | None = None
-
-
-from .simulation import SimulationWorkspaceResponse  # noqa: E402
-
-ManualResearchQueueView.model_rebuild()
-OperationsDashboardResponse.model_rebuild()
 

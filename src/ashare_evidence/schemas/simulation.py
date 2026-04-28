@@ -213,9 +213,3 @@ class ManualSimulationOrderRequest(BaseModel):
 class SimulationEndRequest(BaseModel):
     confirm: bool
 
-
-from .operations import PricePointView  # noqa: E402
-
-SimulationTrackStateView.model_rebuild()
-SimulationKlineView.model_rebuild()
-
