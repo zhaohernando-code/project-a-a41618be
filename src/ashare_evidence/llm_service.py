@@ -7,8 +7,9 @@ from urllib.error import HTTPError, URLError
 
 from sqlalchemy.orm import Session
 
-from ashare_evidence.dashboard import get_stock_dashboard
-from ashare_evidence.runtime_config import record_model_api_key_result, resolve_llm_key_candidates
+from ashare_evidence.http_client import urlopen
+
+OPENAI_COMPATIBLE_TIMEOUT_SECONDS = 75
 
 
 class LLMTransport(Protocol):
@@ -41,7 +42,7 @@ class OpenAICompatibleTransport:
             method="POST",
         )
         try:
-            with request.urlopen(http_request, timeout=30) as response:
+            with urlopen(http_request, timeout=OPENAI_COMPATIBLE_TIMEOUT_SECONDS) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore") or str(exc)
@@ -85,64 +86,13 @@ def run_follow_up_analysis(
     failover_enabled: bool = True,
     transport: LLMTransport | None = None,
 ) -> dict[str, Any]:
-    transport = transport or OpenAICompatibleTransport()
-    summary = get_stock_dashboard(session, symbol)
-    prompt = _build_follow_up_prompt(summary, question)
-    candidates = resolve_llm_key_candidates(session, model_api_key_id)
-    if not candidates:
-        raise ValueError("尚未配置可用的大模型 API Key。")
+    from ashare_evidence.manual_research_workflow import run_follow_up_analysis_compat
 
-    attempted: list[dict[str, Any]] = []
-    last_error: str | None = None
-    for index, key in enumerate(candidates):
-        try:
-            answer = transport.complete(
-                base_url=key.base_url,
-                api_key=key.api_key,
-                model_name=key.model_name,
-                prompt=prompt,
-            )
-            record_model_api_key_result(session, key.id, status="healthy", error_message=None)
-            session.commit()
-            attempted.append(
-                {
-                    "key_id": key.id,
-                    "name": key.name,
-                    "provider_name": key.provider_name,
-                    "model_name": key.model_name,
-                    "status": "success",
-                    "error": None,
-                }
-            )
-            return {
-                "symbol": symbol,
-                "question": question.strip() or "请解释当前建议最容易失效的条件。",
-                "answer": answer,
-                "selected_key": {
-                    "id": key.id,
-                    "name": key.name,
-                    "provider_name": key.provider_name,
-                    "model_name": key.model_name,
-                    "base_url": key.base_url,
-                },
-                "failover_used": index > 0,
-                "attempted_keys": attempted,
-            }
-        except Exception as exc:
-            last_error = str(exc)
-            record_model_api_key_result(session, key.id, status="failed", error_message=last_error)
-            session.commit()
-            attempted.append(
-                {
-                    "key_id": key.id,
-                    "name": key.name,
-                    "provider_name": key.provider_name,
-                    "model_name": key.model_name,
-                    "status": "failed",
-                    "error": last_error,
-                }
-            )
-            if not failover_enabled:
-                break
-
-    raise RuntimeError(last_error or "所有可用的大模型 API Key 都调用失败。")
+    return run_follow_up_analysis_compat(
+        session,
+        symbol=symbol,
+        question=question,
+        model_api_key_id=model_api_key_id,
+        failover_enabled=failover_enabled,
+        transport=transport if transport is not None else OpenAICompatibleTransport(),
+    )

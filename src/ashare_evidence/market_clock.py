@@ -4,6 +4,9 @@ from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 MARKET_TIMEZONE = ZoneInfo("Asia/Shanghai")
+MARKET_OPEN_TIME = time(9, 30)
+MARKET_MORNING_CLOSE_TIME = time(11, 30)
+MARKET_AFTERNOON_OPEN_TIME = time(13, 0)
 MARKET_CLOSE_TIME = time(15, 0)
 
 
@@ -23,3 +26,14 @@ def latest_completed_trade_day(reference: datetime | None = None) -> date:
     while trade_day.weekday() >= 5:
         trade_day -= timedelta(days=1)
     return trade_day
+
+
+def is_market_session_open(reference: datetime | None = None) -> bool:
+    current = _market_now(reference)
+    if current.weekday() >= 5:
+        return False
+    current_time = current.time()
+    return (
+        MARKET_OPEN_TIME <= current_time < MARKET_MORNING_CLOSE_TIME
+        or MARKET_AFTERNOON_OPEN_TIME <= current_time < MARKET_CLOSE_TIME
+    )

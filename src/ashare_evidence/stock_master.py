@@ -10,6 +10,7 @@ from urllib import error, request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ashare_evidence.http_client import urlopen
 from ashare_evidence.models import ProviderCredential
 
 TUSHARE_STOCK_BASIC_FIELDS = "ts_code,symbol,name,industry,list_date"
@@ -228,7 +229,7 @@ def _post_tushare(
         method="POST",
     )
     try:
-        with request.urlopen(req, timeout=5) as response:
+        with urlopen(req, timeout=5) as response:
             body = response.read()
     except (error.URLError, TimeoutError, OSError, ValueError):
         return None
