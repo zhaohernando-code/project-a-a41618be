@@ -19,13 +19,15 @@ from ashare_evidence.signal_engine_parts.base import (
 from ashare_evidence.signal_engine_parts.factors import (
     active_sector_codes,
     compute_fundamental_factor,
-    compute_liquidity_factor,
     compute_manual_review_layer,
     compute_news_factor,
     compute_price_factor,
+    primary_sector_membership,
+)
+from ashare_evidence.signal_engine_parts.factors_extended import (
+    compute_liquidity_factor,
     compute_reversal_factor,
     compute_size_factor,
-    primary_sector_membership,
 )
 from ashare_evidence.signal_engine_parts.recommendation import (
     _fusion_state,
