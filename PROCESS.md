@@ -139,4 +139,8 @@
 - historical validation 不能复用 `as_of_data_time` 之后的 future exit bars；否则 horizon study 会被未来泄漏污染。
 - canonical 若看起来 stale，先排查 tunnel / remote port ownership；不要先把它误判成 repo 或 runtime 代码失效。
 - 浏览器验收优先用 Safari。Chrome 如果出现旧缓存页、空白页、异常 profile 状态，但 curl/health/served assets 正常，不要继续在 Chrome 上浪费时间，直接切 Safari 复核。
-- Safari 即使使用正确入口，也可能保留旧标签页或旧 `?cb=` 页面内存态；如果页面上出现“最近动作理由已更新，但模型持仓仍显示 0”这类自相矛盾现象，先刷新当前标签页，再判断是不是 live runtime 真问题。
+- Safari 即使使用正确入口，也可能保留旧标签页或旧 `?cb=` 页面内存态；如果页面上出现”最近动作理由已更新，但模型持仓仍显示 0”这类自相矛盾现象，先刷新当前标签页，再判断是不是 live runtime 真问题。
+- Pydantic schema 模块不要同时使用 `from __future__ import annotations` 和 `TYPE_CHECKING` 导入跨模块 Pydantic 类型，除非在 `__init__.py` 中所有模块加载后注入类型并显式调用 `model_rebuild()`。循环依赖时使用 `__init__.py` 命名空间注入模式，而非在源文件中做 bottom import。
+- SSH 隧道清理脚本不要用 `.join(“; “)` 拼接数组生成 bash，多余分号会导致语法错误。必须用字符串拼接，并对生成脚本跑 `bash -n` 做语法检查。
+- API 错误响应的 JSON key 必须用 `detail` 而非 `error`，因为前端 `core.ts` 只提取 `detail` 展示给用户。
+- 定时刷新任务必须在 `~/Library/LaunchAgents/` 下配置 `RunAtLoad` + `StartInterval`（或 `StartCalendarInterval`），`KeepAlive` 只适用于长期运行的服务进程。
