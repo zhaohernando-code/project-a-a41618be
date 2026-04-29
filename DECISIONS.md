@@ -7,6 +7,7 @@
 - `规范路由` 不再作为移动端设置项展示，避免无意义长 URL 占据设置页宽度。运行状态、数据源、自动降级、研究模式、版式密度、风险提醒等当前只读项保留为状态行，不显示箭头。
 - 首页左滑操作仅对 `source_kind !== "candidate_only"` 的关注来源标的开放；纯候选来源不展示移除入口，和桌面端自选删除边界保持一致。
 - 左滑移除的红色按钮只在展开状态显示，展开后卡片右侧圆角归零，避免闭合状态红色透底和双圆角边框；滑动释放会吞掉下一次 click，避免误跳单票页。
+- 发布先从主仓库提交 `a654cd9070a917f4050433e674fec5d7d638ff13`，再通过干净 worktree `/private/tmp/stock-dashboard-mobile-publish-ANQXdo/repo` 执行标准脚本，生成 manifest `/private/tmp/stock-dashboard-mobile-publish-ANQXdo/repo/output/releases/20260429T145429Z-a654cd9070a9/manifest.json`。localhost `http://127.0.0.1:5173/` 已在 390x844 验收：首页显示 `关注股票`、底部 tab 和移除入口，设置页显示 `外观主题` Switch，只有 `默认模型` 带箭头且二级页包含 `本机 Codex GPT` 与当前 `deepseek-v4-pro` Key。canonical 标准入口在当前浏览器会话被统一登录层拦截到登录页；脚本 release parity 已通过，但手工浏览器 canonical 复验需要有效登录态。
 
 [2026-04-29T17:40:00+08:00] Mobile dashboard information architecture is app-native, not a compressed desktop workspace:
 手机端正式固定为 `首页 / 单票 / 复盘 / 设置` 四个 bottom tabs；原先“首页”和“自选/候选”不再拆成两个移动端入口，统一合并到首页，用一个焦点卡片、搜索筛选和候选/自选列表承载。设置升为独立 tab，但只展示和操作已有真实运行时能力，不新增未接后端的假偏好项。
