@@ -2,15 +2,16 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
 from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
 from ashare_evidence.lineage import LineageRecord
 
-from .operations import PricePointView
-from .simulation import SimulationOrderView
+if TYPE_CHECKING:
+    from .operations import PricePointView
+    from .simulation import SimulationOrderView
 
 
 class StockView(BaseModel):
@@ -273,7 +274,7 @@ class CandidateItemView(BaseModel):
     as_of_data_time: datetime
     last_close: float | None = None
     price_return_20d: float
-    price_chart: list[PricePointView] = Field(default_factory=list)
+    price_chart: list[dict[str, Any]] = Field(default_factory=list)
     why_now: str
     primary_risk: str | None = None
     change_summary: str
