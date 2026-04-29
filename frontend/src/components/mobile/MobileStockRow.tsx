@@ -2,6 +2,7 @@ import { Tag, Typography } from "antd";
 import type { CandidateWorkspaceRow } from "../../types";
 import { directionColor, formatDate, formatNumber, formatPercent, valueTone } from "../../utils/format";
 import { claimGateStatusLabel, sanitizeDisplayText } from "../../utils/labels";
+import { MobileMiniTrendChart } from "./MobileMiniTrendChart";
 
 const { Text } = Typography;
 
@@ -26,15 +27,16 @@ export function MobileStockRow({
     >
       <div className="mobile-stock-row-main">
         <div>
-          <Text className="mobile-stock-rank">{candidate?.rank ? `#${candidate.rank}` : row.source_kind === "candidate_only" ? "候选" : "自选"}</Text>
+          <Text className="mobile-stock-rank">{candidate?.rank ? `#${candidate.rank}` : row.source_kind === "candidate_only" ? "候选" : "关注"}</Text>
           <strong>{row.name}</strong>
           <span>{row.symbol}</span>
         </div>
         <div className="mobile-stock-row-price">
-          <strong>{formatNumber(candidate?.last_close)}</strong>
+          <strong className={`value-${valueTone(candidate?.price_return_20d)}`}>{formatPercent(candidate?.price_return_20d)}</strong>
           <span className={`value-${valueTone(candidate?.price_return_20d)}`}>
-            {formatPercent(candidate?.price_return_20d)}
+            {formatNumber(candidate?.last_close)}
           </span>
+          <MobileMiniTrendChart row={row} />
         </div>
       </div>
       <div className="mobile-stock-row-tags">

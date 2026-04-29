@@ -257,6 +257,7 @@ export interface CandidateItemView {
   as_of_data_time: string;
   last_close?: number | null;
   price_return_20d: number;
+  price_chart: PricePointView[];
   why_now: string;
   primary_risk?: string | null;
   change_summary: string;
@@ -321,4 +322,3 @@ export interface RecommendationReplayView {
   summary: string;
   followed_by_portfolios: string[];
 }
-

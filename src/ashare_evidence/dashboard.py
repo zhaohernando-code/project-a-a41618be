@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload
 
 from ashare_evidence.db import align_datetime_timezone
 from ashare_evidence.models import MarketBar, ModelVersion, NewsEntityLink, Recommendation, SectorMembership, Stock
@@ -15,10 +15,7 @@ from ashare_evidence.recommendation_selection import (
     recommendation_recency_ordering,
 )
 from ashare_evidence.research_artifact_store import artifact_root_from_database_url
-from ashare_evidence.services import (
-    _serialize_recommendation,
-    get_recommendation_trace,
-)
+from ashare_evidence.services import _serialize_recommendation, get_recommendation_trace
 from ashare_evidence.watchlist import active_watchlist_symbols
 
 DIRECTION_LABELS = {
@@ -174,7 +171,7 @@ def _recent_news(
         .where(NewsEntityLink.effective_at <= as_of)
         .order_by(NewsEntityLink.effective_at.desc())
     ).all()
-    deduped: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
+    deduped: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for link in links:
         if link.stock_id != stock_id and (link.sector_id is None or link.sector_id not in sector_ids):
             continue
@@ -523,6 +520,7 @@ def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str
                 "as_of_data_time": reco["as_of_data_time"],
                 "last_close": latest_bar.close_price if latest_bar is not None else None,
                 "price_return_20d": round(twenty_day_return, 4),
+                "price_chart": _price_chart_payload(bars),
                 "why_now": _candidate_primary_driver(reco),
                 "primary_risk": _candidate_primary_risk(reco),
                 "change_summary": change["summary"],

@@ -1,16 +1,23 @@
-import { BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Alert, Button, Empty, Skeleton, Space, Tag, Typography } from "antd";
+import { CalendarOutlined, FileTextOutlined, LineChartOutlined } from "@ant-design/icons";
+import { Alert, Button, Empty, Skeleton, Tag, Typography } from "antd";
+import { useState } from "react";
 import type { MobileAppShellProps } from "./types";
 import { MobileMetric } from "./MobileMetric";
-import { KlinePanel } from "../KlinePanel";
 import { formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, valueTone } from "../../utils/format";
 import { formatMarketFreshness, operationsValidationDescription, operationsValidationMessage, sanitizeDisplayText, validationStatusLabel } from "../../utils/labels";
 
 const { Text, Title } = Typography;
+type TrackKey = "manual" | "model";
 
 export function MobileOperations(props: MobileAppShellProps) {
   const simulation = props.simulation;
   const operations = props.operations;
+  const [trackKey, setTrackKey] = useState<TrackKey>("manual");
+  const activeTrack = trackKey === "manual" ? simulation?.manual_track : simulation?.model_track;
+  const activeHolding = activeTrack?.portfolio.holdings.find((item) => item.quantity > 0) ?? null;
+  const activeAdvice = activeHolding
+    ? simulation?.model_advices.find((item) => item.symbol === activeHolding.symbol) ?? simulation?.model_advices[0]
+    : simulation?.model_advices[0];
 
   if (props.operationsLoading && !operations && !simulation) {
     return (
@@ -21,14 +28,16 @@ export function MobileOperations(props: MobileAppShellProps) {
   }
 
   return (
-    <main className="mobile-page">
+    <main className="mobile-page mobile-page-operations">
       <header className="mobile-page-head">
         <div>
-          <Text className="mobile-kicker">运营复盘</Text>
-          <Title level={2}>双轨模拟</Title>
-          <Text>{simulation?.session.status_label ?? "等待工作区数据"}</Text>
+          <Title level={2}>复盘</Title>
+          <Text>
+            <span className="mobile-live-dot" />
+            {simulation ? `${simulation.session.status_label} · ${formatMarketFreshness(simulation.session.data_latency_seconds, simulation.session.last_market_data_at, true)}` : "等待工作区数据"}
+          </Text>
         </div>
-        <Button shape="circle" icon={<ReloadOutlined />} loading={props.operationsLoading} onClick={() => void props.onLoadOperations()} />
+        <Button className="mobile-icon-button" shape="circle" icon={<CalendarOutlined />} loading={props.operationsLoading} onClick={() => void props.onLoadOperations()} />
       </header>
 
       {props.operationsError ? (
@@ -44,73 +53,45 @@ export function MobileOperations(props: MobileAppShellProps) {
 
       {simulation ? (
         <>
-          <section className="mobile-hero-card">
-            <div className="mobile-focus-title">
-              <div>
-                <Text className="mobile-card-kicker">当前模拟</Text>
-                <Title level={3}>{simulation.session.status_label}</Title>
-              </div>
-              <Tag color="blue">{simulation.session.market_data_timeframe}</Tag>
-            </div>
-            <div className="mobile-metric-grid">
-              <MobileMetric label="步数" value={simulation.session.current_step} />
-              <MobileMetric label="股票池" value={`${simulation.session.watch_symbols.length} 只`} />
-              <MobileMetric label="最新行情" value={formatMarketFreshness(simulation.session.data_latency_seconds, simulation.session.last_market_data_at, true)} />
-            </div>
-            <Space wrap className="mobile-chip-row">
-              <Tag>{`初始资金 ${formatNumber(simulation.session.initial_cash)}`}</Tag>
-              <Tag>{simulation.session.fill_rule_label}</Tag>
-              <Tag>{`重启 ${simulation.session.restart_count} 次`}</Tag>
-            </Space>
+          <section className="mobile-panel-card mobile-review-summary">
+            <MobileMetric label="当前净值" value={formatNumber(activeTrack?.portfolio.net_asset_value)} />
+            <MobileMetric label="今日盈亏" value={formatSignedNumber(activeTrack?.portfolio.unrealized_pnl)} tone={valueTone(activeTrack?.portfolio.unrealized_pnl)} />
+            <MobileMetric label="仓位" value={formatPercent(activeTrack?.portfolio.invested_ratio)} />
           </section>
 
-          <section className="mobile-panel-card">
+          <div className="mobile-segmented mobile-track-switch">
+            <button type="button" className={trackKey === "manual" ? "active" : ""} onClick={() => setTrackKey("manual")}>用户轨道</button>
+            <button type="button" className={trackKey === "model" ? "active" : ""} onClick={() => setTrackKey("model")}>模型轨道</button>
+          </div>
+
+          <TrackPanel title={activeTrack?.label ?? "轨道"} track={activeTrack} holding={activeHolding} onOpenStock={props.onSelectSymbol} />
+
+          <section className="mobile-panel-card mobile-advice-card">
             <div className="mobile-section-head">
               <div>
-                <Title level={4}>焦点 K 线</Title>
-                <Text>{simulation.kline.stock_name ?? simulation.kline.symbol ?? "--"}</Text>
+                <Title level={4}>模型建议</Title>
+                <Text>{activeAdvice ? `${activeAdvice.stock_name} · ${activeAdvice.symbol}` : "暂无建议"}</Text>
               </div>
-              <BarChartOutlined />
+              {activeAdvice ? <Tag>{simulationAdviceActionLabel(activeAdvice)}</Tag> : null}
             </div>
-            <KlinePanel
-              title={`${simulation.kline.stock_name ?? simulation.kline.symbol ?? "焦点标的"} K 线`}
-              points={simulation.kline.points}
-              lastUpdated={simulation.kline.last_updated}
-              stockName={simulation.kline.stock_name ?? simulation.kline.symbol}
-              isMobile
-            />
-          </section>
-
-          <TrackPanel title="用户轨道" track={simulation.manual_track} onOpenStock={props.onSelectSymbol} />
-          <TrackPanel title="模型轨道" track={simulation.model_track} onOpenStock={props.onSelectSymbol} />
-
-          <section className="mobile-panel-card">
-            <Title level={4}>模型建议</Title>
             <div className="mobile-card-list">
-              {simulation.model_advices.length > 0 ? simulation.model_advices.slice(0, 6).map((advice) => (
-                <article key={advice.symbol} className="mobile-mini-card">
-                  <div className="mobile-mini-head">
-                    <div>
-                      <strong>{advice.stock_name}</strong>
-                      <span>{advice.symbol}</span>
-                    </div>
-                    <Tag>{simulationAdviceActionLabel(advice)}</Tag>
-                  </div>
-                  <p>{sanitizeDisplayText(advice.reason)}</p>
-                  <div className="mobile-fact-list">
-                    <MobileMetric label={simulationAdvicePolicyLabel(advice)} value={advice.confidence_label} />
-                    <MobileMetric label="参考价" value={formatNumber(advice.reference_price)} />
-                    <MobileMetric label="目标权重" value={formatPercent(advice.target_weight)} />
+              {activeAdvice ? (
+                <article className="mobile-mini-card mobile-flat-card">
+                  <p>{sanitizeDisplayText(activeAdvice.reason)}</p>
+                  <div className="mobile-fact-list mobile-fact-grid">
+                    <MobileMetric label={simulationAdvicePolicyLabel(activeAdvice)} value={activeAdvice.confidence_label} />
+                    <MobileMetric label="参考价" value={formatNumber(activeAdvice.reference_price)} />
+                    <MobileMetric label="目标权重" value={formatPercent(activeAdvice.target_weight)} />
                   </div>
                 </article>
-              )) : <Empty description="暂无模型建议" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+              ) : <Empty description="暂无模型建议" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
             </div>
           </section>
 
-          <section className="mobile-panel-card">
-            <Title level={4}>最近事件</Title>
+          <section className="mobile-panel-card mobile-key-points">
+            <Title level={4}>关键记录</Title>
             <div className="mobile-timeline">
-              {simulation.timeline.slice(0, 8).map((event) => (
+              {simulation.timeline.slice(0, 4).map((event) => (
                 <article key={event.event_key}>
                   <span>{formatDate(event.happened_at)}</span>
                   <strong>{event.title}</strong>
@@ -118,6 +99,14 @@ export function MobileOperations(props: MobileAppShellProps) {
                 </article>
               ))}
             </div>
+          </section>
+
+          <section className="mobile-action-dock" aria-label="复盘快捷动作">
+            <Button danger disabled={!activeHolding}>买入</Button>
+            <Button disabled={!activeHolding}>卖出</Button>
+            <Button type="primary" onClick={() => activeHolding && props.onSelectSymbol(activeHolding.symbol, "stock")} disabled={!activeHolding}>
+              记录判断
+            </Button>
           </section>
         </>
       ) : (
@@ -152,41 +141,48 @@ export function MobileOperations(props: MobileAppShellProps) {
 function TrackPanel({
   title,
   track,
+  holding,
   onOpenStock,
 }: {
   title: string;
-  track: NonNullable<MobileAppShellProps["simulation"]>["manual_track"];
+  track: NonNullable<MobileAppShellProps["simulation"]>["manual_track"] | undefined;
+  holding: NonNullable<MobileAppShellProps["simulation"]>["manual_track"]["portfolio"]["holdings"][number] | null;
   onOpenStock: MobileAppShellProps["onSelectSymbol"];
 }) {
-  const holdings = track.portfolio.holdings.filter((item) => item.quantity > 0);
   return (
-    <section className="mobile-panel-card">
+    <section className="mobile-panel-card mobile-holding-card">
       <div className="mobile-section-head">
         <div>
           <Title level={4}>{title}</Title>
-          <Text>{track.portfolio.strategy_label}</Text>
+          <Text>{track?.portfolio.strategy_label ?? "等待轨道数据"}</Text>
         </div>
-        <strong className={`value-${valueTone(track.portfolio.total_return)}`}>{formatPercent(track.portfolio.total_return)}</strong>
+        <strong className={`value-${valueTone(track?.portfolio.total_return)}`}>{formatPercent(track?.portfolio.total_return)}</strong>
       </div>
-      <div className="mobile-metric-grid">
-        <MobileMetric label="净值" value={formatNumber(track.portfolio.net_asset_value)} />
-        <MobileMetric label="现金" value={formatNumber(track.portfolio.available_cash)} />
-        <MobileMetric label="仓位" value={formatPercent(track.portfolio.invested_ratio)} />
-      </div>
-      <div className="mobile-card-list">
-        {holdings.length > 0 ? holdings.map((holding) => (
-          <button key={holding.symbol} type="button" className="mobile-holding-row" onClick={() => onOpenStock(holding.symbol, "stock")}>
-            <div>
+      {holding ? (
+        <article className="mobile-position-card">
+          <button type="button" className="mobile-position-head" onClick={() => onOpenStock(holding.symbol, "stock")}>
+            <span className="mobile-position-avatar">{holding.name.slice(0, 1)}</span>
+            <span>
               <strong>{holding.name}</strong>
-              <span>{`${holding.symbol} · ${formatNumber(holding.quantity)} 股`}</span>
-            </div>
-            <div>
-              <strong>{formatNumber(holding.market_value)}</strong>
-              <span className={`value-${valueTone(holding.total_pnl)}`}>{formatSignedNumber(holding.total_pnl)}</span>
-            </div>
+              <em>{holding.symbol} · {formatNumber(holding.quantity)} 股</em>
+            </span>
+            <span className="mobile-position-price">
+              <strong>{formatNumber(holding.last_price)}</strong>
+              <em className={`value-${valueTone(holding.today_pnl_pct)}`}>{formatPercent(holding.today_pnl_pct)}</em>
+            </span>
           </button>
-        )) : <Empty description="暂无持仓" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-      </div>
+          <div className="mobile-metric-grid">
+            <MobileMetric label="数量" value={formatNumber(holding.quantity)} />
+            <MobileMetric label="成本" value={formatNumber(holding.avg_cost)} />
+            <MobileMetric label="浮动盈亏" value={formatSignedNumber(holding.total_pnl)} tone={valueTone(holding.total_pnl)} />
+          </div>
+          <div className="mobile-position-actions">
+            <Button icon={<LineChartOutlined />} onClick={() => onOpenStock(holding.symbol, "stock")}>K线</Button>
+            <Button icon={<FileTextOutlined />} onClick={() => onOpenStock(holding.symbol, "stock")}>报告</Button>
+            <Button onClick={() => onOpenStock(holding.symbol, "stock")}>操作</Button>
+          </div>
+        </article>
+      ) : <Empty description="暂无持仓" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
     </section>
   );
 }

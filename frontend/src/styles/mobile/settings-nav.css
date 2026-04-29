@@ -1,0 +1,79 @@
+.mobile-settings-group {
+  padding: 7px 0;
+  overflow: hidden;
+}
+
+.mobile-settings-group h4.ant-typography {
+  padding: 13px 16px 8px;
+}
+
+.mobile-settings-row {
+  align-items: center;
+  min-height: 70px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(30, 55, 86, 0.06);
+}
+
+.mobile-settings-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-settings-copy em {
+  display: block;
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.mobile-settings-trailing {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #8a98aa;
+}
+
+.mobile-settings-row .ant-tag {
+  margin-inline-end: 0;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 12px;
+  z-index: 30;
+  display: grid;
+  max-width: 456px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 auto;
+  padding: 8px;
+  border: 1px solid rgba(30, 55, 86, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 48px rgba(20, 42, 68, 0.16);
+  backdrop-filter: blur(22px);
+}
+
+.mobile-bottom-nav button {
+  display: grid;
+  min-height: 54px;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #687a92;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mobile-bottom-nav button.active {
+  background: #075bff;
+  color: #ffffff;
+}
+
+.mobile-bottom-nav .anticon {
+  font-size: 20px;
+}

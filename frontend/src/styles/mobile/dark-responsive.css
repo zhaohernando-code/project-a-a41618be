@@ -1,0 +1,107 @@
+.mobile-theme-shell[data-theme="dark"] {
+  background:
+    radial-gradient(circle at 18% -8%, rgba(64, 116, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, #07111e 0%, #0b1628 48%, #101b30 100%);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-app-shell {
+  color: #edf4ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-page-head h2.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-headline h2.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-focus-title h3.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-section-head h4.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-group h4.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-analysis-card h4.ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-focus-price strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-main strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-holding-row strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-mini-card strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-position-head strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-row strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-timeline article strong {
+  color: #f4f8ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-page-head .ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-headline .ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-section-head .ant-typography,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-main span,
+.mobile-theme-shell[data-theme="dark"] .mobile-holding-row span,
+.mobile-theme-shell[data-theme="dark"] .mobile-mini-card span,
+.mobile-theme-shell[data-theme="dark"] .mobile-row-foot,
+.mobile-theme-shell[data-theme="dark"] .mobile-position-head em,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-row em,
+.mobile-theme-shell[data-theme="dark"] .mobile-metric span,
+.mobile-theme-shell[data-theme="dark"] .mobile-hero-card p,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row p,
+.mobile-theme-shell[data-theme="dark"] .mobile-mini-card p,
+.mobile-theme-shell[data-theme="dark"] .mobile-conclusion-card p,
+.mobile-theme-shell[data-theme="dark"] .mobile-plain-list,
+.mobile-theme-shell[data-theme="dark"] .mobile-timeline article p {
+  color: #9fb0c6;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-hero-card,
+.mobile-theme-shell[data-theme="dark"] .mobile-panel-card,
+.mobile-theme-shell[data-theme="dark"] .mobile-list-panel,
+.mobile-theme-shell[data-theme="dark"] .mobile-mini-card,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-group,
+.mobile-theme-shell[data-theme="dark"] .mobile-bottom-nav,
+.mobile-theme-shell[data-theme="dark"] .mobile-action-dock {
+  border-color: rgba(128, 161, 203, 0.14);
+  background: rgba(13, 25, 44, 0.9);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.28);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-focus-card {
+  border: 0;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(255, 255, 255, 0.24), transparent 24%),
+    linear-gradient(140deg, #095dff 0%, #0a48bd 56%, #092f78 100%);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-metric,
+.mobile-theme-shell[data-theme="dark"] .mobile-segmented,
+.mobile-theme-shell[data-theme="dark"] .mobile-quick-grid button,
+.mobile-theme-shell[data-theme="dark"] .mobile-position-actions .ant-btn,
+.mobile-theme-shell[data-theme="dark"] .mobile-position-avatar,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-icon {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-metric strong {
+  color: #edf4ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-segmented button {
+  color: #a7b7cc;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-segmented button.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #8fb8ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-chart-card .chart-shell {
+  background:
+    linear-gradient(180deg, rgba(102, 164, 255, 0.07), rgba(102, 164, 255, 0.02)),
+    linear-gradient(90deg, rgba(149, 167, 191, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(149, 167, 191, 0.07) 1px, transparent 1px);
+  background-size: auto, 28px 28px, 28px 28px;
+}
+
+@media (max-width: 380px) {
+  .mobile-page {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .mobile-metric-grid,
+  .mobile-review-summary,
+  .mobile-fact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

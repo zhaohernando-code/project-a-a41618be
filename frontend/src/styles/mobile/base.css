@@ -1,0 +1,140 @@
+.mobile-theme-shell {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 16% -8%, rgba(53, 123, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, #f4f8ff 0%, #f7f4ed 46%, #f5f7fb 100%);
+}
+
+.mobile-app-shell {
+  position: relative;
+  min-height: 100svh;
+  overflow-x: hidden;
+  color: #13233a;
+  font-family: "SF Pro Display", "SF Pro Text", "Avenir Next", "PingFang SC", sans-serif;
+}
+
+.mobile-page {
+  width: 100%;
+  max-width: 480px;
+  min-height: calc(100svh - 88px);
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 112px);
+}
+
+.mobile-page-centered {
+  display: grid;
+  align-content: center;
+}
+
+.mobile-page-head,
+.mobile-top-bar,
+.mobile-stock-headline,
+.mobile-section-head,
+.mobile-focus-title,
+.mobile-mini-head,
+.mobile-stock-row-main,
+.mobile-holding-row,
+.mobile-setting-row,
+.mobile-position-head,
+.mobile-settings-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.mobile-page-head {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mobile-page-head h2.ant-typography,
+.mobile-stock-headline h2.ant-typography {
+  margin: 0;
+  color: #11243d;
+  font-size: clamp(28px, 7.4vw, 36px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.mobile-focus-title h3.ant-typography {
+  margin: 3px 0 0;
+  color: #10233d;
+  font-size: clamp(28px, 7.2vw, 36px);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.mobile-section-head h4.ant-typography,
+.mobile-settings-group h4.ant-typography,
+.mobile-analysis-card h4.ant-typography {
+  margin: 0;
+  color: #10233d;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.mobile-page-head .ant-typography,
+.mobile-stock-headline .ant-typography,
+.mobile-section-head .ant-typography {
+  color: #708097;
+  font-size: 13px;
+}
+
+.mobile-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: #19b778;
+  box-shadow: 0 0 0 5px rgba(25, 183, 120, 0.12);
+  vertical-align: 1px;
+}
+
+.mobile-icon-button.ant-btn {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid rgba(24, 48, 83, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 28px rgba(38, 57, 86, 0.1);
+  color: #173456;
+}
+
+.mobile-kicker,
+.mobile-card-kicker,
+.mobile-stock-rank {
+  display: block;
+  color: #6e7e94;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+}
+
+.mobile-card-kicker-inverse {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mobile-hero-card,
+.mobile-panel-card,
+.mobile-list-panel,
+.mobile-mini-card,
+.mobile-stock-row,
+.mobile-settings-group {
+  border: 1px solid rgba(30, 55, 86, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 42px rgba(25, 43, 66, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.mobile-hero-card,
+.mobile-panel-card,
+.mobile-list-panel,
+.mobile-settings-group {
+  margin-bottom: 16px;
+  padding: 16px;
+}
+

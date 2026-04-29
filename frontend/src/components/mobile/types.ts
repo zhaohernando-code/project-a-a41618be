@@ -11,8 +11,6 @@ import type {
 
 export type MobileTabKey = "home" | "stock" | "operations" | "settings";
 
-export type MobileListFilter = "all" | "candidate" | "holding" | "risk";
-
 export interface MobileAppShellProps {
   themeMode: "light" | "dark";
   loadingShell: boolean;

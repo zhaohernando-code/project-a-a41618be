@@ -30,6 +30,17 @@ export function MobileAppShell(props: MobileAppShellProps) {
     }
   }
 
+  function selectSymbol(symbol: string, target: MobileTabKey = "stock") {
+    props.onSelectSymbol(symbol, target);
+    activate(target);
+  }
+
+  const mobileProps = {
+    ...props,
+    onSelectSymbol: selectSymbol,
+    onTabChange: activate,
+  };
+
   return (
     <div className="app-theme-shell mobile-theme-shell" data-theme={props.themeMode}>
       <div className="mobile-app-shell">
@@ -48,10 +59,10 @@ export function MobileAppShell(props: MobileAppShellProps) {
                 description={props.error}
               />
             ) : null}
-            {activeTab === "home" ? <MobileHome {...props} /> : null}
-            {activeTab === "stock" ? <MobileStockDetail {...props} /> : null}
-            {activeTab === "operations" ? <MobileOperations {...props} /> : null}
-            {activeTab === "settings" ? <MobileSettings {...props} /> : null}
+            {activeTab === "home" ? <MobileHome {...mobileProps} /> : null}
+            {activeTab === "stock" ? <MobileStockDetail {...mobileProps} /> : null}
+            {activeTab === "operations" ? <MobileOperations {...mobileProps} /> : null}
+            {activeTab === "settings" ? <MobileSettings {...mobileProps} /> : null}
           </>
         )}
 
