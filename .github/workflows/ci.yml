@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "task/**", "codex/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]" 2>/dev/null || pip install pytest fastapi sqlalchemy pydantic uvicorn akshare
+      - run: PYTHONPATH=src python3 -m pytest tests/ -v --timeout=60
+
+  typecheck-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --prefix frontend
+      - run: npm run check --prefix frontend

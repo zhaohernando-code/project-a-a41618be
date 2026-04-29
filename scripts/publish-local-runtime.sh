@@ -75,9 +75,31 @@ launchctl stop "$SCHEDULED_LABEL" 2>/dev/null || true
 
 COMMIT_SHA="$(git -C "$REPO_ROOT" rev-parse HEAD)"
 
+BACKUP_ROOT="$HOME/codex/runtime/projects/ashare-dashboard.backups"
+BACKUP_DIR="$BACKUP_ROOT/$(date -u +%Y%m%dT%H%M%SZ)-${COMMIT_SHA:0:7}"
+MAX_BACKUPS=5
+
 mkdir -p "$RUNTIME_ROOT"
 
 echo "[publish] Release source commit: $COMMIT_SHA"
+
+# Snapshot current runtime before overwriting (AI rollback path)
+echo "[publish] Backing up runtime to $BACKUP_DIR"
+mkdir -p "$BACKUP_DIR"
+if [ -d "$RUNTIME_ROOT/frontend/dist" ] || [ -d "$RUNTIME_ROOT/src" ]; then
+  rsync -a --exclude ".git" --exclude "data" "$RUNTIME_ROOT/" "$BACKUP_DIR/"
+  echo "[publish] Backup saved: $BACKUP_DIR"
+  echo "[publish] Rollback: rsync -a --delete $BACKUP_DIR/ $RUNTIME_ROOT/"
+else
+  echo "[publish] Runtime empty — skipping backup (first publish?)"
+fi
+
+# Rotate old backups
+backup_count=$(ls -d "$BACKUP_ROOT"/*/ 2>/dev/null | wc -l | tr -d ' ')
+if [ "$backup_count" -gt "$MAX_BACKUPS" ]; then
+  ls -dt "$BACKUP_ROOT"/*/ | tail -n +$((MAX_BACKUPS + 1)) | xargs rm -rf
+  echo "[publish] Rotated backups, keeping last $MAX_BACKUPS"
+fi
 echo "[publish] Building repo frontend"
 npm --prefix "$REPO_ROOT/frontend" run build
 
