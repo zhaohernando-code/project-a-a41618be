@@ -126,6 +126,7 @@ scripts/publish-local-runtime.sh
 - 如果 Browser Use、Chrome 或当前标签页状态可疑，不要在一个异常标签上反复猜。先检查 URL 是否输对、标签页是否仍持有旧登录态或旧内存态；必要时改用 Safari 重新打开标准入口和本机入口做交叉验证。
 - `scripts/publish-local-runtime.sh` 最后如果只卡在 canonical verifier 缺 `ASHARE_CANONICAL_USERNAME` / `ASHARE_CANONICAL_PASSWORD`，这次任务仍不能默认为“已自动验收完成”；必须补手工浏览器复验，并明确记录“自动 verifier 未跑通、改由人工复验”的事实。
 - 每次手工点击验收都要记下这四类证据：发布所用仓库路径、是否为临时干净快照、实际检查的 URL、最终浏览器结果。若出现空白页、URL 手误、浏览器假阴性或 hydration 误判，也必须写回 `PROCESS.md`，防止后续会话重复踩坑。
+- 使用 Playwright CLI 或其他自动化浏览器完成验收后，必须执行 `scripts/cleanup-browser-automation.sh`。这会关闭 Playwright daemon 和 `playwright_chromiumdev_profile-*` 自动化 Chrome，避免测试后残留进程越积越多；脚本不会关闭用户正常的 Chrome 主进程。
 
 发布完成的定义也已经收紧：脚本最后会自动执行 release parity verifier，只有在以下条件全部满足时才算成功：
 
