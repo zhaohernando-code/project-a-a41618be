@@ -4,7 +4,7 @@
 }
 
 .mobile-top-bar strong {
-  color: #152944;
+  color: var(--mobile-color-heading);
   font-size: 18px;
 }
 
@@ -14,13 +14,13 @@
 }
 
 .mobile-conclusion-card {
-  background: #ffffff;
+  background: var(--mobile-color-panel);
 }
 
 .mobile-chart-card .chart-shell {
   height: 220px;
   border: 0;
-  border-radius: 18px;
+  border-radius: var(--mobile-radius-panel);
   background: linear-gradient(180deg, #f8fbff, #eef5ff);
 }
 
@@ -46,7 +46,7 @@
 .mobile-plain-list {
   margin: 10px 0 0;
   padding-left: 18px;
-  color: #40536d;
+  color: var(--mobile-color-text);
   font-size: 16px;
   line-height: 1.7;
 }
@@ -54,7 +54,7 @@
 .mobile-inline-alert,
 .mobile-global-alert {
   margin-bottom: 12px;
-  border-radius: 18px;
+  border-radius: var(--mobile-radius-panel);
 }
 
 .mobile-full-width {
@@ -66,7 +66,7 @@
   width: 100%;
   height: 54px;
   margin-bottom: 16px;
-  border-radius: 18px;
+  border-radius: var(--mobile-radius-panel);
   font-size: 17px;
   font-weight: 850;
 }
@@ -92,9 +92,9 @@
   min-width: 42px;
   height: 42px;
   place-items: center;
-  border-radius: 15px;
+  border-radius: var(--mobile-radius-control);
   background: #eaf2ff;
-  color: #075bff;
+  color: var(--mobile-color-accent);
   font-size: 18px;
   font-weight: 900;
 }
@@ -115,9 +115,9 @@
 .mobile-position-actions .ant-btn {
   height: 42px;
   border: 0;
-  border-radius: 14px;
-  background: #f2f6fb;
-  color: #183654;
+  border-radius: var(--mobile-radius-control);
+  background: var(--mobile-color-panel-soft);
+  color: var(--mobile-color-text);
   font-weight: 800;
 }
 
@@ -141,24 +141,24 @@
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: #075bff;
+  background: var(--mobile-color-accent);
   content: "";
 }
 
 .mobile-timeline article strong {
   display: block;
-  color: #132844;
+  color: var(--mobile-color-heading);
   font-size: 16px;
 }
 
 .mobile-timeline article span {
-  color: #75869b;
+  color: var(--mobile-color-muted);
   font-size: 12px;
 }
 
 .mobile-timeline article p {
   margin: 5px 0 0;
-  color: #4a5b70;
+  color: var(--mobile-color-text);
   line-height: 1.55;
 }
 
@@ -171,16 +171,15 @@
   gap: 9px;
   margin: 16px 0 0;
   padding: 10px;
-  border: 1px solid rgba(30, 55, 86, 0.08);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--mobile-color-border);
+  border-radius: var(--mobile-radius-panel);
+  background: var(--mobile-color-panel);
   box-shadow: 0 18px 38px rgba(25, 43, 66, 0.14);
   backdrop-filter: blur(18px);
 }
 
 .mobile-action-dock .ant-btn {
   height: 44px;
-  border-radius: 15px;
+  border-radius: var(--mobile-radius-control);
   font-weight: 850;
 }
-

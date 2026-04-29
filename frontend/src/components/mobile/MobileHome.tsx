@@ -58,9 +58,6 @@ export function MobileHome(props: MobileAppShellProps) {
           </div>
           <div className="mobile-focus-price">
             <strong>{formatNumber(activeCandidate?.last_close)}</strong>
-            <span className={`value-${valueTone(activeCandidate?.price_return_20d)}`}>
-              {formatPercent(activeCandidate?.price_return_20d)}
-            </span>
           </div>
         </div>
         <Space wrap className="mobile-chip-row">
@@ -72,14 +69,14 @@ export function MobileHome(props: MobileAppShellProps) {
         <div className="mobile-metric-grid mobile-metric-grid-glass">
           <MobileMetric label="20日" value={formatPercent(activeCandidate?.price_return_20d)} tone={valueTone(activeCandidate?.price_return_20d)} />
           <MobileMetric label="置信" value={activeCandidate?.confidence_label ?? "--"} />
-          <MobileMetric label="刷新" value={formatDate(props.activeRow?.last_analyzed_at ?? props.activeRow?.updated_at)} />
+          <MobileMetric label="刷新时间" value={formatDate(props.activeRow?.last_analyzed_at ?? props.activeRow?.updated_at)} />
         </div>
       </section>
 
       <section className="mobile-list-panel mobile-section-plain">
         <div className="mobile-section-head">
           <div>
-            <Title level={4}>今日候选</Title>
+            <Title level={4}>关注股票</Title>
             <Text>{`${rows.length} 只符合筛选`}</Text>
           </div>
           <span className="mobile-section-link">向上滑看全部</span>

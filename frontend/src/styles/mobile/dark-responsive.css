@@ -1,4 +1,16 @@
 .mobile-theme-shell[data-theme="dark"] {
+  --mobile-color-text: #edf4ff;
+  --mobile-color-heading: #f4f8ff;
+  --mobile-color-muted: #9fb0c6;
+  --mobile-color-subtle: #9fb0c6;
+  --mobile-color-panel: rgba(13, 25, 44, 0.9);
+  --mobile-color-panel-soft: rgba(255, 255, 255, 0.07);
+  --mobile-color-border: rgba(128, 161, 203, 0.14);
+  --mobile-color-accent: #8fb8ff;
+  --mobile-color-positive: #ff6b6b;
+  --mobile-color-negative: #38c784;
+  --mobile-shadow-panel: 0 22px 48px rgba(0, 0, 0, 0.28);
+  --mobile-shadow-control: 0 14px 30px rgba(0, 0, 0, 0.24);
   background:
     radial-gradient(circle at 18% -8%, rgba(64, 116, 255, 0.16), transparent 30%),
     linear-gradient(180deg, #07111e 0%, #0b1628 48%, #101b30 100%);
@@ -56,6 +68,12 @@
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.28);
 }
 
+.mobile-theme-shell[data-theme="dark"] .mobile-section-plain {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .mobile-theme-shell[data-theme="dark"] .mobile-focus-card {
   border: 0;
   background:
@@ -72,8 +90,28 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
+.mobile-theme-shell[data-theme="dark"] .mobile-quick-grid button {
+  color: #edf4ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-quick-grid .anticon {
+  color: #8fb8ff;
+}
+
 .mobile-theme-shell[data-theme="dark"] .mobile-metric strong {
   color: #edf4ff;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-metric strong.value-positive,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-price strong.value-positive,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-price span.value-positive {
+  color: var(--mobile-color-positive);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-metric strong.value-negative,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-price strong.value-negative,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-row-price span.value-negative {
+  color: var(--mobile-color-negative);
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-segmented button {

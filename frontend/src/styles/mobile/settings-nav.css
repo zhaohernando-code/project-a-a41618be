@@ -34,7 +34,7 @@
 
 .mobile-settings-row .ant-tag {
   margin-inline-end: 0;
-  border-radius: 999px;
+  border-radius: var(--mobile-radius-pill);
   font-weight: 800;
 }
 
@@ -51,8 +51,8 @@
   gap: 4px;
   margin: 0 auto;
   padding: 8px;
-  border: 1px solid rgba(30, 55, 86, 0.08);
-  border-radius: 24px;
+  border: 1px solid var(--mobile-color-border);
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 20px 48px rgba(20, 42, 68, 0.16);
   backdrop-filter: blur(22px);
@@ -64,15 +64,15 @@
   min-height: 54px;
   place-items: center;
   border: 0;
-  border-radius: 18px;
+  border-radius: var(--mobile-radius-control);
   background: transparent;
-  color: #687a92;
+  color: var(--mobile-color-muted);
   font-size: 12px;
   font-weight: 900;
 }
 
 .mobile-bottom-nav button.active {
-  background: #075bff;
+  background: var(--mobile-color-accent);
   color: #ffffff;
 }
 

@@ -32,8 +32,8 @@ export function MobileStockRow({
       className={`mobile-stock-row${active ? " mobile-stock-row-active" : ""}`}
       onClick={onOpen}
     >
-      <div className="mobile-stock-row-main">
-        <div>
+      <div className="mobile-stock-row-layout">
+        <div className="mobile-stock-row-copy">
           <div className="mobile-stock-row-meta">
             <Text className="mobile-stock-rank">{candidate?.rank ? `#${candidate.rank}` : row.source_kind === "candidate_only" ? "候选" : "关注"}</Text>
             {rowTags}
@@ -42,19 +42,19 @@ export function MobileStockRow({
             <strong>{row.name}</strong>
             <span>{row.symbol}</span>
           </div>
+          <p>{candidate?.summary ? sanitizeDisplayText(candidate.summary) : "等待候选分析结果。"}</p>
+          <div className="mobile-row-foot">
+            <span>{candidate?.sector ?? row.exchange}</span>
+            <span>{formatDate(row.last_analyzed_at ?? row.updated_at)}</span>
+          </div>
         </div>
-        <div className="mobile-stock-row-price">
+        <div className="mobile-stock-row-price" aria-label="20日表现">
           <strong className={`value-${valueTone(candidate?.price_return_20d)}`}>{formatPercent(candidate?.price_return_20d)}</strong>
           <span className={`value-${valueTone(candidate?.price_return_20d)}`}>
             {formatNumber(candidate?.last_close)}
           </span>
           <MobileMiniTrendChart row={row} />
         </div>
-      </div>
-      <p>{candidate?.summary ? sanitizeDisplayText(candidate.summary) : "等待候选分析结果。"}</p>
-      <div className="mobile-row-foot">
-        <span>{candidate?.sector ?? row.exchange}</span>
-        <span>{formatDate(row.last_analyzed_at ?? row.updated_at)}</span>
       </div>
     </button>
   );
