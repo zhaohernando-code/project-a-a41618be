@@ -42,13 +42,55 @@ run_phase5_daily_refresh() {
 }
 
 within_market_hours() {
-  [[ "$NOW_HHMM" > "09:34" && "$NOW_HHMM" < "11:31" ]] || [[ "$NOW_HHMM" > "13:04" && "$NOW_HHMM" < "15:01" ]]
+  [[ "$NOW_HHMM" > "09:30" && "$NOW_HHMM" < "11:31" ]] || [[ "$NOW_HHMM" > "13:00" && "$NOW_HHMM" < "15:01" ]]
+}
+
+CACHE_DIR="$HOME/.cache/codex"
+TRADE_CALENDAR_CACHE="$CACHE_DIR/trade_calendar.json"
+
+is_trading_day() {
+  mkdir -p "$CACHE_DIR"
+  local today_str
+  today_str="$(TZ="$TIMEZONE" date '+%Y-%m-%d')"
+  TRADE_CALENDAR_CACHE="$TRADE_CALENDAR_CACHE" _TRADE_DATE_CHECK="$today_str" "$PYTHON_BIN" -c "
+import json, os, sys
+from datetime import date
+
+cache_path = os.environ.get('TRADE_CALENDAR_CACHE', '')
+today = os.environ.get('_TRADE_DATE_CHECK', '')
+
+# Check daily cache
+if os.path.exists(cache_path):
+    try:
+        cache = json.load(open(cache_path))
+        if cache.get('date') == today:
+            sys.exit(0 if cache.get('is_trading_day') else 1)
+    except Exception:
+        pass
+
+# Query AKShare
+try:
+    import akshare as ak
+    dates = ak.tool_trade_date_hist_sina()
+    trade_dates = set(dates['trade_date'].tolist())
+    is_td = date.fromisoformat(today) in trade_dates
+    json.dump({'date': today, 'is_trading_day': is_td}, open(cache_path, 'w'))
+    sys.exit(0 if is_td else 1)
+except Exception as e:
+    # If API fails (network issue, etc.), assume trading day to be safe
+    print(f'Warning: trade calendar check failed: {e}', file=sys.stderr)
+    sys.exit(0)
+" 2>&1
 }
 
 if [[ "$NOW_DOW" -gt 5 ]]; then
   if [[ "$NOW_HHMM" == "09:30" ]]; then
     run_phase5_daily_refresh --analysis-only
   fi
+  exit 0
+fi
+
+if ! is_trading_day; then
   exit 0
 fi
 
