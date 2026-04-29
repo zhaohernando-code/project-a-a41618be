@@ -85,6 +85,8 @@ import { buildCandidateColumns } from "./components/CandidateColumns";
 import { buildReplayColumns } from "./components/ReplayColumns";
 import { buildAddWatchlistOverlay } from "./components/AddWatchlistOverlay";
 import { buildOperationsTabs } from "./components/OperationsTabs";
+import { MobileAppShell } from "./components/mobile/MobileAppShell";
+import type { MobileTabKey } from "./components/mobile/types";
 
 import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
 import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, statusColor, valueTone } from "./utils/format";
@@ -860,6 +862,25 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     });
   }
 
+  function handleMobileTabChange(tab: MobileTabKey) {
+    if (tab === "home") {
+      setView("candidates");
+    } else if (tab === "stock") {
+      setView("stock");
+    } else if (tab === "operations") {
+      setView("operations");
+    } else {
+      setView("settings");
+    }
+  }
+
+  function handleMobileSelectSymbol(symbol: string, target: MobileTabKey = "stock") {
+    startTransition(() => {
+      setSelectedSymbol(symbol);
+      handleMobileTabChange(target);
+    });
+  }
+
   function openManualResearchWorkspace() {
     setView("stock");
     setStockActiveTab("followup");
@@ -1533,6 +1554,55 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     savingConfig, setSavingConfig,
     messageApi, loadRuntimeSettings, setError,
   });
+
+  if (isMobile) {
+    return (
+      <>
+        {messageContextHolder}
+        <MobileAppShell
+          themeMode={themeMode}
+          loadingShell={loadingShell}
+          loadingDetail={loadingDetail}
+          operationsLoading={operationsLoading}
+          error={error}
+          operationsError={operationsError}
+          candidateRows={candidateRows}
+          activeRow={activeRow}
+          selectedSymbol={selectedSymbol}
+          dashboard={dashboard}
+          operations={operations}
+          simulation={simulation}
+          sourceInfo={sourceInfo}
+          runtimeSettings={runtimeSettings}
+          modelApiKeys={modelApiKeys}
+          generatedAt={generatedAt}
+          addWatchlistOverlay={addWatchlistOverlay}
+          addPopoverOpen={addPopoverOpen}
+          setAddPopoverOpen={setAddPopoverOpen}
+          mutatingWatchlist={mutatingWatchlist}
+          watchlistMutationSymbol={watchlistMutationSymbol}
+          questionDraft={questionDraft}
+          setQuestionDraft={setQuestionDraft}
+          analysisKeyId={analysisKeyId}
+          setAnalysisKeyId={setAnalysisKeyId}
+          analysisLoading={analysisLoading}
+          onToggleTheme={onToggleTheme}
+          onRefresh={() => void handleRefresh()}
+          onRefreshWatchlist={(symbol) => void handleRefreshWatchlist(symbol)}
+          onSelectSymbol={handleMobileSelectSymbol}
+          onTabChange={handleMobileTabChange}
+          onSubmitManualResearch={() => void handleSubmitManualResearch()}
+          onCopyPrompt={() => void handleCopyPrompt()}
+          onLoadOperations={() => {
+            if (selectedSymbol) {
+              void loadOperationsData(selectedSymbol);
+            }
+          }}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       {messageContextHolder}
@@ -1716,7 +1786,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                       open={addPopoverOpen}
                       onOpenChange={setAddPopoverOpen}
                       trigger="click"
-                      placement={isMobile ? "bottom" : "bottomRight"}
+                      placement="bottomRight"
                       content={addWatchlistOverlay}
                     >
                       <Button shape="circle" type="primary" icon={<PlusOutlined />} />
@@ -1726,82 +1796,6 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
               >
                 {candidateRows.length === 0 ? (
                   <Empty description="当前自选池为空，请先添加股票代码" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                ) : isMobile ? (
-                  <List
-                    className="candidate-mobile-list"
-                    dataSource={candidateRows}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <Card className={`candidate-mobile-card${item.symbol === activeRow?.symbol ? " candidate-mobile-card-active" : ""}`}>
-                          <div className="candidate-mobile-head">
-                            <div>
-                              <div className="candidate-mobile-rank">{`#${item.candidate?.rank ?? "--"}`}</div>
-                              <Title level={5}>{item.name}</Title>
-                              <Text type="secondary">{item.symbol}</Text>
-                            </div>
-                            {item.candidate ? (
-                              <Space direction="vertical" size={4} align="end">
-                                <Tag color={directionColor(item.candidate.display_direction)}>{item.candidate.display_direction_label}</Tag>
-                                <Tag color={claimGateAlertType(item.candidate.claim_gate.status)}>
-                                  {claimGateStatusLabel(item.candidate.claim_gate.status)}
-                                </Tag>
-                              </Space>
-                            ) : (
-                              <Tag>{item.analysis_status}</Tag>
-                            )}
-                          </div>
-                          <div className="candidate-mobile-metrics">
-                            <div>
-                              <span>价格</span>
-                              <strong>{formatNumber(item.candidate?.last_close)}</strong>
-                            </div>
-                            <div>
-                              <span>20日</span>
-                              <strong className={`value-${valueTone(item.candidate?.price_return_20d)}`}>
-                                {formatPercent(item.candidate?.price_return_20d)}
-                              </strong>
-                            </div>
-                            <div>
-                              <span>分析</span>
-                              <strong>{formatDate(item.last_analyzed_at ?? item.updated_at)}</strong>
-                            </div>
-                          </div>
-                          <Paragraph className="panel-description">
-                            {item.candidate?.summary ? sanitizeDisplayText(item.candidate.summary) : "等待候选分析结果。"}
-                          </Paragraph>
-                          <Descriptions size="small" column={1}>
-                            <Descriptions.Item label="当前触发点">
-                              {item.candidate?.why_now ? sanitizeDisplayText(item.candidate.why_now) : "暂无"}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="主要风险">
-                              {item.candidate?.primary_risk
-                                ? sanitizeDisplayText(item.candidate.primary_risk)
-                                : item.last_error
-                                  ? sanitizeDisplayText(item.last_error)
-                                  : "暂无"}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="验证摘要">{candidateValidationSummary(item.candidate)}</Descriptions.Item>
-                          </Descriptions>
-                          <div className="candidate-mobile-actions">
-                            <Button type="default" onClick={() => handleCandidateSelect(item.symbol, "stock")}>
-                              打开
-                            </Button>
-                            <Button
-                              icon={<SyncOutlined />}
-                              disabled={item.source_kind === "candidate_only"}
-                              loading={mutatingWatchlist && watchlistMutationSymbol === item.symbol}
-                              onClick={() => void handleRefreshWatchlist(item.symbol)}
-                            >
-                              重分析
-                            </Button>
-                            <Button danger disabled={item.source_kind === "candidate_only"} onClick={() => setPendingRemoval(item)}>
-                              移除
-                            </Button>
-                          </div>
-                        </Card>
-                      </List.Item>
-                    )}
-                  />
                 ) : (
                   <Table
                     rowKey="symbol"

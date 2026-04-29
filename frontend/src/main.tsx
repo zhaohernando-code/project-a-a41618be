@@ -4,6 +4,7 @@ import { ConfigProvider, theme as antTheme } from "antd";
 import "antd/dist/reset.css";
 import App from "./App";
 import "./styles.css";
+import "./mobile.css";
 
 type ThemeMode = "light" | "dark";
 

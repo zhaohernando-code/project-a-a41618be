@@ -1,5 +1,13 @@
 # 一个关于a股的当前数据和投资建议看板 Decisions
 
+[2026-04-29T17:40:00+08:00] Mobile dashboard information architecture is app-native, not a compressed desktop workspace:
+手机端正式固定为 `首页 / 单票 / 复盘 / 设置` 四个 bottom tabs；原先“首页”和“自选/候选”不再拆成两个移动端入口，统一合并到首页，用一个焦点卡片、搜索筛选和候选/自选列表承载。设置升为独立 tab，但只展示和操作已有真实运行时能力，不新增未接后端的假偏好项。
+
+补充说明
+- 桌面端继续保留现有候选、单票、运营复盘、设置工作台；移动端通过 `MobileAppShell` 走独立组件树，不再把大段 mobile JSX 继续塞进 `App.tsx`。
+- 移动端复盘页不得复用 `TrackHoldingsTable` 这类 PC 宽表。用户轨道、模型轨道、持仓、模型建议和时间线都以移动端卡片/列表呈现，避免横向滚动和超长桌面栅格。
+- 设计稿真值源为 `output/design/mobile-redesign/mobile-tab-home-candidates.png`、`mobile-tab-stock-detail.png`、`mobile-tab-operations-review.png` 和 `mobile-tab-settings.png`；已删除旧的半截 SVG 概念图和废弃的独立自选页图片，避免后续实现回退到错误 IA。
+
 [2026-04-28T10:47:41+08:00] Manual-research request views must never borrow another request's LLM result on the live dashboard:
 the live manual-research / follow-up workflow is no longer allowed to serialize a queued request together with the `manual_llm_review` payload of a different, newer completed request. From this round on, every `ManualResearchRequestView` must carry only its own request-scoped projection; if the request itself has not executed yet, its `manual_llm_review` must stay empty/queued instead of inheriting another artifact. This closes the request/result mismatch that could surface as follow-up actions targeting the wrong object and intermittently ending in `404 Not Found`.
 

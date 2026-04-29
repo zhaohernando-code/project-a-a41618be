@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,11 +14,16 @@ from ashare_evidence.manual_research_workflow import (
     create_manual_research_request,
     fail_manual_research_request,
 )
-from ashare_evidence.phase2 import PHASE2_WINDOW_DEFINITION, phase2_target_horizon_label
-from ashare_evidence.release_verifier import audit_user_visible_operations_text
 from ashare_evidence.models import Recommendation, Stock
 from ashare_evidence.operations import build_operations_dashboard
-from ashare_evidence.watchlist import add_watchlist_symbol, list_watchlist_entries, refresh_watchlist_symbol, remove_watchlist_symbol
+from ashare_evidence.phase2 import PHASE2_WINDOW_DEFINITION, phase2_target_horizon_label
+from ashare_evidence.release_verifier import audit_user_visible_operations_text
+from ashare_evidence.watchlist import (
+    add_watchlist_symbol,
+    list_watchlist_entries,
+    refresh_watchlist_symbol,
+    remove_watchlist_symbol,
+)
 from tests.fixtures import inject_market_data_stale_backfill, seed_recommendation_fixture, seed_watchlist_fixture
 
 
@@ -170,7 +174,7 @@ class DashboardViewTests(unittest.TestCase):
         with session_scope(self.database_url) as session:
             candidates = list_candidate_recommendations(session, limit=8)
             dashboard = get_stock_dashboard(session, "600519.SH")
-            operations = build_operations_dashboard(session, sample_symbol="600519.SH")
+            build_operations_dashboard(session, sample_symbol="600519.SH")
             watchlist = list_watchlist_entries(session)
 
         self.assertEqual(candidates["items"][0]["as_of_data_time"], fresh.as_of_data_time)
@@ -492,7 +496,7 @@ class DashboardViewTests(unittest.TestCase):
 
     def test_frontend_manual_research_display_fallback_sanitizes_timeout_related_internal_terms(self) -> None:
         source = (
-            Path(__file__).resolve().parents[1] / "frontend" / "src" / "App.tsx"
+            Path(__file__).resolve().parents[1] / "frontend" / "src" / "utils" / "labels.ts"
         ).read_text(encoding="utf-8")
 
         self.assertIn('.replace(/pending_rebuild/g, "口径校准中")', source)
@@ -507,26 +511,24 @@ class DashboardViewTests(unittest.TestCase):
     def test_frontend_operations_track_tables_keep_overflow_scoped_to_card(self) -> None:
         frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
         app_source = (frontend_root / "App.tsx").read_text(encoding="utf-8")
+        track_table_source = (frontend_root / "components" / "TrackHoldingsTable.tsx").read_text(encoding="utf-8")
+        track_card_source = (frontend_root / "components" / "SimulationTrackCard.tsx").read_text(encoding="utf-8")
         style_source = (frontend_root / "styles.css").read_text(encoding="utf-8")
         focus_change_section = app_source.split("async function handleSimulationFocusChange(symbol: string) {", 1)[1]
         focus_change_body = focus_change_section.split("function openManualOrderModal", 1)[0]
 
         self.assertIn('const [operationsFocusSymbol, setOperationsFocusSymbol] = useState<string | null>(null);', app_source)
-        self.assertIn("async function handleSimulationFocusChange(symbol: string)", app_source)
         self.assertIn("const response = await api.updateSimulationConfig({", app_source)
         self.assertIn("setOperationsFocusSymbol(nextFocusSymbol);", app_source)
         self.assertNotIn("setSelectedSymbol(symbol);", focus_change_body)
-        self.assertIn('<div className="track-holdings-shell">', app_source)
-        self.assertIn('className="track-holdings-table"', app_source)
-        self.assertIn('scroll={{ x: "max-content" }}', app_source)
-        self.assertIn("event.stopPropagation();", app_source)
-        self.assertIn('className="panel-card simulation-track-card"', app_source)
+        self.assertIn('<div className="track-holdings-shell">', track_table_source)
+        self.assertIn('className="track-holdings-table"', track_table_source)
+        self.assertIn('scroll={{ x: "max-content" }}', track_table_source)
+        self.assertIn("event.stopPropagation();", track_table_source)
+        self.assertIn('className="panel-card simulation-track-card"', track_card_source)
         self.assertNotIn('scroll={{ x: 980 }}', app_source)
         self.assertEqual(app_source.count("<Col xs={24} xxl={12}>"), 2)
-        self.assertIn(
-            '<Col xs={24} xxl={12}>\n                        <SimulationTrackCard',
-            app_source,
-        )
+        self.assertIn('<Col xs={24} xxl={12}>\n                        <SimulationTrackCard', app_source)
         self.assertIn("当前表格默认展示当前模拟股票池。", app_source)
         self.assertIn('`模拟池 ${simulation.session.watch_symbols.length} 只`', app_source)
 
@@ -541,12 +543,12 @@ class DashboardViewTests(unittest.TestCase):
     def test_frontend_candidate_return_color_and_operations_report_button_follow_current_contract(self) -> None:
         frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
         app_source = (frontend_root / "App.tsx").read_text(encoding="utf-8")
+        candidate_columns_source = (frontend_root / "components" / "CandidateColumns.tsx").read_text(encoding="utf-8")
+        mobile_stock_row_source = (frontend_root / "components" / "mobile" / "MobileStockRow.tsx").read_text(encoding="utf-8")
 
-        self.assertIn('className={`value-${valueTone(record.candidate.price_return_20d)}`}', app_source)
-        self.assertIn('className={`value-${valueTone(item.candidate?.price_return_20d)}`}', app_source)
-        self.assertNotIn('type={record.candidate.price_return_20d >= 0 ? "success" : "danger"}', app_source)
-        self.assertIn("async function openAnalysisReportModal(symbol: string)", app_source)
-        self.assertIn("分析报告", app_source)
+        self.assertIn('className={`value-${valueTone(record.candidate.price_return_20d)}`}', candidate_columns_source)
+        self.assertIn('className={`value-${valueTone(candidate?.price_return_20d)}`}', mobile_stock_row_source)
+        self.assertNotIn('type={record.candidate.price_return_20d >= 0 ? "success" : "danger"}', candidate_columns_source)
         self.assertIn("运营复盘分析报告", app_source)
         self.assertIn("onOpenReport={(symbol) => void openAnalysisReportModal(symbol)}", app_source)
 
@@ -560,30 +562,28 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn('setStockActiveTab("followup");', app_source)
         self.assertIn('<Button type="primary" size="small" onClick={openManualResearchWorkspace}>', app_source)
         self.assertIn("发起人工研究", app_source)
-        self.assertIn("入口在下方“追问与模拟”标签。", app_source)
-        self.assertIn(
-            "留空不选模型 Key 时会直接调用本机 Codex，用 `gpt-5.5` 执行 builtin 研究；选择已配置 Key 时则走对应的外部模型 Key。",
-            app_source,
-        )
+        self.assertIn('入口在下方"追问与模拟"标签。', app_source)
+        self.assertIn("留空不选模型 Key 时会直接调用本机 Codex，用 `gpt-5.5` 执行 builtin 研究；选择已配置 Key 时则走对应的外部模型 Key。", app_source)
         self.assertIn('<Tabs activeKey={stockActiveTab} onChange={setStockActiveTab} items={stockTabItems} />', app_source)
         self.assertIn(".manual-research-entry-actions {", style_source)
 
     def test_frontend_manual_research_default_submit_executes_builtin_codex(self) -> None:
         frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
         app_source = (frontend_root / "App.tsx").read_text(encoding="utf-8")
-        api_source = (frontend_root / "api.ts").read_text(encoding="utf-8")
+        api_core_source = (frontend_root / "api" / "core.ts").read_text(encoding="utf-8")
+        api_manual_research_source = (frontend_root / "api" / "manual-research.ts").read_text(encoding="utf-8")
         submit_section = app_source.split("async function handleSubmitManualResearch()", 1)[1]
         submit_body = submit_section.split("async function handleExecuteManualResearch", 1)[0]
 
         self.assertIn("const created = await api.createManualResearchRequest({", submit_body)
         self.assertIn("const result = await api.executeManualResearchRequest(created.id, {", submit_body)
         self.assertNotIn("? await api.executeManualResearchRequest", submit_body)
-        self.assertIn("const longRunningRequestTimeoutMs = 180000;", api_source)
-        self.assertIn("const longRunningRequestAttemptTimeoutMs = 60000;", api_source)
-        self.assertIn("const manualResearchRequestBehavior: RequestBehavior = {", api_source)
-        self.assertIn("timeoutMs: longRunningRequestTimeoutMs,", api_source)
-        self.assertIn("attemptTimeoutMs: longRunningRequestAttemptTimeoutMs,", api_source)
-        self.assertIn("}, manualResearchRequestBehavior),", api_source)
+        self.assertIn("const longRunningRequestTimeoutMs = 180000;", api_core_source)
+        self.assertIn("const longRunningRequestAttemptTimeoutMs = 60000;", api_core_source)
+        self.assertIn("export const manualResearchRequestBehavior: RequestBehavior = {", api_core_source)
+        self.assertIn("timeoutMs: longRunningRequestTimeoutMs,", api_core_source)
+        self.assertIn("attemptTimeoutMs: longRunningRequestAttemptTimeoutMs,", api_core_source)
+        self.assertIn("}, manualResearchRequestBehavior);", api_manual_research_source)
         self.assertIn('placeholder="可选：选择要执行的模型 Key；留空则使用本机 Codex builtin GPT"', app_source)
         self.assertIn('{analysisKeyId ? "提交并执行" : "使用 builtin GPT 执行"}', app_source)
         self.assertIn(
