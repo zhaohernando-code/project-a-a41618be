@@ -264,9 +264,9 @@
 
 .mobile-stock-row-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 82px;
+  grid-template-columns: minmax(0, 1fr) 92px;
   align-items: start;
-  gap: 10px;
+  gap: 16px;
 }
 
 .mobile-stock-row-meta {
@@ -312,6 +312,7 @@
   align-content: start;
   gap: 3px;
   min-width: 0;
+  padding-top: 16px;
 }
 
 .mobile-stock-row-price strong {
@@ -330,9 +331,9 @@
 }
 
 .mobile-mini-trend {
-  width: 78px;
-  height: 30px;
-  margin-top: 6px;
+  width: 88px;
+  height: 42px;
+  margin-top: 5px;
 }
 
 .mobile-stock-row-tags {
@@ -354,7 +355,8 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
+  padding-top: 2px;
 }
 
 .mobile-section-link {

@@ -43,10 +43,6 @@ export function MobileStockRow({
             <span>{row.symbol}</span>
           </div>
           <p>{candidate?.summary ? sanitizeDisplayText(candidate.summary) : "等待候选分析结果。"}</p>
-          <div className="mobile-row-foot">
-            <span>{candidate?.sector ?? row.exchange}</span>
-            <span>{formatDate(row.last_analyzed_at ?? row.updated_at)}</span>
-          </div>
         </div>
         <div className="mobile-stock-row-price" aria-label="20日表现">
           <strong className={`value-${valueTone(candidate?.price_return_20d)}`}>{formatPercent(candidate?.price_return_20d)}</strong>
@@ -55,6 +51,10 @@ export function MobileStockRow({
           </span>
           <MobileMiniTrendChart row={row} />
         </div>
+      </div>
+      <div className="mobile-row-foot">
+        <span>{candidate?.sector ?? row.exchange}</span>
+        <span>{formatDate(row.last_analyzed_at ?? row.updated_at)}</span>
       </div>
     </button>
   );

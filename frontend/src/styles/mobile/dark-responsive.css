@@ -123,6 +123,11 @@
   color: #8fb8ff;
 }
 
+.mobile-theme-shell[data-theme="dark"] .mobile-bottom-nav button.active {
+  background: #2f5fa8;
+  color: #eef5ff;
+}
+
 .mobile-theme-shell[data-theme="dark"] .mobile-chart-card .chart-shell {
   background:
     linear-gradient(180deg, rgba(102, 164, 255, 0.07), rgba(102, 164, 255, 0.02)),
