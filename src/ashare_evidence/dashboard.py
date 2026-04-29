@@ -19,20 +19,11 @@ from ashare_evidence.research_artifact_store import artifact_root_from_database_
 from ashare_evidence.services import _serialize_recommendation, get_recommendation_trace
 from ashare_evidence.watchlist import active_watchlist_symbols
 
-DIRECTION_LABELS = {
-    "buy": "偏积极",
-    "watch": "继续观察",
-    "reduce": "偏谨慎",
-    "risk_alert": "风险提示",
-}
+DIRECTION_LABELS = {"buy": "可建仓", "add": "可加仓", "watch": "继续观察", "reduce": "减仓",
+    "sell": "建议离场", "risk_alert": "风险提示"}
 
-FACTOR_LABELS = {
-    "price_baseline": "价格基线",
-    "news_event": "新闻事件",
-    "manual_review_layer": "人工研究层",
-    "llm_assessment": "人工研究兼容壳",
-    "fusion": "融合评分",
-}
+FACTOR_LABELS = {"price_baseline": "价格基线", "news_event": "新闻事件", "fundamental": "基本面",
+    "manual_review_layer": "人工研究层", "llm_assessment": "人工研究兼容壳", "fusion": "融合评分"}
 
 GLOSSARY_ENTRIES: list[dict[str, str]] = [
     {

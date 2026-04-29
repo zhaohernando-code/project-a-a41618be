@@ -15,10 +15,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/analysis_pipeline.py": {
-      "lines": 892,
-      "reason": "Analysis pipeline stages with sequential step coupling. Cohesive pipeline definition — splitting would fragment the flow logic.",
+      "lines": 1049,
+      "reason": "Analysis pipeline: announcement body fetching, LLM enrichment, financial trends. Cohesive pipeline definition.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/api.py": {
       "lines": 706,
@@ -33,10 +33,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/dashboard.py": {
-      "lines": 612,
-      "reason": "Dashboard data aggregation and view building. Single responsibility; current growth adds today_price_chart projection for mobile single-stock view without changing API ownership.",
+      "lines": 615,
+      "reason": "Dashboard views with direction labels and factor cards. Minor growth from label additions.",
       "status": "accepted",
-      "reviewed_at": "2026-04-29"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/intraday_market.py": {
       "lines": 520,
@@ -94,15 +94,15 @@
     },
     "src/ashare_evidence/services.py": {
       "lines": 1609,
-      "reason": "Multiple service classes: data provider service, signal service, portfolio service, analysis service. Domain split planned.",
+      "reason": "Service layer: recommendation serialization, claim gate, direction capping.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/signal_engine_parts/recommendation.py": {
-      "lines": 536,
-      "reason": "Recommendation signal engine: scoring, ranking, direction inference. Cohesive engine component.",
+      "lines": 681,
+      "reason": "Fusion engine with dynamic weights, conflict resolution, multi-factor integration (price/news/fundamental).",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/simulation.py": {
       "lines": 1508,

@@ -24,8 +24,9 @@ TRANSACTION_COST_BPS = float(PHASE2_COST_MODEL["round_trip_cost_bps"])
 VALIDATION_PENDING = pending_rebuild_payload()
 MANUAL_REVIEW_PLACEHOLDER = manual_review_placeholder(PHASE2_MANUAL_REVIEW_NOTE)
 FUSION_WEIGHTS = {
-    "price_baseline": 0.72,
-    "news_event": 0.28,
+    "price_baseline": 0.50,
+    "news_event": 0.30,
+    "fundamental": 0.20,
 }
 
 
@@ -96,9 +97,13 @@ def factor_direction(score: float, threshold: float = 0.08) -> str:
 def recommendation_direction(score: float, degraded: bool) -> str:
     if degraded:
         return "risk_alert"
-    if score >= 0.16:
+    if score >= 0.28:
         return "buy"
-    if score <= -0.16:
+    if score >= 0.12:
+        return "add"
+    if score <= -0.28:
+        return "sell"
+    if score <= -0.12:
         return "reduce"
     return "watch"
 

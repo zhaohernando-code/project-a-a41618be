@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
-import json
 from typing import Any
 from urllib import error, parse, request
 from zoneinfo import ZoneInfo
@@ -11,6 +11,11 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ashare_evidence.analysis_enrichment import (
+    compute_financial_trends,
+    enrich_with_llm_analysis,
+    fetch_announcement_body,
+)
 from ashare_evidence.http_client import urlopen
 from ashare_evidence.lineage import build_lineage
 from ashare_evidence.models import ProviderCredential, Recommendation, Stock
@@ -30,16 +35,13 @@ ANNOUNCEMENT_LIMIT = 12
 RESEARCH_METADATA_LIMIT = 5
 MIN_EXISTING_RECOMMENDATION_DAYS_FOR_BACKFILL = 3
 
-
 class RealDataRefreshError(RuntimeError):
     pass
-
 
 @dataclass(frozen=True)
 class DailyMarketFetch:
     provider_name: str
     bars: list[dict[str, Any]]
-
 
 def _normalize_text(raw: Any) -> str | None:
     if raw is None:
@@ -48,7 +50,6 @@ def _normalize_text(raw: Any) -> str | None:
     if not value or value in {"nan", "None", "null", "--", "-"}:
         return None
     return value
-
 
 def _json_safe(value: Any) -> Any:
     if isinstance(value, datetime):
@@ -63,14 +64,12 @@ def _json_safe(value: Any) -> Any:
         return [_json_safe(item) for item in value]
     return value
 
-
 def _normalize_symbol_parts(symbol: str) -> tuple[str, str]:
     ticker, _, market = symbol.partition(".")
     market = market.upper()
     if market not in {"SH", "SZ", "BJ"}:
         raise ValueError(f"Unsupported symbol market: {symbol}")
     return ticker, market
-
 
 def _exchange_name(market: str) -> str:
     return {
@@ -79,11 +78,9 @@ def _exchange_name(market: str) -> str:
         "BJ": "BSE",
     }[market]
 
-
 def _akshare_prefixed_symbol(symbol: str) -> str:
     ticker, market = _normalize_symbol_parts(symbol)
     return f"{market.lower()}{ticker}"
-
 
 def _to_float(raw: Any) -> float | None:
     if raw is None:
@@ -92,7 +89,6 @@ def _to_float(raw: Any) -> float | None:
         return float(str(raw).replace(",", ""))
     except (TypeError, ValueError):
         return None
-
 
 def _parse_day(raw: Any) -> date | None:
     if raw is None:
@@ -106,10 +102,8 @@ def _parse_day(raw: Any) -> date | None:
         return None
     return date(int(digits[0:4]), int(digits[4:6]), int(digits[6:8]))
 
-
 def _close_timestamp(trade_day: date) -> datetime:
     return datetime.combine(trade_day, time(15, 0), tzinfo=SHANGHAI_TZ)
-
 
 def _announcement_timestamp(raw: Any) -> datetime | None:
     published_day = _parse_day(raw)
@@ -119,12 +113,10 @@ def _announcement_timestamp(raw: Any) -> datetime | None:
     # Use end-of-day to avoid leaking same-day after-close filings into earlier bars.
     return datetime.combine(published_day, time(23, 59), tzinfo=SHANGHAI_TZ)
 
-
 def _trade_day_from_timestamp(raw: datetime) -> date:
     if raw.tzinfo is None:
         return raw.date()
     return raw.astimezone(SHANGHAI_TZ).date()
-
 
 def _parse_query_id(source_uri: str) -> str | None:
     parsed = parse.urlparse(source_uri)
@@ -135,7 +127,6 @@ def _parse_query_id(source_uri: str) -> str | None:
     path_parts = [part for part in parsed.path.split("/") if part]
     return path_parts[-1] if path_parts else None
 
-
 def _provider_credential(session: Session, provider_name: str) -> ProviderCredential | None:
     return session.scalar(
         select(ProviderCredential).where(
@@ -143,7 +134,6 @@ def _provider_credential(session: Session, provider_name: str) -> ProviderCreden
             ProviderCredential.enabled.is_(True),
         )
     )
-
 
 def _post_tushare(
     *,
@@ -177,7 +167,6 @@ def _post_tushare(
         return None
     return parsed if isinstance(parsed, dict) else None
 
-
 def _tushare_rows(
     session: Session,
     *,
@@ -210,12 +199,10 @@ def _tushare_rows(
             rows.append(dict(zip(field_names, item, strict=False)))
     return rows
 
-
 def _akshare_module() -> Any:
     import akshare as akshare  # type: ignore[import-not-found]
 
     return akshare
-
 
 def _fetch_daily_bars_tushare(session: Session, symbol: str) -> DailyMarketFetch | None:
     end_day = datetime.now(SHANGHAI_TZ).date()
@@ -291,7 +278,6 @@ def _fetch_daily_bars_tushare(session: Session, symbol: str) -> DailyMarketFetch
     bars.sort(key=lambda item: item["observed_at"])
     return DailyMarketFetch(provider_name="tushare_daily", bars=bars)
 
-
 def _fetch_daily_bars_akshare(symbol: str) -> DailyMarketFetch | None:
     akshare = _akshare_module()
     end_day = datetime.now(SHANGHAI_TZ).date()
@@ -348,7 +334,6 @@ def _fetch_daily_bars_akshare(symbol: str) -> DailyMarketFetch | None:
     bars.sort(key=lambda item: item["observed_at"])
     return DailyMarketFetch(provider_name="akshare_sina_daily", bars=bars)
 
-
 def _fetch_daily_market_data(session: Session, symbol: str) -> DailyMarketFetch:
     for fetcher in (_fetch_daily_bars_tushare, lambda active_session, active_symbol: _fetch_daily_bars_akshare(active_symbol)):
         try:
@@ -358,7 +343,6 @@ def _fetch_daily_market_data(session: Session, symbol: str) -> DailyMarketFetch:
         if result is not None and len(result.bars) >= 21:
             return result
     raise RealDataRefreshError(f"{symbol} 缺少足够的 21 个交易日日线行情，无法生成真实建议。")
-
 
 def _announcement_impact(title: str) -> str:
     positive_keywords = (
@@ -441,13 +425,14 @@ def _fetch_official_announcements(
             continue
         external_id = _parse_query_id(source_uri) or f"{ticker}-{published_at:%Y%m%d}-{index}"
         news_key = f"cninfo-{ticker}-{external_id}"
+        content_excerpt = fetch_announcement_body(source_uri)
         item = {
             "news_key": news_key,
             "provider_name": "cninfo",
             "external_id": external_id,
             "headline": headline,
             "summary": headline,
-            "content_excerpt": None,
+            "content_excerpt": content_excerpt,
             "published_at": published_at,
             "event_scope": _announcement_scope(headline),
             "dedupe_key": news_key,
@@ -510,6 +495,7 @@ def _fetch_official_announcements(
                     source_uri=f"pipeline://news-link/sector/{news_key}",
                 )
             )
+    enrich_with_llm_analysis(news_items, news_links)
     return news_items, news_links
 
 
@@ -709,6 +695,15 @@ def build_real_evidence_bundle(
     except Exception:
         research_metadata = []
 
+    financial_trends = compute_financial_trends(financial_snapshot)
+    financial_llm = None
+    if financial_trends.get("available"):
+        try:
+            from ashare_evidence.news_analysis import analyze_financials
+            financial_llm = analyze_financials(financial_snapshot, financial_trends)
+        except Exception:
+            financial_llm = None
+
     generated_at = datetime.now(SHANGHAI_TZ)
     signal_artifacts = build_signal_artifacts(
         symbol=normalized_symbol,
@@ -717,6 +712,9 @@ def build_real_evidence_bundle(
         news_items=news_items,
         news_links=news_links,
         sector_memberships=sector_memberships,
+        financial_snapshot=financial_snapshot,
+        financial_trends=financial_trends,
+        financial_llm=financial_llm,
         generated_at=generated_at,
     )
 
@@ -741,6 +739,8 @@ def build_real_evidence_bundle(
                 "research_provider": "eastmoney_research_metadata" if research_metadata else None,
             },
             "financial_snapshot": financial_snapshot,
+            "financial_trends": financial_trends,
+            "financial_llm_analysis": financial_llm,
             "research_report_metadata": research_metadata,
         },
     }

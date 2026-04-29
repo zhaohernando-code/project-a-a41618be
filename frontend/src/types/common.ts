@@ -1,6 +1,6 @@
 // common domain types
 
-export type RecommendationDirection = "buy" | "watch" | "reduce" | "risk_alert";
+export type RecommendationDirection = "buy" | "add" | "watch" | "reduce" | "sell" | "risk_alert";
 
 export interface LineageRecord {
   license_tag: string;
@@ -61,3 +61,20 @@ export interface DashboardRuntimeConfig {
   snapshotGeneratedAt: string;
 }
 
+export interface AccountSpaceView {
+  account_login: string;
+  role_snapshot: string;
+  first_seen_at: string;
+  last_seen_at?: string | null;
+  last_acted_at?: string | null;
+  created_by_root: boolean;
+}
+
+export interface AuthContextResponse {
+  actor_login: string;
+  actor_role: string;
+  target_login: string;
+  can_act_as: boolean;
+  auth_mode: string;
+  visible_account_spaces: AccountSpaceView[];
+}

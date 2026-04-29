@@ -15,15 +15,18 @@ const percentFormatter = new Intl.NumberFormat("zh-CN", {
 });
 
 const directionLabels: Record<string, string> = {
-  buy: "偏积极",
+  buy: "可建仓",
+  add: "可加仓",
   watch: "继续观察",
-  reduce: "偏谨慎",
+  reduce: "减仓",
+  sell: "建议离场",
   risk_alert: "风险提示",
 };
 
 const factorLabels: Record<string, string> = {
   price_baseline: "价格基线",
   news_event: "新闻事件",
+  fundamental: "基本面",
   manual_review_layer: "人工研究层",
   llm_assessment: "人工研究参考",
   fusion: "融合评分",

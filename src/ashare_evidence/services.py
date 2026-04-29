@@ -13,9 +13,8 @@ from ashare_evidence.contract_status import (
     STATUS_SYNTHETIC_DEMO,
     STATUS_VERIFIED,
 )
-from ashare_evidence.manual_research_contract import build_manual_llm_review_projection
-from ashare_evidence.phase2 import PHASE2_MANUAL_REVIEW_NOTE, phase2_target_horizon_label
 from ashare_evidence.lineage import REQUIRED_LINEAGE_FIELDS, build_lineage, compute_lineage_hash
+from ashare_evidence.manual_research_contract import build_manual_llm_review_projection
 from ashare_evidence.models import (
     FeatureSnapshot,
     IngestionRun,
@@ -36,17 +35,18 @@ from ashare_evidence.models import (
     SectorMembership,
     Stock,
 )
-from ashare_evidence.research_artifacts import normalize_product_validation_status
+from ashare_evidence.phase2 import PHASE2_MANUAL_REVIEW_NOTE, phase2_target_horizon_label
+from ashare_evidence.providers import EvidenceBundle
+from ashare_evidence.recommendation_selection import (
+    collapse_recommendation_history,
+    recommendation_recency_ordering,
+)
 from ashare_evidence.research_artifact_store import (
     artifact_root_from_database_url,
     read_manifest_if_exists,
     read_validation_metrics_if_exists,
 )
-from ashare_evidence.recommendation_selection import (
-    collapse_recommendation_history,
-    recommendation_recency_ordering,
-)
-from ashare_evidence.providers import EvidenceBundle
+from ashare_evidence.research_artifacts import normalize_product_validation_status
 
 TRACE_MODEL_MAP = {
     "market_bar": MarketBar,
@@ -878,11 +878,6 @@ def _build_evidence_layer(
         )
         for key in factor_keys
     ]
-    factor_card_map = {
-        str(card.get("factor_key")): card
-        for card in factor_cards
-        if isinstance(card, Mapping) and card.get("factor_key")
-    }
     price_factor = factor_breakdown.get("price_baseline", {})
     news_factor = factor_breakdown.get("news_event", {})
     manual_review_factor = factor_breakdown.get(
@@ -1088,9 +1083,11 @@ def _metric_number(value: Any) -> float | None:
 def _cap_direction(direction: str, *, ceiling: str) -> str:
     ranking = {
         "risk_alert": 0,
-        "reduce": 1,
-        "watch": 2,
-        "buy": 3,
+        "sell": 1,
+        "reduce": 2,
+        "watch": 3,
+        "add": 4,
+        "buy": 5,
     }
     direction_rank = ranking.get(direction, ranking["risk_alert"])
     ceiling_rank = ranking.get(ceiling, ranking["risk_alert"])

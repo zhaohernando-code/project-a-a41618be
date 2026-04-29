@@ -12,18 +12,23 @@ from ashare_evidence.signal_engine_parts.base import (
     HORIZONS,
     PRIMARY_HORIZON,
     TRANSACTION_COST_BPS,
-    SignalArtifacts,
     VALIDATION_PENDING,
+    SignalArtifacts,
     with_internal_lineage,
 )
 from ashare_evidence.signal_engine_parts.factors import (
     active_sector_codes,
+    compute_fundamental_factor,
     compute_manual_review_layer,
     compute_news_factor,
     compute_price_factor,
     primary_sector_membership,
 )
-from ashare_evidence.signal_engine_parts.recommendation import build_recommendation, compute_model_results, _fusion_state
+from ashare_evidence.signal_engine_parts.recommendation import (
+    _fusion_state,
+    build_recommendation,
+    compute_model_results,
+)
 
 
 def build_signal_artifacts(
@@ -34,6 +39,9 @@ def build_signal_artifacts(
     news_items: list[dict[str, object]],
     news_links: list[dict[str, object]],
     sector_memberships: list[dict[str, object]],
+    financial_snapshot: dict[str, object] | None = None,
+    financial_trends: dict[str, object] | None = None,
+    financial_llm: dict[str, object] | None = None,
     generated_at: datetime,
 ) -> SignalArtifacts:
     minimum_bars = max(HORIZONS)
@@ -53,12 +61,18 @@ def build_signal_artifacts(
         news_links=news_links,
         sector_codes=sector_codes,
     )
+    fundamental_factor = compute_fundamental_factor(
+        financial_snapshot=financial_snapshot,
+        financial_trends=financial_trends,
+        financial_llm=financial_llm,
+    )
     manual_review_layer = compute_manual_review_layer(price_factor, news_factor)
     fusion_state = _fusion_state(
         as_of_data_time=as_of_data_time,
         generated_at=generated_at,
         price_factor=price_factor,
         news_factor=news_factor,
+        fundamental_factor=fundamental_factor,
     )
     model_results = compute_model_results(
         symbol=symbol,
@@ -75,6 +89,7 @@ def build_signal_artifacts(
         generated_at=generated_at,
         price_factor=price_factor,
         news_factor=news_factor,
+        fundamental_factor=fundamental_factor,
         manual_review_layer=manual_review_layer,
         model_results=model_results,
         fusion_state=fusion_state,
@@ -136,6 +151,7 @@ def build_signal_artifacts(
             "registry_payload": {
                 "baseline": f"price_baseline_factor:{PHASE2_FEATURE_VERSION}",
                 "news_factor": f"news_event_factor:{PHASE2_FEATURE_VERSION}",
+                "fundamental_factor": f"fundamental_factor:{PHASE2_FEATURE_VERSION}",
                 "manual_review_layer": "manual_review_artifact:v1",
                 "policy_version": PHASE2_POLICY_VERSION,
             },
@@ -153,7 +169,7 @@ def build_signal_artifacts(
                 "horizon_days": list(HORIZONS),
                 "universe": "watchlist",
                 "rule_baseline": PHASE2_RULE_BASELINE,
-                "weights": {"price_baseline": 0.72, "news_event": 0.28},
+                "weights": {"price_baseline": 0.50, "news_event": 0.30, "fundamental": 0.20},
                 "manual_review_layer": "artifact_backed_only_not_scored",
                 "degrade_policy": PHASE2_POLICY_VERSION,
             },

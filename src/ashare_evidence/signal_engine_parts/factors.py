@@ -142,6 +142,46 @@ def compute_price_factor(market_bars: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _llm_summary_for_key(news_key: str, item_by_key: dict[str, dict[str, Any]]) -> str | None:
+    item = item_by_key.get(news_key)
+    if not item:
+        return None
+    llm = (item.get("raw_payload") or {}).get("llm_analysis")
+    if isinstance(llm, dict) and not llm.get("_fallback"):
+        summary = llm.get("summary_sentence", "").strip()
+        if summary:
+            return summary
+    return None
+
+
+def _news_driver_texts(
+    events: list[dict[str, Any]],
+    item_by_key: dict[str, dict[str, Any]],
+) -> list[str]:
+    texts: list[str] = []
+    for event in events:
+        llm_summary = _llm_summary_for_key(event["news_key"], item_by_key)
+        if llm_summary:
+            texts.append(f"公告解读：{llm_summary}")
+        else:
+            texts.append(f"{event['headline']} 提供正向事件证据。")
+    return texts
+
+
+def _news_risk_texts(
+    events: list[dict[str, Any]],
+    item_by_key: dict[str, dict[str, Any]],
+) -> list[str]:
+    texts: list[str] = []
+    for event in events:
+        llm_summary = _llm_summary_for_key(event["news_key"], item_by_key)
+        if llm_summary:
+            texts.append(f"风险公告：{llm_summary}")
+        else:
+            texts.append(f"{event['headline']} 仍是潜在反向事件。")
+    return texts
+
+
 def compute_news_factor(
     *,
     symbol: str,
@@ -209,8 +249,8 @@ def compute_news_factor(
 
     positive_events = [item for item in event_contributions if item["score"] > 0]
     negative_events = [item for item in event_contributions if item["score"] < 0]
-    drivers = [f"{item['headline']} 提供正向事件证据。" for item in positive_events[:2]]
-    risks = [f"{item['headline']} 仍是潜在反向事件。" for item in negative_events[:2]]
+    drivers = _news_driver_texts(positive_events[:2], item_by_key)
+    risks = _news_risk_texts(negative_events[:2], item_by_key)
     if conflict_ratio >= 0.25:
         risks.append(f"正负事件冲突度 {conflict_ratio:.0%}，新闻因子不能单独抬高建议强度。")
     if not drivers:
@@ -250,6 +290,84 @@ def compute_news_factor(
     }
 
 
+def compute_fundamental_factor(
+    *,
+    financial_snapshot: dict[str, Any] | None,
+    financial_trends: dict[str, Any] | None,
+    financial_llm: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if not financial_trends or not financial_trends.get("available"):
+        return {
+            "score": 0.0,
+            "direction": "neutral",
+            "confidence_score": 0.0,
+            "drivers": ["基本面数据暂不可用，当前不参与评分。"],
+            "risks": [],
+            "feature_values": {"fundamental_score": 0.0, "available": False},
+            "evidence_count": 0,
+            "weight": 0.0,
+        }
+
+    composite = float(financial_trends["composite_score"])
+    llm_verdict = None
+    drivers: list[str] = []
+    risks: list[str] = []
+
+    if financial_llm and not financial_llm.get("_fallback"):
+        llm_verdict = financial_llm.get("verdict")
+        for d in (financial_llm.get("key_drivers") or [])[:2]:
+            drivers.append(f"基本面亮点：{d}")
+        for r in (financial_llm.get("key_risks") or [])[:2]:
+            risks.append(f"基本面风险：{r}")
+        summary = financial_llm.get("summary_sentence", "").strip()
+        if summary and not drivers:
+            drivers.append(f"基本面评估：{summary}")
+
+    if not drivers:
+        if composite > 0.15:
+            drivers.append("财务趋势记分卡偏正面，营收、利润或ROE表现优于基准。")
+        elif composite < -0.15:
+            drivers.append("财务趋势记分卡偏负面，关注营收增速与现金流质量。")
+
+    if not risks:
+        if composite < 0.05:
+            risks.append("财务指标存在改善空间，若持续恶化将拖累中期判断。")
+        if financial_snapshot:
+            cf = financial_snapshot.get("operating_cashflow_per_share") or financial_snapshot.get("operating_cashflow")
+            eps = financial_snapshot.get("eps") or financial_snapshot.get("basic_eps")
+            if cf and eps and float(cf) < float(eps) * 0.3:
+                risks.append("经营现金流明显低于每股收益，盈利质量需关注。")
+
+    if llm_verdict:
+        verdict_score = {"positive": 0.5, "negative": -0.5, "mixed": 0.0, "neutral": 0.0}.get(llm_verdict, 0.0)
+    else:
+        verdict_score = 0.0
+    adjusted_score = clip(composite * 0.7 + verdict_score * 0.3)
+
+    feature_values = {
+        "fundamental_score": round(adjusted_score, 4),
+        "composite_trend_score": composite,
+        "growth_quality": financial_trends.get("growth_quality", 0),
+        "profitability_quality": financial_trends.get("profitability_quality", 0),
+        "cash_flow_quality": financial_trends.get("cash_flow_quality", 0),
+        "available": True,
+        "llm_verdict": llm_verdict,
+    }
+
+    confidence = clip(0.3 + abs(adjusted_score) * 0.4 + (0.15 if llm_verdict else 0), 0.0, 0.8)
+
+    return {
+        "score": round(adjusted_score, 4),
+        "direction": factor_direction(adjusted_score),
+        "confidence_score": round(confidence, 4),
+        "drivers": drivers[:2],
+        "risks": risks[:2],
+        "feature_values": feature_values,
+        "evidence_count": 1 if financial_trends.get("available") else 0,
+        "weight": 0.20,
+    }
+
+
 def compute_manual_review_layer(price_factor: dict[str, Any], news_factor: dict[str, Any]) -> dict[str, Any]:
     feature_values = {
         "manual_review_score": 0.0,
@@ -273,6 +391,7 @@ def compute_manual_review_layer(price_factor: dict[str, Any], news_factor: dict[
 
 __all__ = [
     "active_sector_codes",
+    "compute_fundamental_factor",
     "compute_manual_review_layer",
     "compute_news_factor",
     "compute_price_factor",

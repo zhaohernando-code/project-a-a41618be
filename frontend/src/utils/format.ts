@@ -73,8 +73,10 @@ export function valueTone(value?: number | null): "positive" | "negative" | "neu
 
 export function directionColor(direction: string): string {
   if (direction === "buy") return "green";
+  if (direction === "add") return "cyan";
   if (direction === "watch") return "blue";
   if (direction === "reduce") return "orange";
+  if (direction === "sell") return "red";
   if (direction === "risk_alert") return "red";
   return "default";
 }
