@@ -283,6 +283,7 @@ export interface StockDashboardResponse {
   simulation_orders: SimulationOrderView[];
   hero: HeroView;
   price_chart: PricePointView[];
+  today_price_chart: PricePointView[];
   recent_news: RecentNewsView[];
   change: ChangeView;
   glossary: GlossaryEntryView[];

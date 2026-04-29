@@ -1,11 +1,9 @@
-import { ArrowLeftOutlined, CopyOutlined, LineChartOutlined, QuestionCircleOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Alert, Button, Empty, Input, Select, Skeleton, Space, Tag, Typography } from "antd";
+import { ArrowLeftOutlined, CalendarOutlined, CopyOutlined, LineChartOutlined, QuestionCircleOutlined, ReloadOutlined, WarningOutlined } from "@ant-design/icons";
+import { Button, Empty, Input, Select, Skeleton, Tag, Typography } from "antd";
 import { useState } from "react";
 import type { MobileAppShellProps, MobileStockPanelKey } from "./types";
-import { MobileMetric } from "./MobileMetric";
-import { KlinePanel } from "../KlinePanel";
+import { MobilePriceLineChart } from "./MobilePriceLineChart";
 import {
-  claimGateAlertType,
   claimGateDescription,
   claimGateStatusLabel,
   displayBenchmarkLabel,
@@ -19,7 +17,7 @@ import {
 import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, valueTone } from "../../utils/format";
 import { directionLabels, factorLabels } from "../../utils/constants";
 
-const { Text, Title, Paragraph } = Typography;
+const { Text, Title } = Typography;
 const { TextArea } = Input;
 
 export function MobileStockDetail(props: MobileAppShellProps) {
@@ -45,71 +43,105 @@ export function MobileStockDetail(props: MobileAppShellProps) {
   }
 
   const recommendation = dashboard.recommendation;
+  const latestPoint = dashboard.price_chart[dashboard.price_chart.length - 1];
+  const previousPoint = dashboard.price_chart[dashboard.price_chart.length - 2];
+  const dayChangeValue = latestPoint && previousPoint ? latestPoint.close_price - previousPoint.close_price : null;
+  const todayPriceChart = dashboard.today_price_chart ?? [];
+  const visibleDrivers = recommendation.evidence.primary_drivers.slice(0, 3);
+  const visibleRisks = [
+    ...recommendation.risk.risk_flags,
+    ...recommendation.risk.downgrade_conditions,
+  ].slice(0, 4);
+  const fallbackAdvice = [
+    { title: "不追高", detail: sanitizeDisplayText(claimGateDescription(recommendation.claim_gate)), icon: <LineChartOutlined /> },
+    { title: "观察中枢", detail: displayWindowLabel(recommendation.historical_validation.window_definition), icon: <CalendarOutlined /> },
+    { title: "风险优先", detail: sanitizeDisplayText(dashboard.risk_panel.change_hint || dashboard.risk_panel.headline), icon: <WarningOutlined /> },
+  ];
+  const adviceItems = visibleDrivers.length > 0
+    ? visibleDrivers.map((item, index) => ({
+        title: index === 0 ? dashboard.hero.direction_label : index === 1 ? "观察中枢" : "风险优先",
+        detail: sanitizeDisplayText(item),
+        icon: index === 0 ? <LineChartOutlined /> : index === 1 ? <CalendarOutlined /> : <WarningOutlined />,
+      }))
+    : fallbackAdvice;
 
   return (
-    <main className="mobile-page">
-      <header className="mobile-top-bar">
-        <Button className="mobile-icon-button" shape="circle" icon={<ArrowLeftOutlined />} onClick={() => props.onTabChange("home")} />
+    <main className="mobile-page mobile-stock-page">
+      <header className="mobile-app-top-bar mobile-stock-top-bar">
+        <Button className="mobile-icon-button" type="text" icon={<ArrowLeftOutlined />} onClick={() => props.onTabChange("home")} />
         <strong>单票分析</strong>
-        <Button className="mobile-icon-button" shape="circle" icon={<ReloadOutlined />} onClick={() => void props.onRefresh()} />
+        <Button className="mobile-icon-button" type="text" icon={<ReloadOutlined />} onClick={() => void props.onRefresh()} />
       </header>
 
-      <section className="mobile-stock-headline">
+      <section className="mobile-stock-hero">
         <div>
           <Title level={2}>{dashboard.stock.name}</Title>
-          <Text>{dashboard.stock.symbol} · {dashboard.stock.exchange}</Text>
+          <Text>{dashboard.stock.symbol} · {dashboard.hero.sector_tags[0] ?? dashboard.stock.exchange}</Text>
         </div>
-        <div className="mobile-focus-price">
+        <div className="mobile-stock-quote">
           <strong>{formatNumber(dashboard.hero.latest_close)}</strong>
           <span className={`value-${valueTone(dashboard.hero.day_change_pct)}`}>
-            {formatPercent(dashboard.hero.day_change_pct)}
+            {`${formatSignedNumber(dayChangeValue)}  ${formatPercent(dashboard.hero.day_change_pct)}`}
           </span>
         </div>
       </section>
 
-      <section className="mobile-panel-card mobile-conclusion-card">
-        <div className="mobile-focus-title">
+      <section className="mobile-stock-card mobile-stock-conclusion">
+        <div className="mobile-stock-card-head">
           <div>
-            <Text className="mobile-card-kicker">当前结论</Text>
+            <Text>当前结论</Text>
             <Title level={3}>{dashboard.hero.direction_label}</Title>
           </div>
-          <Tag color={directionColor(recommendation.claim_gate.public_direction)}>{recommendation.confidence_expression}</Tag>
+          <span className="mobile-target-badge"><QuestionCircleOutlined /></span>
         </div>
-        <Space wrap className="mobile-chip-row">
+        <div className="mobile-stock-pill-row">
           <Tag color={directionColor(recommendation.claim_gate.public_direction)}>{dashboard.hero.direction_label}</Tag>
-          {recommendation.claim_gate.public_direction !== recommendation.direction ? (
-            <Tag>{`原始 ${directionLabels[recommendation.direction] ?? recommendation.direction}`}</Tag>
-          ) : null}
-          <Tag>{recommendation.confidence_expression}</Tag>
+          <Tag>{`${recommendation.confidence_label}置信`}</Tag>
           <Tag>{claimGateStatusLabel(recommendation.claim_gate.status)}</Tag>
-        </Space>
+        </div>
         <p>{sanitizeDisplayText(recommendation.summary)}</p>
-        <div className="mobile-metric-grid">
-          <MobileMetric label="20日表现" value={formatPercent(dashboard.hero.day_change_pct)} tone={valueTone(dashboard.hero.day_change_pct)} />
-          <MobileMetric label="RankIC" value={formatSignedNumber(recommendation.historical_validation.metrics?.rank_ic_mean)} />
-          <MobileMetric label="样本数" value={recommendation.claim_gate.sample_count ?? "--"} />
+        <div className="mobile-stock-stat-strip">
+          <div>
+            <span>20日</span>
+            <strong className={`value-${valueTone(dashboard.hero.day_change_pct)}`}>{formatPercent(dashboard.hero.day_change_pct)}</strong>
+          </div>
+          <div>
+            <span>RankIC</span>
+            <strong className={`value-${valueTone(recommendation.historical_validation.metrics?.rank_ic_mean)}`}>{formatSignedNumber(recommendation.historical_validation.metrics?.rank_ic_mean)}</strong>
+          </div>
+          <div>
+            <span>样本数</span>
+            <strong>{recommendation.claim_gate.sample_count ?? "--"}</strong>
+          </div>
         </div>
       </section>
 
-      <section className="mobile-panel-card mobile-chart-card">
-        <div className="mobile-section-head">
+      <section className="mobile-stock-card mobile-stock-price-card">
+        <div className="mobile-stock-section-head">
           <div>
             <Title level={4}>价格轨迹</Title>
-            <Text>{displayWindowLabel(recommendation.historical_validation.window_definition)}</Text>
+            <Text>近60日</Text>
           </div>
-          <LineChartOutlined />
+          <span>{formatDate(dashboard.hero.last_updated)}</span>
         </div>
-        <KlinePanel
-          title={`${dashboard.stock.name} · ${dashboard.stock.symbol} K 线`}
-          points={dashboard.price_chart}
-          lastUpdated={dashboard.hero.last_updated}
-          stockName={dashboard.stock.name}
-          isMobile
-        />
+        <MobilePriceLineChart points={dashboard.price_chart} />
       </section>
 
-      <section className="mobile-panel-card mobile-analysis-card">
-        <div className="mobile-segmented mobile-sticky-segmented">
+      {todayPriceChart.length >= 2 ? (
+        <section className="mobile-stock-card mobile-stock-price-card">
+          <div className="mobile-stock-section-head">
+            <div>
+              <Title level={4}>今日价格轨迹</Title>
+              <Text>5分钟</Text>
+            </div>
+            <span>{formatDate(todayPriceChart[todayPriceChart.length - 1]?.observed_at)}</span>
+          </div>
+          <MobilePriceLineChart points={todayPriceChart} />
+        </section>
+      ) : null}
+
+      <section className="mobile-stock-card mobile-stock-analysis-card">
+        <div className="mobile-stock-tabs">
           {([
             ["advice", "建议"],
             ["evidence", "证据"],
@@ -123,83 +155,71 @@ export function MobileStockDetail(props: MobileAppShellProps) {
         </div>
 
       {panel === "advice" ? (
-        <div>
-          <Alert
-            className="mobile-inline-alert"
-            type={claimGateAlertType(recommendation.claim_gate.status)}
-            showIcon
-            message={recommendation.claim_gate.headline}
-            description={sanitizeDisplayText(claimGateDescription(recommendation.claim_gate))}
-          />
-          <div className="mobile-fact-list">
-            <MobileMetric label="目标 horizon" value={horizonLabel(recommendation.core_quant.target_horizon_label)} />
-            <MobileMetric label="验证状态" value={validationStatusLabel(recommendation.historical_validation.status)} />
-            <MobileMetric label="基准" value={displayBenchmarkLabel(recommendation.historical_validation.benchmark_definition)} />
-            <MobileMetric label="RankIC" value={formatSignedNumber(recommendation.historical_validation.metrics?.rank_ic_mean)} />
-            <MobileMetric label="正超额占比" value={formatPercent(recommendation.historical_validation.metrics?.positive_excess_rate)} />
-          </div>
-          <Title level={5}>核心驱动</Title>
-          <ul className="mobile-plain-list">
-            {recommendation.evidence.primary_drivers.map((item) => <li key={item}>{sanitizeDisplayText(item)}</li>)}
-          </ul>
+        <div className="mobile-stock-insight-list">
+          {adviceItems.map((item) => (
+            <article key={`${item.title}-${item.detail}`}>
+              <span className="mobile-stock-insight-icon">{item.icon}</span>
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.detail}</p>
+              </div>
+            </article>
+          ))}
         </div>
       ) : null}
 
       {panel === "evidence" ? (
-        <div>
-          <Title level={4}>因子与证据</Title>
-          <div className="mobile-card-list">
+        <div className="mobile-stock-insight-list">
             {recommendation.evidence.factor_cards.map((card) => (
-              <article key={card.factor_key} className="mobile-mini-card">
-                <div className="mobile-mini-head">
+              <article key={card.factor_key}>
+                <span className="mobile-stock-insight-icon"><LineChartOutlined /></span>
+                <div>
                   <strong>{factorLabels[card.factor_key] ?? card.factor_key}</strong>
-                  {card.direction ? <Tag color={directionColor(card.direction)}>{directionLabels[card.direction] ?? card.direction}</Tag> : null}
+                  <p>{sanitizeDisplayText(card.headline)}</p>
+                  {card.direction ? <em>{directionLabels[card.direction] ?? card.direction}</em> : null}
                 </div>
-                <p>{sanitizeDisplayText(card.headline)}</p>
-                {card.risk_note ? <Text>{sanitizeDisplayText(card.risk_note)}</Text> : null}
               </article>
             ))}
-          </div>
         </div>
       ) : null}
 
       {panel === "risk" ? (
-        <div>
-          <Title level={4}>失效条件</Title>
-          <Paragraph>{sanitizeDisplayText(dashboard.risk_panel.headline)}</Paragraph>
-          <ul className="mobile-plain-list">
-            {[...recommendation.risk.risk_flags, ...recommendation.risk.downgrade_conditions].map((item) => (
-              <li key={item}>{sanitizeDisplayText(item)}</li>
-            ))}
-          </ul>
+        <div className="mobile-stock-insight-list">
+          {(visibleRisks.length > 0 ? visibleRisks : [dashboard.risk_panel.headline]).map((item) => (
+            <article key={item}>
+              <span className="mobile-stock-insight-icon warning"><WarningOutlined /></span>
+              <div>
+                <strong>风险条件</strong>
+                <p>{sanitizeDisplayText(item)}</p>
+              </div>
+            </article>
+          ))}
           {recommendation.historical_validation.note ? (
-            <Alert
-              className="mobile-inline-alert"
-              type="warning"
-              showIcon
-              message="验证说明"
-              description={sanitizeDisplayText(recommendation.historical_validation.note)}
-            />
+            <article>
+              <span className="mobile-stock-insight-icon"><CalendarOutlined /></span>
+              <div>
+                <strong>验证说明</strong>
+                <p>{sanitizeDisplayText(recommendation.historical_validation.note)}</p>
+              </div>
+            </article>
           ) : null}
         </div>
       ) : null}
 
       {panel === "question" ? (
-        <div>
-          <div className="mobile-section-head">
+        <div className="mobile-question-panel">
+          <div className="mobile-stock-section-head">
             <div>
               <Title level={4}>追问与人工研究</Title>
               <Text>{manualReviewStatusLabel(recommendation.manual_llm_review.status)}</Text>
             </div>
             <QuestionCircleOutlined />
           </div>
-          <Space wrap className="mobile-chip-row">
+          <div className="mobile-question-chips">
             {dashboard.follow_up.suggested_questions.map((question) => (
-              <Button key={question} size="small" onClick={() => props.setQuestionDraft(question)}>
-                {question}
-              </Button>
+              <button key={question} type="button" onClick={() => props.setQuestionDraft(question)}>{question}</button>
             ))}
-          </Space>
+          </div>
           <Select
             className="mobile-full-width"
             value={props.analysisKeyId}
@@ -226,16 +246,16 @@ export function MobileStockDetail(props: MobileAppShellProps) {
               复制追问包
             </Button>
           </div>
-          <div className="mobile-fact-list">
-            <MobileMetric label="模型标签" value={recommendation.manual_llm_review.model_label ? manualReviewModelLabel(recommendation.manual_llm_review.model_label) : "未指定"} />
-            <MobileMetric label="产物时间" value={formatDate(recommendation.manual_llm_review.generated_at)} />
+          <div className="mobile-stock-meta-grid">
+            <div><span>模型标签</span><strong>{recommendation.manual_llm_review.model_label ? manualReviewModelLabel(recommendation.manual_llm_review.model_label) : "未指定"}</strong></div>
+            <div><span>产物时间</span><strong>{formatDate(recommendation.manual_llm_review.generated_at)}</strong></div>
           </div>
           <p>{recommendation.manual_llm_review.summary ? sanitizeDisplayText(recommendation.manual_llm_review.summary) : "当前没有额外的人工研究摘要。"}</p>
         </div>
       ) : null}
       </section>
 
-      <Button className="mobile-primary-cta" type="primary" size="large" onClick={() => setPanel("question")}>
+      <Button className="mobile-stock-primary-cta" type="primary" size="large" onClick={() => setPanel("question")}>
         发起人工追问
       </Button>
     </main>

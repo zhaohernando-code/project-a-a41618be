@@ -28,8 +28,7 @@ from ashare_evidence.models import (
     SimulationSession,
     Stock,
 )
-from ashare_evidence.operations import MODE_LABELS, _benchmark_close_map, _distinct_trade_days, _market_history, _portfolio_payload
-from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
+from ashare_evidence.operations import _benchmark_close_map, _distinct_trade_days, _market_history, _portfolio_payload
 from ashare_evidence.phase2.phase5_contract import (
     PHASE5_BOARD_LOT,
     PHASE5_LONG_DIRECTIONS,
@@ -586,12 +585,20 @@ def _track_state(role: str, summary: dict[str, Any], latest_reason: str | None) 
 
 
 def _session_events(session: Session, simulation_session: SimulationSession) -> list[SimulationEvent]:
-    return session.scalars(
+    events = session.scalars(
         select(SimulationEvent)
         .where(SimulationEvent.session_id == simulation_session.id)
         .order_by(SimulationEvent.happened_at.desc(), SimulationEvent.id.desc())
-        .limit(64)
+        .limit(MAX_TIMELINE_EVENTS * 4)
     ).all()
+    return [event for event in events if not _is_noop_model_decision_event(event)][:MAX_TIMELINE_EVENTS]
+
+
+def _is_noop_model_decision_event(event: SimulationEvent) -> bool:
+    if event.track != "model" or event.event_type != "model_decision" or event.symbol:
+        return False
+    payload = event.event_payload or {}
+    return event.title == "模型维持观望" or payload.get("action_summary") == "持有"
 
 
 def _serialize_lineage(instance: Any) -> dict[str, str]:
@@ -1335,27 +1342,6 @@ def step_simulation_session(session: Session, *, anchor_time: datetime | None = 
     advices = _model_advices(session, simulation_session, model_summary)
     primary = next((item for item in advices if item["action"] in {"buy", "sell"} and (item["quantity"] or 0) > 0), None)
     if primary is None:
-        policy_context = phase5_simulation_policy_context()
-        _record_event(
-            session,
-            simulation_session,
-            step_index=simulation_session.current_step,
-            track="model",
-            event_type="model_decision",
-            happened_at=next_data_time,
-            title="模型维持观望",
-            detail=(
-                "当前刷新步没有形成新的目标仓位差额，"
-                "模型组合维持现有持仓并等待下一次刷新。"
-            ),
-            event_payload={
-                "action_summary": "持有",
-                "risk_flags": [],
-                "policy_status": policy_context["policy_status"],
-                "policy_type": policy_context["policy_type"],
-                "policy_note": policy_context["policy_note"],
-            },
-        )
         session.flush()
         return _workspace_payload(session, simulation_session)
 

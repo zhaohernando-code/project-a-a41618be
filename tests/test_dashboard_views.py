@@ -151,6 +151,12 @@ class DashboardViewTests(unittest.TestCase):
         self.assertEqual(dashboard["stock"]["symbol"], "600519.SH")
         self.assertTrue(dashboard["change"]["has_previous"])
         self.assertGreaterEqual(len(dashboard["price_chart"]), 24)
+        self.assertGreaterEqual(len(dashboard["today_price_chart"]), 2)
+        latest_chart_day = dashboard["today_price_chart"][-1]["observed_at"].date()
+        self.assertGreater(
+            sum(1 for point in dashboard["today_price_chart"] if point["observed_at"].date() == latest_chart_day),
+            1,
+        )
         self.assertGreaterEqual(len(dashboard["recent_news"]), 3)
         self.assertGreaterEqual(len(dashboard["glossary"]), 5)
         self.assertGreaterEqual(len(dashboard["follow_up"]["suggested_questions"]), 4)

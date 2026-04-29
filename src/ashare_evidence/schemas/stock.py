@@ -330,6 +330,7 @@ class WatchlistDeleteResponse(BaseModel):
 class StockDashboardResponse(RecommendationTraceResponse):
     hero: HeroView
     price_chart: list[PricePointView] = Field(default_factory=list)
+    today_price_chart: list[PricePointView] = Field(default_factory=list)
     recent_news: list[RecentNewsView] = Field(default_factory=list)
     change: ChangeView
     glossary: list[GlossaryEntryView] = Field(default_factory=list)

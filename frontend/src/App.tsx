@@ -86,6 +86,8 @@ import { buildReplayColumns } from "./components/ReplayColumns";
 import { buildAddWatchlistOverlay } from "./components/AddWatchlistOverlay";
 import { buildOperationsTabs } from "./components/OperationsTabs";
 import { MobileAppShell } from "./components/mobile/MobileAppShell";
+import { MobileManualOrderModal } from "./components/mobile/MobileManualOrderModal";
+import { readAnalysisModelPreference, selectMobileAnalysisModel } from "./components/mobile/modelSelection";
 import type { MobileTabKey } from "./components/mobile/types";
 
 import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
@@ -246,6 +248,13 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     const payload = await api.getRuntimeSettings();
     setRuntimeSettings(payload);
     setAnalysisKeyId((current) => {
+      const storedPreference = readAnalysisModelPreference();
+      if (storedPreference === "builtin") {
+        return undefined;
+      }
+      if (typeof storedPreference === "number" && payload.model_api_keys.some((item) => item.id === storedPreference)) {
+        return storedPreference;
+      }
       if (current && payload.model_api_keys.some((item) => item.id === current)) {
         return current;
       }
@@ -530,10 +539,11 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     }
   }
 
-  function openManualOrderModal(symbol: string) {
+  function openManualOrderModal(symbol: string, side?: ManualSimulationOrderRequest["side"]) {
     setManualOrderDraft((current) => ({
       ...current,
       symbol,
+      side: side ?? current.side,
       quantity: current.symbol === symbol ? current.quantity : 100,
       reason: current.symbol === symbol ? current.reason : "",
       limit_price: current.symbol === symbol ? current.limit_price : null,
@@ -714,6 +724,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     } finally {
       setAnalysisLoading(false);
     }
+  }
+
+  async function handleSelectAnalysisModel(keyId: number | undefined) {
+    await selectMobileAnalysisModel({
+      keyId, setSavingConfig, setError, loadRuntimeSettings, setAnalysisKeyId, messageApi,
+    });
   }
 
   async function handleExecuteManualResearch(item: ManualResearchRequestView) {
@@ -1554,7 +1570,6 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     savingConfig, setSavingConfig,
     messageApi, loadRuntimeSettings, setError,
   });
-
   if (isMobile) {
     return (
       <>
@@ -1587,9 +1602,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
           setAnalysisKeyId={setAnalysisKeyId}
           analysisLoading={analysisLoading}
           onToggleTheme={onToggleTheme}
+          onSelectAnalysisModel={handleSelectAnalysisModel}
           onRefresh={() => void handleRefresh()}
           onRefreshWatchlist={(symbol) => void handleRefreshWatchlist(symbol)}
           onSelectSymbol={handleMobileSelectSymbol}
+          onRequestRemoveWatchlist={setPendingRemoval}
+          onOpenManualOrder={openManualOrderModal}
           onTabChange={handleMobileTabChange}
           onSubmitManualResearch={() => void handleSubmitManualResearch()}
           onCopyPrompt={() => void handleCopyPrompt()}
@@ -1599,6 +1617,35 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
             }
           }}
         />
+        <MobileManualOrderModal
+          open={Boolean(orderModalSymbol && simulation)}
+          themeMode={themeMode}
+          title={orderModalSymbol ? `用户轨道操作 · ${symbolNameMap.get(orderModalSymbol) ?? orderModalSymbol}` : "用户轨道操作"}
+          watchSymbols={simulation?.session.watch_symbols ?? []}
+          symbolNameMap={symbolNameMap}
+          draft={manualOrderDraft}
+          setDraft={setManualOrderDraft}
+          activeHolding={manualOrderActiveHolding}
+          activeAdvice={activeSimulationAdvice}
+          submitting={simulationAction === "manual-order"}
+          onCancel={() => setOrderModalSymbol(null)}
+          onSubmit={() => void handleSubmitManualOrder()}
+        />
+        <Modal
+          open={Boolean(pendingRemoval)}
+          centered
+          title={pendingRemoval ? `移除 ${pendingRemoval.name}` : "移除标的"}
+          okText="确认移除"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
+          confirmLoading={mutatingWatchlist && watchlistMutationSymbol === pendingRemoval?.symbol}
+          onCancel={() => setPendingRemoval(null)}
+          onOk={() => void handleConfirmRemoveWatchlist()}
+        >
+          <Paragraph className="panel-description">
+            该标的会从共享自选池中移除，相关候选缓存也会失去预热资格。确认继续吗？
+          </Paragraph>
+        </Modal>
       </>
     );
   }

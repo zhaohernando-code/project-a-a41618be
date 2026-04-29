@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from ashare_evidence.db import align_datetime_timezone
+from ashare_evidence.intraday_market import INTRADAY_MARKET_TIMEFRAME
 from ashare_evidence.models import MarketBar, ModelVersion, NewsEntityLink, Recommendation, SectorMembership, Stock
 from ashare_evidence.phase2 import phase2_target_horizon_label
 from ashare_evidence.recommendation_selection import (
@@ -155,6 +156,34 @@ def _recent_bars(session: Session, stock_id: int, limit: int = 28) -> list[Marke
         .limit(limit)
     ).all()
     return list(reversed(bars))
+
+
+def _today_intraday_bars(session: Session, stock_id: int, daily_bars: list[MarketBar]) -> list[MarketBar]:
+    latest_intraday = session.scalar(
+        select(MarketBar)
+        .where(MarketBar.stock_id == stock_id, MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME)
+        .order_by(MarketBar.observed_at.desc())
+        .limit(1)
+    )
+    if latest_intraday is None:
+        return []
+
+    intraday_day = latest_intraday.observed_at.date()
+    latest_daily_day = daily_bars[-1].observed_at.date() if daily_bars else None
+    if latest_daily_day is not None and intraday_day < latest_daily_day:
+        return []
+
+    intraday_bars = session.scalars(
+        select(MarketBar)
+        .where(
+            MarketBar.stock_id == stock_id,
+            MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME,
+            MarketBar.observed_at >= datetime.combine(intraday_day, datetime.min.time()),
+            MarketBar.observed_at <= latest_intraday.observed_at,
+        )
+        .order_by(MarketBar.observed_at.asc())
+    ).all()
+    return list(intraday_bars)
 
 
 def _recent_news(
@@ -559,6 +588,7 @@ def get_stock_dashboard(session: Session, symbol: str) -> dict[str, Any]:
     previous_summary = _serialize_recommendation(history[1], artifact_root=artifact_root) if len(history) > 1 else None
     trace = get_recommendation_trace(session, latest.id)
     bars = _recent_bars(session, latest.stock_id, limit=28)
+    today_intraday_bars = _today_intraday_bars(session, latest.stock_id, bars)
     memberships = _active_memberships(session, latest.stock_id, latest.as_of_data_time)
     recent_news = _recent_news(
         session,
@@ -573,6 +603,7 @@ def get_stock_dashboard(session: Session, symbol: str) -> dict[str, Any]:
         recommendation=trace["recommendation"],
     )
     trace["price_chart"] = _price_chart_payload(bars)
+    trace["today_price_chart"] = _price_chart_payload(today_intraday_bars)
     trace["recent_news"] = recent_news
     trace["change"] = change
     trace["glossary"] = get_glossary_entries()

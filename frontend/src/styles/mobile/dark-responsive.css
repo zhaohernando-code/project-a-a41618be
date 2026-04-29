@@ -7,13 +7,17 @@
   --mobile-color-panel-soft: rgba(255, 255, 255, 0.07);
   --mobile-color-border: rgba(128, 161, 203, 0.14);
   --mobile-color-accent: #8fb8ff;
+  --mobile-color-action: #2f5fa8;
+  --mobile-color-on-action: #eef5ff;
   --mobile-color-positive: #ff6b6b;
   --mobile-color-negative: #38c784;
-  --mobile-shadow-panel: 0 22px 48px rgba(0, 0, 0, 0.28);
-  --mobile-shadow-control: 0 14px 30px rgba(0, 0, 0, 0.24);
-  background:
+  --mobile-bg-layer:
     radial-gradient(circle at 18% -8%, rgba(64, 116, 255, 0.16), transparent 30%),
     linear-gradient(180deg, #07111e 0%, #0b1628 48%, #101b30 100%);
+  --mobile-chart-grid: rgba(159, 176, 198, 0.18);
+  --mobile-shadow-panel: 0 22px 48px rgba(0, 0, 0, 0.28);
+  --mobile-shadow-control: 0 14px 30px rgba(0, 0, 0, 0.24);
+  background: var(--mobile-bg-layer);
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-app-shell {
@@ -32,6 +36,7 @@
 .mobile-theme-shell[data-theme="dark"] .mobile-mini-card strong,
 .mobile-theme-shell[data-theme="dark"] .mobile-position-head strong,
 .mobile-theme-shell[data-theme="dark"] .mobile-settings-row strong,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-option strong,
 .mobile-theme-shell[data-theme="dark"] .mobile-timeline article strong {
   color: #f4f8ff;
 }
@@ -45,6 +50,7 @@
 .mobile-theme-shell[data-theme="dark"] .mobile-row-foot,
 .mobile-theme-shell[data-theme="dark"] .mobile-position-head em,
 .mobile-theme-shell[data-theme="dark"] .mobile-settings-row em,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-option em,
 .mobile-theme-shell[data-theme="dark"] .mobile-metric span,
 .mobile-theme-shell[data-theme="dark"] .mobile-hero-card p,
 .mobile-theme-shell[data-theme="dark"] .mobile-stock-row p,
@@ -62,7 +68,8 @@
 .mobile-theme-shell[data-theme="dark"] .mobile-stock-row,
 .mobile-theme-shell[data-theme="dark"] .mobile-settings-group,
 .mobile-theme-shell[data-theme="dark"] .mobile-bottom-nav,
-.mobile-theme-shell[data-theme="dark"] .mobile-action-dock {
+.mobile-theme-shell[data-theme="dark"] .mobile-action-dock,
+.mobile-theme-shell[data-theme="dark"] .mobile-operation-card {
   border-color: rgba(128, 161, 203, 0.14);
   background: rgba(13, 25, 44, 0.9);
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.28);
@@ -85,9 +92,22 @@
 .mobile-theme-shell[data-theme="dark"] .mobile-segmented,
 .mobile-theme-shell[data-theme="dark"] .mobile-quick-grid button,
 .mobile-theme-shell[data-theme="dark"] .mobile-position-actions .ant-btn,
+.mobile-theme-shell[data-theme="dark"] .mobile-operation-actions .ant-btn,
+.mobile-theme-shell[data-theme="dark"] .mobile-operation-metric,
+.mobile-theme-shell[data-theme="dark"] .mobile-review-summary-flat > div,
 .mobile-theme-shell[data-theme="dark"] .mobile-position-avatar,
 .mobile-theme-shell[data-theme="dark"] .mobile-settings-icon {
   background: rgba(255, 255, 255, 0.07);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-row-action:active,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-option:active,
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-option.active {
+  background: rgba(143, 184, 255, 0.12);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-settings-check {
+  color: #8fb8ff;
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-quick-grid button {
@@ -119,13 +139,13 @@
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-segmented button.active {
-  background: rgba(255, 255, 255, 0.14);
-  color: #8fb8ff;
+  background: var(--mobile-color-action);
+  color: var(--mobile-color-on-action);
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-bottom-nav button.active {
-  background: #2f5fa8;
-  color: #eef5ff;
+  background: var(--mobile-color-action);
+  color: var(--mobile-color-on-action);
 }
 
 .mobile-theme-shell[data-theme="dark"] .mobile-chart-card .chart-shell {
@@ -134,6 +154,17 @@
     linear-gradient(90deg, rgba(149, 167, 191, 0.07) 1px, transparent 1px),
     linear-gradient(rgba(149, 167, 191, 0.07) 1px, transparent 1px);
   background-size: auto, 28px 28px, 28px 28px;
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-conclusion p,
+.mobile-theme-shell[data-theme="dark"] .mobile-question-panel p,
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-insight-list p {
+  color: var(--mobile-color-muted);
+}
+
+.mobile-theme-shell[data-theme="dark"] .mobile-stock-primary-cta.ant-btn {
+  background: #2f5fa8;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.22);
 }
 
 @media (max-width: 380px) {

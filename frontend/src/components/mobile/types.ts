@@ -40,9 +40,12 @@ export interface MobileAppShellProps {
   setAnalysisKeyId: (value: number | undefined) => void;
   analysisLoading: boolean;
   onToggleTheme: () => void;
+  onSelectAnalysisModel: (keyId: number | undefined) => void | Promise<void>;
   onRefresh: () => void | Promise<void>;
   onRefreshWatchlist: (symbol: string) => void | Promise<void>;
   onSelectSymbol: (symbol: string, target?: MobileTabKey) => void;
+  onRequestRemoveWatchlist?: (row: CandidateWorkspaceRow) => void;
+  onOpenManualOrder?: (symbol: string, side: "buy" | "sell") => void;
   onTabChange: (tab: MobileTabKey) => void;
   onSubmitManualResearch: () => void | Promise<void>;
   onCopyPrompt: () => void | Promise<void>;

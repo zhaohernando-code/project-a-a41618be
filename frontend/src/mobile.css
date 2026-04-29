@@ -1,5 +1,7 @@
 @import "./styles/mobile/base.css";
 @import "./styles/mobile/home.css";
+@import "./styles/mobile/stock-detail.css";
 @import "./styles/mobile/detail-operations.css";
+@import "./styles/mobile/order-modal.css";
 @import "./styles/mobile/settings-nav.css";
 @import "./styles/mobile/dark-responsive.css";

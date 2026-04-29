@@ -26,7 +26,7 @@ export function MobileAppShell(props: MobileAppShellProps) {
   function activate(tab: MobileTabKey) {
     setActiveTab(tab);
     props.onTabChange(tab);
-    if (tab === "operations") {
+    if (tab === "operations" && !props.operations && !props.simulation && !props.operationsLoading) {
       void props.onLoadOperations();
     }
   }

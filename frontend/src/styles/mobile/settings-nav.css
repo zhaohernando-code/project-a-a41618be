@@ -14,6 +14,27 @@
   border-top: 1px solid rgba(30, 55, 86, 0.06);
 }
 
+button.mobile-settings-row,
+.mobile-settings-option {
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.mobile-settings-row-action {
+  cursor: pointer;
+}
+
+.mobile-settings-row-action:active,
+.mobile-settings-option:active {
+  background: rgba(45, 101, 191, 0.07);
+}
+
 .mobile-settings-copy {
   min-width: 0;
   flex: 1;
@@ -36,6 +57,39 @@
   margin-inline-end: 0;
   border-radius: var(--mobile-radius-pill);
   font-weight: 800;
+}
+
+.mobile-settings-panel {
+  margin-top: 10px;
+}
+
+.mobile-settings-option {
+  display: flex;
+  align-items: center;
+  min-height: 74px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(30, 55, 86, 0.06);
+}
+
+.mobile-settings-option.active {
+  background: rgba(45, 101, 191, 0.08);
+}
+
+.mobile-settings-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+
+.mobile-settings-option .ant-tag {
+  margin-inline-end: 0;
+  border-radius: var(--mobile-radius-pill);
+  font-weight: 800;
+}
+
+.mobile-settings-check {
+  color: var(--mobile-color-action);
+  font-size: 18px;
 }
 
 .mobile-bottom-nav {
@@ -72,8 +126,8 @@
 }
 
 .mobile-bottom-nav button.active {
-  background: var(--mobile-color-accent);
-  color: #ffffff;
+  background: var(--mobile-color-action);
+  color: var(--mobile-color-on-action);
 }
 
 .mobile-bottom-nav .anticon {

@@ -3,10 +3,10 @@
   "reviewed_at": "2026-04-28",
   "files": {
     "frontend/src/App.tsx": {
-      "lines": 2503,
-      "reason": "Main app shell (3095 lines, down from 5199). Extracted: utils (400L), chart components (900L), SettingsView (462L), CandidateColumns (330L), ReplayColumns (87L), AddWatchlistOverlay (60L). Remaining: state/handlers (~876L), stockTabItems (~600L), operationsTabItems (~600L), render JSX (~900L).",
+      "lines": 2544,
+      "reason": "Main app shell (2544 lines after mobile refactor follow-up). Mobile UI JSX remains in dedicated components/mobile/*; this file only holds shared state/handlers and mobile overlay wiring. Default model selection logic was extracted to components/mobile/modelSelection.ts during review; further App.tsx growth should be blocked unless paired with additional extraction.",
       "status": "planned_refactor",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-29"
     },
     "frontend/src/styles.css": {
       "lines": 1073,
@@ -33,10 +33,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/dashboard.py": {
-      "lines": 583,
-      "reason": "Dashboard data aggregation and view building. Single responsibility.",
+      "lines": 612,
+      "reason": "Dashboard data aggregation and view building. Single responsibility; current growth adds today_price_chart projection for mobile single-stock view without changing API ownership.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-29"
     },
     "src/ashare_evidence/intraday_market.py": {
       "lines": 520,
@@ -123,10 +123,10 @@
       "reviewed_at": "2026-04-28"
     },
     "tests/test_dashboard_views.py": {
-      "lines": 797,
-      "reason": "Large file pending review.",
+      "lines": 803,
+      "reason": "Dashboard view contract tests. Current growth locks mobile today's price chart and manual research builtin/default model behavior; split remains lower priority than preserving broad frontend/backend contract coverage.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-29"
     },
     "frontend/src/components/OperationsTabs.tsx": {
       "lines": 715,

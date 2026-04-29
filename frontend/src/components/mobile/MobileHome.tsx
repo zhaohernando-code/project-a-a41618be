@@ -1,4 +1,4 @@
-import { BellOutlined, PlusOutlined, QuestionCircleOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, QuestionCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Empty, Popover, Space, Tag, Typography } from "antd";
 import { useMemo } from "react";
 import type { MobileAppShellProps } from "./types";
@@ -31,12 +31,10 @@ export function MobileHome(props: MobileAppShellProps) {
 
   return (
     <main className="mobile-page mobile-page-home">
-      <header className="mobile-page-head">
-        <div>
-          <Title level={2}>工作台</Title>
-          <Text>{`今日关注 · ${props.candidateRows.length} 只`}</Text>
-        </div>
-        <Button className="mobile-icon-button" shape="circle" icon={<BellOutlined />} onClick={() => void props.onRefresh()} />
+      <header className="mobile-app-top-bar">
+        <span aria-hidden="true" />
+        <strong>工作台</strong>
+        <Button className="mobile-icon-button" type="text" icon={<ReloadOutlined />} onClick={() => void props.onRefresh()} />
       </header>
 
       <section
@@ -89,6 +87,8 @@ export function MobileHome(props: MobileAppShellProps) {
               active={row.symbol === props.selectedSymbol}
               holding={holdingSymbols.has(row.symbol)}
               onOpen={() => props.onSelectSymbol(row.symbol, "stock")}
+              onRemove={row.source_kind !== "candidate_only" ? () => props.onRequestRemoveWatchlist?.(row) : undefined}
+              removing={props.mutatingWatchlist && props.watchlistMutationSymbol === row.symbol}
             />
           )) : <Empty description="没有符合条件的标的" image={Empty.PRESENTED_IMAGE_SIMPLE} />}
         </div>

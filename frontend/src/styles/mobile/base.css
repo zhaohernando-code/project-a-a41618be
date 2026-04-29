@@ -7,8 +7,14 @@
   --mobile-color-panel-soft: #f2f6fb;
   --mobile-color-border: rgba(30, 55, 86, 0.08);
   --mobile-color-accent: #075bff;
+  --mobile-color-action: var(--mobile-color-accent);
+  --mobile-color-on-action: #ffffff;
   --mobile-color-positive: #d14343;
   --mobile-color-negative: #0b8f63;
+  --mobile-bg-layer:
+    radial-gradient(circle at 16% -8%, rgba(53, 123, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, #f4f8ff 0%, #f7f4ed 46%, #f5f7fb 100%);
+  --mobile-chart-grid: rgba(103, 121, 148, 0.14);
   --mobile-shadow-panel: 0 14px 32px rgba(25, 43, 66, 0.075);
   --mobile-shadow-control: 0 8px 20px rgba(28, 50, 78, 0.075);
   --mobile-radius-panel: 18px;
@@ -23,9 +29,7 @@
   --mobile-gap-md: 10px;
   --mobile-gap-lg: 14px;
   min-height: 100svh;
-  background:
-    radial-gradient(circle at 16% -8%, rgba(53, 123, 255, 0.18), transparent 30%),
-    linear-gradient(180deg, #f4f8ff 0%, #f7f4ed 46%, #f5f7fb 100%);
+  background: var(--mobile-bg-layer);
 }
 
 .mobile-app-shell {
@@ -41,7 +45,7 @@
   max-width: 480px;
   min-height: calc(100svh - 88px);
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 13px) 18px calc(env(safe-area-inset-bottom) + 132px);
+  padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 132px);
 }
 
 .mobile-page-centered {
@@ -69,6 +73,29 @@
 .mobile-page-head {
   align-items: center;
   margin-bottom: 12px;
+}
+
+.mobile-app-top-bar {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  height: 34px;
+  margin-bottom: 12px;
+}
+
+.mobile-app-top-bar strong {
+  color: var(--mobile-color-heading);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.mobile-app-top-bar > span {
+  display: block;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
 }
 
 .mobile-page-head h2.ant-typography,
@@ -117,13 +144,24 @@
 }
 
 .mobile-icon-button.ant-btn {
-  width: 38px;
-  min-width: 38px;
-  height: 38px;
-  border: 1px solid var(--mobile-color-border);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 12px 28px rgba(38, 57, 86, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--mobile-color-text);
+  font-size: 20px;
+}
+
+.mobile-icon-button.ant-btn:hover,
+.mobile-icon-button.ant-btn:focus {
+  background: transparent;
+  color: var(--mobile-color-heading);
 }
 
 .mobile-kicker,

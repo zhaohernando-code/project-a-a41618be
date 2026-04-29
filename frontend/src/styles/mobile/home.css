@@ -201,8 +201,8 @@
 }
 
 .mobile-segmented button.active {
-  background: #ffffff;
-  color: var(--mobile-color-accent);
+  background: var(--mobile-color-action);
+  color: var(--mobile-color-on-action);
   box-shadow: 0 10px 20px rgba(21, 45, 74, 0.1);
 }
 
@@ -228,8 +228,42 @@
   backdrop-filter: none;
 }
 
+.mobile-stock-swipe {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--mobile-radius-panel);
+  background: var(--mobile-color-panel);
+}
+
+.mobile-stock-remove-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 78px;
+  border: 0;
+  border-radius: 0 var(--mobile-radius-panel) var(--mobile-radius-panel) 0;
+  background: #d92d20;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.mobile-stock-swipe-open .mobile-stock-remove-action {
+  opacity: 1;
+}
+
+.mobile-stock-remove-action:disabled {
+  opacity: 0.72;
+}
+
 .mobile-stock-row {
   position: relative;
+  z-index: 1;
   width: 100%;
   padding: 13px 14px 12px;
   overflow: hidden;
@@ -237,6 +271,14 @@
   border-radius: var(--mobile-radius-panel);
   color: inherit;
   text-align: left;
+  touch-action: pan-y;
+  transition: transform 180ms ease;
+}
+
+.mobile-stock-swipe-open .mobile-stock-row {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  transform: translateX(-78px);
 }
 
 .mobile-stock-row-active {
