@@ -361,43 +361,12 @@ def _fetch_daily_market_data(session: Session, symbol: str) -> DailyMarketFetch:
     raise RealDataRefreshError(f"{symbol} 缺少足够的 21 个交易日日线行情，无法生成真实建议。")
 
 def _announcement_impact(title: str) -> str:
-    positive_keywords = (
-        "增持",
-        "回购",
-        "中标",
-        "签订",
-        "签署",
-        "合同",
-        "订单",
-        "分红",
-        "业绩预增",
-        "业绩快报",
-        "调研",
-        "说明会",
-    )
-    negative_keywords = (
-        "减持",
-        "风险提示",
-        "处罚",
-        "立案",
-        "诉讼",
-        "问询",
-        "终止",
-        "下修",
-        "亏损",
-        "预减",
-        "退市",
-        "质押",
-        "监管",
-        "停牌",
-    )
-    for keyword in negative_keywords:
-        if keyword in title:
-            return "negative"
-    for keyword in positive_keywords:
-        if keyword in title:
-            return "positive"
-    return "neutral"
+    """Return 'pending_llm' for all announcements — keyword matching is disabled.
+
+    News sentiment must come from LLM analysis only. If LLM analysis fails,
+    the item stays as 'pending_llm' and is excluded from scoring.
+    """
+    return "pending_llm"
 
 def _announcement_scope(title: str) -> str:
     # Roadshow/meeting check first: "说明会/路演/调研" about reports is still a roadshow, not earnings
@@ -510,7 +479,6 @@ def _fetch_official_announcements(
                     source_uri=f"pipeline://news-link/sector/{news_key}",
                 )
             )
-    enrich_with_llm_analysis(news_items, news_links)
     return news_items, news_links
 
 def build_mapped_news_link(record: dict[str, Any], *, source_uri: str) -> dict[str, Any]:
@@ -719,6 +687,8 @@ def build_real_evidence_bundle(
         research_metadata = _fetch_research_metadata(normalized_symbol)
     except Exception:
         research_metadata = []
+
+    enrich_with_llm_analysis(news_items, news_links, financial_snapshot=financial_snapshot)
 
     financial_trends = compute_financial_trends(financial_snapshot)
     financial_llm = None
