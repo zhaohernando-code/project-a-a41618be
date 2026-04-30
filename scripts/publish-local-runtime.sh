@@ -195,3 +195,11 @@ echo "[publish] Runtime frontend matches repo build"
 echo "[publish] Backend healthy at $BACKEND_URL"
 echo "[publish] Frontend healthy at $FRONTEND_URL"
 echo "[publish] Release parity manifest: $MANIFEST_PATH"
+
+echo "[publish] Running deploy verification..."
+if bash "$REPO_ROOT/scripts/verify-deploy.sh"; then
+    echo "[publish] VERIFICATION PASSED"
+else
+    echo "[publish] VERIFICATION FAILED — check output above"
+    exit 1
+fi

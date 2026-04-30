@@ -361,43 +361,12 @@ def _fetch_daily_market_data(session: Session, symbol: str) -> DailyMarketFetch:
     raise RealDataRefreshError(f"{symbol} 缺少足够的 21 个交易日日线行情，无法生成真实建议。")
 
 def _announcement_impact(title: str) -> str:
-    positive_keywords = (
-        "增持",
-        "回购",
-        "中标",
-        "签订",
-        "签署",
-        "合同",
-        "订单",
-        "分红",
-        "业绩预增",
-        "业绩快报",
-        "调研",
-        "说明会",
-    )
-    negative_keywords = (
-        "减持",
-        "风险提示",
-        "处罚",
-        "立案",
-        "诉讼",
-        "问询",
-        "终止",
-        "下修",
-        "亏损",
-        "预减",
-        "退市",
-        "质押",
-        "监管",
-        "停牌",
-    )
-    for keyword in negative_keywords:
-        if keyword in title:
-            return "negative"
-    for keyword in positive_keywords:
-        if keyword in title:
-            return "positive"
-    return "neutral"
+    """Return 'pending_llm' for all announcements — keyword matching is disabled.
+
+    News sentiment must come from LLM analysis only. If LLM analysis fails,
+    the item stays as 'pending_llm' and is excluded from scoring.
+    """
+    return "pending_llm"
 
 def _announcement_scope(title: str) -> str:
     # Roadshow/meeting check first: "说明会/路演/调研" about reports is still a roadshow, not earnings
@@ -510,7 +479,6 @@ def _fetch_official_announcements(
                     source_uri=f"pipeline://news-link/sector/{news_key}",
                 )
             )
-    enrich_with_llm_analysis(news_items, news_links)
     return news_items, news_links
 
 def build_mapped_news_link(record: dict[str, Any], *, source_uri: str) -> dict[str, Any]:
@@ -592,6 +560,32 @@ def _fetch_financial_snapshot_akshare(symbol: str) -> dict[str, Any] | None:
         "operating_cashflow": _to_float(cashflow_row.get("NETCASH_OPERATE") if cashflow_row else None),
         "ending_cash": _to_float(cashflow_row.get("END_CCE") if cashflow_row else None),
     }
+
+def _fetch_market_cap_akshare(symbol: str) -> dict[str, float | None] | None:
+    """Fetch total market cap and circulating market cap from akshare."""
+    import os
+    try:
+        # Bypass proxy for akshare calls (same issue as LLM API)
+        saved = {k: os.environ.pop(k, None) for k in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy")}
+        akshare = _akshare_module()
+        ticker, _ = _normalize_symbol_parts(symbol)
+        df = akshare.stock_individual_info_em(symbol=ticker)
+        record = {}
+        for _, row in df.iterrows():
+            key = str(row.iloc[0])
+            val = row.iloc[1]
+            if key == "总市值":
+                record["total_mv"] = _to_float(val)
+            elif key == "流通市值":
+                record["circ_mv"] = _to_float(val)
+        return record if record else None
+    except Exception:
+        return None
+    finally:
+        for k, v in saved.items():
+            if v is not None:
+                os.environ[k] = v
+
 
 def _fetch_financial_snapshot(session: Session, symbol: str) -> dict[str, Any] | None:
     for fetcher in (
@@ -720,6 +714,17 @@ def build_real_evidence_bundle(
     except Exception:
         research_metadata = []
 
+    try:
+        market_cap = _fetch_market_cap_akshare(normalized_symbol)
+    except Exception:
+        market_cap = None
+    if market_cap is None:
+        from ashare_evidence.signal_engine_parts.market_cap_seed import SEED_MARKET_CAP
+        if normalized_symbol in SEED_MARKET_CAP:
+            market_cap = {"total_mv": SEED_MARKET_CAP[normalized_symbol], "source": "seed"}
+
+    enrich_with_llm_analysis(news_items, news_links, financial_snapshot=financial_snapshot)
+
     financial_trends = compute_financial_trends(financial_snapshot)
     financial_llm = None
     if financial_trends.get("available"):
@@ -740,6 +745,7 @@ def build_real_evidence_bundle(
         financial_snapshot=financial_snapshot,
         financial_trends=financial_trends,
         financial_llm=financial_llm,
+        market_cap_data=market_cap,
         generated_at=generated_at,
     )
 
@@ -766,6 +772,7 @@ def build_real_evidence_bundle(
             "financial_snapshot": financial_snapshot,
             "financial_trends": financial_trends,
             "financial_llm_analysis": financial_llm,
+            "market_cap": market_cap,
             "research_report_metadata": research_metadata,
         },
     }

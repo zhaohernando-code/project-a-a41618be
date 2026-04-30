@@ -252,13 +252,16 @@ def compute_news_factor(
     event_contributions: list[dict[str, Any]] = []
     for news_key, links in link_groups.items():
         item = item_by_key[news_key]
+        # Use LLM-assigned importance as weight multiplier when available
+        llm = (item.get("raw_payload") or {}).get("llm_analysis")
+        llm_importance = float(llm.get("importance_score", 0.5)) if isinstance(llm, dict) and not llm.get("_fallback") else 0.5
         total = 0.0
         for link in links:
             age_hours = max((as_of_data_time - link["effective_at"]).total_seconds() / 3600, 0.0)
             decay = 0.5 ** (age_hours / max(float(link["decay_half_life_hours"]), 1.0))
             scope_weight = {"stock": 1.0, "sector": 0.7, "market": 0.35}.get(link["entity_type"], 0.0)
             direction_sign = {"positive": 1.0, "negative": -1.0, "neutral": 0.0}.get(link["impact_direction"], 0.0)
-            total += direction_sign * float(link["relevance_score"]) * scope_weight * decay
+            total += direction_sign * float(link["relevance_score"]) * scope_weight * decay * llm_importance
         event_contributions.append(
             {
                 "news_key": news_key,
@@ -278,14 +281,12 @@ def compute_news_factor(
         if deduped
         else 999.0
     )
-    # Score scale 0.45 aligns with price factor's typical output range.
-    # At net_contribution=0.3: tanh(0.3/0.45) ≈ 0.58 (vs price ~0.40-0.70).
-    # Bonuses are now sign-aware: neutral net direction -> no bonus.
+    # Score scale 0.75 prevents saturation from LLM importance-boosted signals.
     net_dir = 1 if positive_total > negative_total else (-1 if negative_total > positive_total else 0)
-    freshness_bonus = (0.08 if freshness_hours <= 72 else 0.0) * net_dir
-    coverage_bonus = min(len(event_contributions), 4) * 0.03 * net_dir
+    freshness_bonus = (0.06 if freshness_hours <= 72 else 0.0) * net_dir
+    coverage_bonus = min(len(event_contributions), 4) * 0.02 * net_dir
     news_score = clip(
-        score_scale(positive_total - negative_total, 0.45)
+        score_scale(positive_total - negative_total, 0.75)
         + freshness_bonus
         + coverage_bonus
         - conflict_ratio * 0.28,

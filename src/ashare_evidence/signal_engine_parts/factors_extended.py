@@ -33,41 +33,25 @@ def compute_size_factor(
     market_bars: list[dict[str, Any]],
     *,
     cross_sectional_stats: dict[str, dict[str, float]] | None = None,
+    market_cap_data: dict[str, float | None] | None = None,
+    symbol: str = "",
 ) -> dict[str, Any]:
-    """Compute size (market cap) factor based on Fama-French (1993) small-cap premium.
-
-    Academic basis:
-      - Fama & French (1993): Common risk factors in the returns on stocks and bonds.
-      - Liu, Stambaugh & Yuan (2019): Size and value in China (A-share small-cap premium).
-
-    NOTE: Size premium is a LONG-TERM factor. It takes months to years for the
-    small-cap premium to materialize. DO NOT use this as a short-term timing signal.
-    The score reflects a structural tilt, not a tactical call.
-    """
-    if not market_bars:
-        return {
-            "score": 0.0,
-            "direction": "neutral",
-            "confidence_score": 0.0,
-            "drivers": ["缺乏行情数据，市值因子暂不参与评分。"],
-            "risks": [],
-            "feature_values": {"size_score": 0.0, "available": False},
-            "evidence_count": 0,
-        }
-
-    latest = market_bars[-1]
-    total_mv = latest.get("total_mv")
+    """Compute size (market cap) factor based on Fama-French (1993) small-cap premium."""
+    total_mv = None
+    if market_bars:
+        latest = market_bars[-1]
+        total_mv = latest.get("total_mv") or latest.get("circ_mv")
+    if total_mv is None and market_cap_data:
+        total_mv = market_cap_data.get("total_mv") or market_cap_data.get("circ_mv")
     if total_mv is None:
-        total_mv = latest.get("circ_mv")
+        from ashare_evidence.signal_engine_parts.market_cap_seed import SEED_MARKET_CAP
+        total_mv = SEED_MARKET_CAP.get(symbol) if symbol else None
 
     if total_mv is None or total_mv <= 0:
         return {
-            "score": 0.0,
-            "direction": "neutral",
-            "confidence_score": 0.0,
-            "drivers": ["市值数据暂不可用，当前不参与评分。注意：市值因子是长期结构性因子，不适用于短线择时。"],
-            "risks": ["若 tushare daily_basic 接口未覆盖该标的，市值数据将持续缺失。"],
-            "feature_values": {"size_score": 0.0, "available": False, "total_mv": None, "circ_mv": None},
+            "score": 0.0, "direction": "neutral", "confidence_score": 0.0,
+            "drivers": ["市值数据暂不可用，当前不参与评分。"],
+            "risks": [], "feature_values": {"size_score": 0.0, "available": False},
             "evidence_count": 0,
         }
 
@@ -90,7 +74,7 @@ def compute_size_factor(
     score = float(clip(-tanh(normalized)))
     confidence_score = clip(0.35 + abs(score) * 0.20, 0.0, 0.70)
 
-    total_mv_label = _format_mv(total_mv)
+    total_mv_label = f"{total_mv/1e8:.0f}亿"
     drivers: list[str] = []
     risks: list[str] = []
     if total_mv is not None:
@@ -115,11 +99,12 @@ def compute_size_factor(
     else:
         risks.append("市值信号需要结合价格趋势和流动性判断才能转化为有效建议。")
 
+    latest_bar = market_bars[-1] if market_bars else {}
     feature_values = {
         "size_score": round(score, 4),
         "available": True,
         "total_mv": total_mv,
-        "circ_mv": latest.get("circ_mv"),
+        "circ_mv": latest_bar.get("circ_mv"),
         "log_mcap": round(log_mcap, 4),
         "normalized_log_mcap": round(normalized, 4),
     }
@@ -131,29 +116,26 @@ def compute_size_factor(
         "drivers": drivers[:3],
         "risks": risks[:3],
         "feature_values": feature_values,
-        "window_start": market_bars[0]["observed_at"],
-        "window_end": market_bars[-1]["observed_at"],
+        "window_start": market_bars[0]["observed_at"] if market_bars else None,
+        "window_end": market_bars[-1]["observed_at"] if market_bars else None,
         "evidence_count": 1,
         "weight": 0.10,
     }
 
 
-def compute_reversal_factor(market_bars: list[dict[str, Any]]) -> dict[str, Any]:
-    """Compute short-term reversal factor from daily market bars.
-
-    Academic basis: Jegadeesh (1990), Lehmann (1990).
-    A-shares: Cheema & Nartea (2017) - A-shares exhibit strong short-term reversal
-    rather than momentum. Losers bounce back, winners revert.
-
-    Returns positive score when recent losers are expected to rebound.
-    """
+def compute_reversal_factor(
+    market_bars: list[dict[str, Any]],
+    *,
+    cross_sectional_stats: dict[str, dict[str, float]] | None = None,
+) -> dict[str, Any]:
+    """Short-term reversal factor with cross-sectional normalization."""
     closes = [float(item["close_price"]) for item in market_bars]
-
     ret_5d, lookback_5d = _lagged_return(closes, 5)
     ret_1d, lookback_1d = _lagged_return(closes, 1)
 
-    ret5d_scale = 0.06
-    ret1d_scale = 0.03
+    cs = cross_sectional_stats or {}
+    ret5d_scale = (cs.get("ret_5d", {}).get("mad", 0) or 0.06) * 1.5
+    ret1d_scale = (cs.get("ret_1d", {}).get("mad", 0) or 0.03) * 1.5
     signal_5d = score_scale(-ret_5d, ret5d_scale)
     signal_1d = score_scale(-ret_1d, ret1d_scale)
     score = clip(0.6 * signal_5d + 0.4 * signal_1d)
@@ -200,13 +182,12 @@ def compute_reversal_factor(market_bars: list[dict[str, Any]]) -> dict[str, Any]
     }
 
 
-def compute_liquidity_factor(market_bars: list[dict[str, Any]]) -> dict[str, Any]:
-    """Compute liquidity factor based on Amihud (2002) ILLIQ measure.
-
-    Higher ILLIQ = higher expected return (liquidity premium).
-    The factor prefers liquid stocks over illiquid ones (practical for retail):
-      positive score = liquid (low ILLIQ), negative score = illiquid (high ILLIQ).
-    """
+def compute_liquidity_factor(
+    market_bars: list[dict[str, Any]],
+    *,
+    cross_sectional_stats: dict[str, dict[str, float]] | None = None,
+) -> dict[str, Any]:
+    """Amihud (2002) ILLIQ liquidity factor with cross-sectional normalization."""
     closes = [float(item["close_price"]) for item in market_bars]
 
     illiq_values: list[float] = []
@@ -276,7 +257,7 @@ def compute_liquidity_factor(market_bars: list[dict[str, Any]]) -> dict[str, Any
         "drivers": drivers[:3],
         "risks": risks[:3],
         "feature_values": feature_values,
-        "window_start": market_bars[0]["observed_at"],
-        "window_end": market_bars[-1]["observed_at"],
+        "window_start": market_bars[0]["observed_at"] if market_bars else None,
+        "window_end": market_bars[-1]["observed_at"] if market_bars else None,
         "evidence_count": len(illiq_values),
     }

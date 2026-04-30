@@ -47,6 +47,7 @@ def build_signal_artifacts(
     financial_snapshot: dict[str, object] | None = None,
     financial_trends: dict[str, object] | None = None,
     financial_llm: dict[str, object] | None = None,
+    market_cap_data: dict[str, object] | None = None,
     generated_at: datetime,
 ) -> SignalArtifacts:
     minimum_bars = max(HORIZONS)
@@ -72,7 +73,7 @@ def build_signal_artifacts(
         financial_llm=financial_llm,
     )
     manual_review_layer = compute_manual_review_layer(price_factor, news_factor)
-    size_factor = compute_size_factor(market_bars)
+    size_factor = compute_size_factor(market_bars, market_cap_data=market_cap_data, symbol=symbol)
     reversal_factor = compute_reversal_factor(market_bars)
     liquidity_factor = compute_liquidity_factor(market_bars)
     fusion_state = _fusion_state(
