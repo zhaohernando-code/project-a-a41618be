@@ -8,9 +8,15 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
+from ashare_evidence.account_space import ROLE_ROOT, ROOT_ACCOUNT_LOGIN, record_account_presence
 from ashare_evidence.dashboard import DIRECTION_LABELS
-from ashare_evidence.dashboard_demo import normalize_symbol
 from ashare_evidence.db import utcnow
+from ashare_evidence.intraday_market import (
+    INTRADAY_DECISION_INTERVAL_SECONDS,
+    INTRADAY_MARKET_INTERVAL_SECONDS,
+    INTRADAY_MARKET_TIMEFRAME,
+    get_intraday_market_status,
+)
 from ashare_evidence.lineage import build_lineage
 from ashare_evidence.models import (
     MarketBar,
@@ -23,8 +29,26 @@ from ashare_evidence.models import (
     SimulationSession,
     Stock,
 )
-from ashare_evidence.operations import MODE_LABELS, _benchmark_close_map, _market_history, _portfolio_payload
+from ashare_evidence.operations import _benchmark_close_map, _distinct_trade_days, _market_history, _portfolio_payload
+from ashare_evidence.phase2.phase5_contract import (
+    PHASE5_BOARD_LOT,
+    PHASE5_LONG_DIRECTIONS,
+    PHASE5_MAX_POSITION_COUNT,
+    PHASE5_MAX_SINGLE_WEIGHT,
+    PHASE5_SELL_DIRECTIONS,
+    phase5_auto_execution_context,
+    phase5_simulation_policy_context,
+)
+from ashare_evidence.recommendation_selection import (
+    collapse_recommendation_history,
+    recommendation_recency_ordering,
+)
+from ashare_evidence.research_artifact_store import (
+    artifact_root_from_database_url,
+    portfolio_backtest_artifact_id,
+)
 from ashare_evidence.services import _serialize_recommendation
+from ashare_evidence.symbols import normalize_symbol
 from ashare_evidence.watchlist import active_watchlist_symbols
 
 SESSION_STATUSES = {
@@ -40,12 +64,93 @@ TRACK_LABELS = {
     "shared": "共享时间线",
 }
 
-DEFAULT_STEP_INTERVAL_SECONDS = 300
+DEFAULT_STEP_INTERVAL_SECONDS = INTRADAY_DECISION_INTERVAL_SECONDS
 DEFAULT_INITIAL_CASH = 200000.0
-DEFAULT_BENCHMARK = "CSI300"
+DEFAULT_BENCHMARK = "000300.SH"
 MAX_TIMELINE_EVENTS = 16
 MAX_DECISION_DIFFS = 8
 MAX_MODEL_ADVICES = 4
+WATCHLIST_SCOPE_ACTIVE = "active_watchlist_default"
+WATCHLIST_SCOPE_CUSTOM = "custom"
+
+
+def _sync_portfolio_backtest_artifact_payload(portfolio: PaperPortfolio) -> None:
+    canonical_artifact_id = portfolio_backtest_artifact_id(portfolio.portfolio_key)
+    if not canonical_artifact_id:
+        return
+    payload = dict(portfolio.portfolio_payload or {})
+    portfolio.portfolio_payload = {
+        **payload,
+        "backtest_artifact_id": canonical_artifact_id,
+    }
+
+
+def _auto_execute_requested(simulation_session: SimulationSession) -> bool:
+    return bool(simulation_session.session_payload.get("requested_auto_execute_model", simulation_session.auto_execute_model))
+
+
+def _effective_auto_execute_model(simulation_session: SimulationSession) -> bool:
+    return _auto_execute_requested(simulation_session)
+
+
+def _model_direction_priority(direction: str) -> int:
+    return {
+        "buy": 4,
+        "watch": 3,
+        "reduce": 2,
+        "risk_alert": 1,
+    }.get(direction, 0)
+
+
+def _model_advice_score(direction: str, confidence_score: float) -> int:
+    return _model_direction_priority(direction) * 100 + int(float(confidence_score) * 100)
+
+
+def _round_down_board_lot(quantity: int) -> int:
+    if quantity <= 0:
+        return 0
+    return int(quantity // PHASE5_BOARD_LOT * PHASE5_BOARD_LOT)
+
+
+def _board_lot_quantity_for_target_value(target_value: float, price: float) -> int:
+    if target_value <= 0 or price <= 0:
+        return 0
+    return _round_down_board_lot(int(target_value / price))
+
+
+def _board_lot_quantity_affordable(available_cash: float, price: float) -> int:
+    if available_cash <= 0 or price <= 0:
+        return 0
+    rough_budget = available_cash * 0.999
+    return _board_lot_quantity_for_target_value(rough_budget, price)
+
+
+def _phase5_policy_targets(
+    candidates: list[dict[str, Any]],
+    *,
+    nav: float,
+) -> dict[str, dict[str, Any]]:
+    if nav <= 0:
+        return {}
+    target_value = nav * PHASE5_MAX_SINGLE_WEIGHT
+    ranked = sorted(
+        (
+            item
+            for item in candidates
+            if item["direction"] in PHASE5_LONG_DIRECTIONS
+            and _board_lot_quantity_for_target_value(target_value, item["reference_price"]) >= PHASE5_BOARD_LOT
+        ),
+        key=lambda item: (-_model_direction_priority(item["direction"]), -item["score"], item["symbol"]),
+    )
+    selected = ranked[:PHASE5_MAX_POSITION_COUNT]
+    return {
+        item["symbol"]: {
+            "target_weight": PHASE5_MAX_SINGLE_WEIGHT,
+            "target_quantity": _board_lot_quantity_for_target_value(target_value, item["reference_price"]),
+            "rank": index + 1,
+        }
+        for index, item in enumerate(selected)
+    }
 
 
 def _lineage(payload: dict[str, Any], source_uri: str) -> dict[str, str]:
@@ -58,14 +163,50 @@ def _lineage(payload: dict[str, Any], source_uri: str) -> dict[str, str]:
     )
 
 
-def _latest_session(session: Session) -> SimulationSession | None:
+def _recommendation_primary_reason(recommendation_view: dict[str, Any]) -> str:
+    evidence = recommendation_view.get("evidence") or {}
+    primary_drivers = [str(item) for item in evidence.get("primary_drivers", []) if item]
+    if primary_drivers:
+        return primary_drivers[0]
+    supporting_context = [str(item) for item in evidence.get("supporting_context", []) if item]
+    if supporting_context:
+        return supporting_context[0]
+    return str(recommendation_view.get("summary", ""))
+
+
+def _recommendation_risk_flags(recommendation_view: dict[str, Any], *, limit: int = 3) -> list[str]:
+    risk_layer = recommendation_view.get("risk") or {}
+    layered_flags = [str(item) for item in risk_layer.get("risk_flags", []) if item]
+    invalidators = [str(item) for item in risk_layer.get("invalidators", []) if item]
+    coverage_gaps = [str(item) for item in risk_layer.get("coverage_gaps", []) if item]
+    return [*layered_flags, *invalidators, *coverage_gaps][:limit]
+
+
+def _latest_session(session: Session, *, owner_login: str) -> SimulationSession | None:
     sessions = session.scalars(
-        select(SimulationSession).order_by(SimulationSession.created_at.desc(), SimulationSession.id.desc())
+        select(SimulationSession)
+        .where(SimulationSession.owner_login == owner_login)
+        .order_by(SimulationSession.created_at.desc(), SimulationSession.id.desc())
     ).all()
     for item in sessions:
         if item.status != "ended":
             return item
     return sessions[0] if sessions else None
+
+
+def _sync_watch_symbols_from_active_watchlist(
+    session: Session,
+    simulation_session: SimulationSession,
+    active_symbols: list[str],
+) -> list[str]:
+    simulation_session.session_payload = {
+        **simulation_session.session_payload,
+        "watch_symbols": active_symbols,
+        "watch_symbols_scope": WATCHLIST_SCOPE_ACTIVE,
+    }
+    if not simulation_session.focus_symbol or simulation_session.focus_symbol not in active_symbols:
+        simulation_session.focus_symbol = active_symbols[0] if active_symbols else None
+    return active_symbols
 
 
 def _watch_symbols(session: Session, simulation_session: SimulationSession) -> list[str]:
@@ -74,12 +215,14 @@ def _watch_symbols(session: Session, simulation_session: SimulationSession) -> l
         for symbol in simulation_session.session_payload.get("watch_symbols", [])
         if str(symbol).strip()
     ]
+    active = active_watchlist_symbols(session, account_login=simulation_session.owner_login)
+    scope = str(simulation_session.session_payload.get("watch_symbols_scope") or WATCHLIST_SCOPE_ACTIVE)
     if configured:
+        if scope != WATCHLIST_SCOPE_CUSTOM and active and configured != active:
+            return _sync_watch_symbols_from_active_watchlist(session, simulation_session, active)
         return configured
-    active = active_watchlist_symbols(session)
     if active:
-        simulation_session.session_payload = {**simulation_session.session_payload, "watch_symbols": active}
-        return active
+        return _sync_watch_symbols_from_active_watchlist(session, simulation_session, active)
     return []
 
 
@@ -89,7 +232,7 @@ def _latest_market_bars(session: Session, symbols: list[str]) -> dict[str, Marke
     bars = session.scalars(
         select(MarketBar)
         .join(Stock)
-        .where(Stock.symbol.in_(symbols))
+        .where(Stock.symbol.in_(symbols), MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME)
         .options(joinedload(MarketBar.stock))
         .order_by(Stock.symbol.asc(), MarketBar.observed_at.desc())
     ).all()
@@ -97,6 +240,14 @@ def _latest_market_bars(session: Session, symbols: list[str]) -> dict[str, Marke
     for bar in bars:
         latest.setdefault(bar.stock.symbol, bar)
     return latest
+
+
+def _latest_market_data_time_for_session(session: Session, simulation_session: SimulationSession) -> datetime | None:
+    watch_symbols = _watch_symbols(session, simulation_session)
+    latest_bars = _latest_market_bars(session, watch_symbols)
+    if not latest_bars:
+        return None
+    return max(bar.observed_at for bar in latest_bars.values())
 
 
 def _latest_recommendations(session: Session, symbols: list[str]) -> dict[str, Recommendation]:
@@ -112,11 +263,16 @@ def _latest_recommendations(session: Session, symbols: list[str]) -> dict[str, R
             joinedload(Recommendation.prompt_version),
             joinedload(Recommendation.model_run),
         )
-        .order_by(Stock.symbol.asc(), Recommendation.generated_at.desc())
+        .order_by(*recommendation_recency_ordering(stock_symbol=True))
     ).all()
-    latest: dict[str, Recommendation] = {}
+    histories: dict[str, list[Recommendation]] = defaultdict(list)
     for recommendation in recommendations:
-        latest.setdefault(recommendation.stock.symbol, recommendation)
+        histories[recommendation.stock.symbol].append(recommendation)
+    latest: dict[str, Recommendation] = {}
+    for symbol, records in histories.items():
+        collapsed = collapse_recommendation_history(records, limit=1)
+        if collapsed:
+            latest[symbol] = collapsed[0]
     return latest
 
 
@@ -157,9 +313,11 @@ def _create_track_portfolio(session: Session, simulation_session: SimulationSess
         "watch_symbols": _watch_symbols(session, simulation_session),
         "fill_rule": "latest_price_immediate",
         "timeline_mode": "refresh_step",
+        "backtest_artifact_id": portfolio_backtest_artifact_id(portfolio_key),
     }
     portfolio = PaperPortfolio(
         portfolio_key=portfolio_key,
+        owner_login=simulation_session.owner_login,
         name=name,
         mode=mode,
         benchmark_symbol=simulation_session.benchmark_symbol,
@@ -191,6 +349,8 @@ def _ensure_session_portfolios(session: Session, simulation_session: SimulationS
         manual = _create_track_portfolio(session, simulation_session, "manual")
     if model is None:
         model = _create_track_portfolio(session, simulation_session, "model")
+    _sync_portfolio_backtest_artifact_payload(manual)
+    _sync_portfolio_backtest_artifact_payload(model)
     return manual, model
 
 
@@ -214,6 +374,7 @@ def _record_event(
     symbol: str | None = None,
     severity: str = "info",
     event_payload: dict[str, Any] | None = None,
+    actor_login: str | None = None,
 ) -> SimulationEvent:
     payload = {
         "session_key": simulation_session.session_key,
@@ -229,6 +390,8 @@ def _record_event(
     }
     event = SimulationEvent(
         event_key=f"{simulation_session.session_key}-{event_type}-{uuid4().hex[:10]}",
+        owner_login=simulation_session.owner_login,
+        actor_login=actor_login or simulation_session.owner_login,
         session_id=simulation_session.id,
         step_index=step_index,
         track=track,
@@ -249,6 +412,7 @@ def _record_event(
 def _new_session(
     session: Session,
     *,
+    owner_login: str,
     name: str,
     status: str,
     initial_cash: float,
@@ -263,14 +427,19 @@ def _new_session(
     session_key = f"sim-{created_at:%Y%m%d%H%M%S}-{uuid4().hex[:6]}"
     payload = {
         "watch_symbols": watch_symbols,
+        "watch_symbols_scope": WATCHLIST_SCOPE_ACTIVE,
         "step_trigger": "refresh_tick",
         "fill_rule": "latest_price_immediate",
         "supports_manual_step": True,
         "supports_resume": True,
         "restart_count": restart_count,
+        "market_data_interval_seconds": INTRADAY_MARKET_INTERVAL_SECONDS,
+        "market_data_timeframe": INTRADAY_MARKET_TIMEFRAME,
+        "requested_auto_execute_model": auto_execute_model,
     }
     simulation_session = SimulationSession(
         session_key=session_key,
+        owner_login=owner_login,
         name=name,
         status=status,
         focus_symbol=focus_symbol,
@@ -294,7 +463,7 @@ def _new_session(
                 "initial_cash": initial_cash,
                 "step_interval_seconds": step_interval_seconds,
             },
-            f"simulation://session/{session_key}",
+            f"simulation://session/{owner_login}/{session_key}",
         ),
     )
     session.add(simulation_session)
@@ -314,15 +483,23 @@ def _new_session(
     return simulation_session
 
 
-def ensure_simulation_session(session: Session) -> SimulationSession:
-    simulation_session = _latest_session(session)
+def ensure_simulation_session(session: Session, *, owner_login: str = ROOT_ACCOUNT_LOGIN) -> SimulationSession:
+    simulation_session = _latest_session(session, owner_login=owner_login)
     if simulation_session is not None:
+        requested_auto_execute_model = _auto_execute_requested(simulation_session)
+        if simulation_session.auto_execute_model or simulation_session.session_payload.get("requested_auto_execute_model") is None:
+            simulation_session.auto_execute_model = _effective_auto_execute_model(simulation_session)
+            simulation_session.session_payload = {
+                **simulation_session.session_payload,
+                "requested_auto_execute_model": requested_auto_execute_model,
+            }
         _ensure_session_portfolios(session, simulation_session)
         return simulation_session
-    watch_symbols = active_watchlist_symbols(session)
+    watch_symbols = active_watchlist_symbols(session, account_login=owner_login)
     focus_symbol = watch_symbols[0] if watch_symbols else None
     return _new_session(
         session,
+        owner_login=owner_login,
         name="双轨同步模拟",
         status="draft",
         initial_cash=DEFAULT_INITIAL_CASH,
@@ -330,7 +507,7 @@ def ensure_simulation_session(session: Session) -> SimulationSession:
         watch_symbols=watch_symbols,
         benchmark_symbol=DEFAULT_BENCHMARK,
         step_interval_seconds=DEFAULT_STEP_INTERVAL_SECONDS,
-        auto_execute_model=True,
+        auto_execute_model=False,
     )
 
 
@@ -338,9 +515,37 @@ def _portfolio_context(
     session: Session,
     simulation_session: SimulationSession,
 ) -> tuple[dict[str, list[tuple[Any, float]]], dict[str, str], list[Any], dict[Any, float]]:
-    price_history, stock_names, trade_days = _market_history(session, _watch_symbols(session, simulation_session))
-    benchmark_close_map = _benchmark_close_map(trade_days)
-    return price_history, stock_names, trade_days, benchmark_close_map
+    watch_symbols = _watch_symbols(session, simulation_session)
+    price_history, stock_names, timeline_points = _market_history(
+        session,
+        watch_symbols,
+        timeframe=INTRADAY_MARKET_TIMEFRAME,
+    )
+    if not timeline_points:
+        price_history, stock_names, timeline_points = _market_history(session, watch_symbols, timeframe="1d")
+    latest_timeline_point = timeline_points[-1] if timeline_points else None
+    last_data_time = simulation_session.last_data_time
+    comparable_last_data_time = (
+        last_data_time.replace(tzinfo=None) if last_data_time is not None and last_data_time.tzinfo is not None else last_data_time
+    )
+    comparable_latest_timeline_point = (
+        latest_timeline_point.replace(tzinfo=None)
+        if latest_timeline_point is not None and latest_timeline_point.tzinfo is not None
+        else latest_timeline_point
+    )
+    if comparable_last_data_time is not None and (
+        comparable_latest_timeline_point is None or comparable_last_data_time > comparable_latest_timeline_point
+    ):
+        # Keep the portfolio replay aligned with the session clock even when
+        # the newest 5-minute bar has not landed yet, so same-step fills appear
+        # in holdings and NAV immediately.
+        timeline_points = [*timeline_points, comparable_last_data_time]
+    benchmark_close_map = _benchmark_close_map(
+        _distinct_trade_days(timeline_points),
+        price_history=price_history,
+        active_symbols=watch_symbols,
+    )
+    return price_history, stock_names, timeline_points, benchmark_close_map
 
 
 def _portfolio_summary(
@@ -352,15 +557,19 @@ def _portfolio_summary(
     watch_symbols: set[str] | None = None,
 ) -> dict[str, Any]:
     active_watch_symbols = watch_symbols or set(_watch_symbols(session, simulation_session))
-    price_history, stock_names, trade_days, benchmark_close_map = context or _portfolio_context(session, simulation_session)
+    price_history, stock_names, timeline_points, benchmark_close_map = context or _portfolio_context(session, simulation_session)
+    bind = session.get_bind()
+    artifact_root = artifact_root_from_database_url(bind.url.render_as_string(hide_password=False) if bind else None)
     return _portfolio_payload(
         portfolio,
         active_symbols=active_watch_symbols,
         stock_names=stock_names,
         price_history=price_history,
-        trade_days=trade_days,
+        timeline_points=timeline_points,
         benchmark_close_map=benchmark_close_map,
         recommendation_hit_rate=0.0,
+        market_data_timeframe=INTRADAY_MARKET_TIMEFRAME if timeline_points else "1d",
+        artifact_root=artifact_root,
     )
 
 
@@ -386,12 +595,20 @@ def _track_state(role: str, summary: dict[str, Any], latest_reason: str | None) 
 
 
 def _session_events(session: Session, simulation_session: SimulationSession) -> list[SimulationEvent]:
-    return session.scalars(
+    events = session.scalars(
         select(SimulationEvent)
         .where(SimulationEvent.session_id == simulation_session.id)
         .order_by(SimulationEvent.happened_at.desc(), SimulationEvent.id.desc())
-        .limit(64)
+        .limit(MAX_TIMELINE_EVENTS * 4)
     ).all()
+    return [event for event in events if not _is_noop_model_decision_event(event)][:MAX_TIMELINE_EVENTS]
+
+
+def _is_noop_model_decision_event(event: SimulationEvent) -> bool:
+    if event.track != "model" or event.event_type != "model_decision" or event.symbol:
+        return False
+    payload = event.event_payload or {}
+    return event.title == "模型维持观望" or payload.get("action_summary") == "持有"
 
 
 def _serialize_lineage(instance: Any) -> dict[str, str]:
@@ -510,59 +727,102 @@ def _model_advices(
     simulation_session: SimulationSession,
     model_summary: dict[str, Any],
 ) -> list[dict[str, Any]]:
+    bind = session.get_bind()
+    artifact_root = artifact_root_from_database_url(bind.url.render_as_string(hide_password=False) if bind else None)
     symbols = _watch_symbols(session, simulation_session)
     latest_bars = _latest_market_bars(session, symbols)
     latest_recommendations = _latest_recommendations(session, symbols)
     holdings = {item["symbol"]: int(item["quantity"]) for item in model_summary["holdings"]}
+    holding_weights = {item["symbol"]: float(item["portfolio_weight"]) for item in model_summary["holdings"]}
     available_cash = float(model_summary["available_cash"])
+    nav = float(model_summary["net_asset_value"])
 
-    advices: list[dict[str, Any]] = []
+    candidate_rows: list[dict[str, Any]] = []
     for symbol in symbols:
         recommendation = latest_recommendations.get(symbol)
         bar = latest_bars.get(symbol)
         if recommendation is None or bar is None:
             continue
-        summary = _serialize_recommendation(recommendation)
+        summary = _serialize_recommendation(recommendation, artifact_root=artifact_root)
         reco = summary["recommendation"]
         price = float(bar.close_price)
-        quantity = 0
-        action = "hold"
-        if reco["direction"] == "buy":
-            budget = available_cash * 0.24
-            quantity = max(int(budget / price / 100) * 100, 0)
-            action = "buy" if quantity > 0 else "hold"
-        elif reco["direction"] in {"reduce", "risk_alert"}:
-            owned = holdings.get(symbol, 0)
-            quantity = min(owned, max((owned // 2) // 100 * 100, 100 if owned >= 100 else 0))
-            action = "sell" if quantity > 0 else "hold"
-        score = {
-            "buy": 300,
-            "watch": 200,
-            "reduce": 120,
-            "risk_alert": 80,
-        }.get(reco["direction"], 0) + int(float(reco["confidence_score"]) * 100)
-        advices.append(
+        score = _model_advice_score(reco["direction"], float(reco["confidence_score"]))
+        candidate_rows.append(
             {
                 "symbol": symbol,
                 "stock_name": summary["stock"]["name"],
                 "direction": reco["direction"],
                 "direction_label": DIRECTION_LABELS.get(reco["direction"], reco["direction"]),
-                "action": action,
-                "quantity": quantity,
                 "reference_price": round(price, 2),
                 "confidence_label": reco["confidence_label"],
                 "generated_at": reco["generated_at"],
-                "reason": reco["core_drivers"][0] if reco["core_drivers"] else reco["summary"],
-                "risk_flags": reco["reverse_risks"][:3],
+                "reason": _recommendation_primary_reason(reco),
+                "risk_flags": _recommendation_risk_flags(reco),
                 "score": score,
+                "confidence_score": float(reco["confidence_score"]),
             }
         )
-    advices.sort(key=lambda item: (item["action"] == "hold", -item["score"], item["symbol"]))
+
+    targets = _phase5_policy_targets(candidate_rows, nav=nav)
+    advices: list[dict[str, Any]] = []
+    for item in candidate_rows:
+        symbol = item["symbol"]
+        current_quantity = holdings.get(symbol, 0)
+        current_weight = holding_weights.get(symbol, 0.0)
+        target = targets.get(symbol, {"target_weight": 0.0, "target_quantity": 0, "rank": None})
+        target_quantity = int(target["target_quantity"])
+        quantity = 0
+        action = "hold"
+        if current_quantity > 0 and (
+            item["direction"] in PHASE5_SELL_DIRECTIONS
+            or target_quantity < current_quantity
+        ):
+            action = "sell"
+            quantity = _round_down_board_lot(min(current_quantity, current_quantity - target_quantity))
+        elif item["direction"] in PHASE5_LONG_DIRECTIONS and target_quantity > current_quantity:
+            affordable_quantity = _board_lot_quantity_affordable(available_cash, item["reference_price"])
+            quantity = _round_down_board_lot(min(target_quantity - current_quantity, affordable_quantity))
+            if quantity >= PHASE5_BOARD_LOT:
+                action = "buy"
+
+        policy_context = phase5_simulation_policy_context()
+        policy_note = policy_context["policy_note"]
+        if (
+            item["direction"] in PHASE5_LONG_DIRECTIONS
+            and target_quantity <= 0
+            and current_quantity <= 0
+            and nav * PHASE5_MAX_SINGLE_WEIGHT < item["reference_price"] * PHASE5_BOARD_LOT
+        ):
+            policy_note = (
+                f"{policy_context['policy_note']} 当前 {symbol} 在单票 20% 上限下不足一手，"
+                "因此不会被纳入本轮目标持仓。"
+            )
+            policy_context = phase5_simulation_policy_context(policy_note=policy_note)
+
+        advices.append(
+            {
+                **item,
+                "action": action,
+                "quantity": quantity if quantity > 0 else None,
+                "current_weight": round(current_weight, 4),
+                "target_weight": round(float(target["target_weight"]), 4),
+                "trade_delta_weight": round(float(target["target_weight"]) - current_weight, 4),
+                "policy_status": policy_context["policy_status"],
+                "policy_type": policy_context["policy_type"],
+                "policy_note": policy_context["policy_note"],
+                "action_definition": policy_context["action_definition"],
+                "quantity_definition": policy_context["quantity_definition"],
+                "rank": target["rank"],
+            }
+        )
+    action_rank = {"sell": 0, "buy": 1, "hold": 2}
+    advices.sort(key=lambda item: (action_rank.get(item["action"], 9), -item["score"], item["symbol"]))
     return advices[:MAX_MODEL_ADVICES]
 
 
 def _kline_payload(session: Session, simulation_session: SimulationSession) -> dict[str, Any]:
-    focus_symbol = simulation_session.focus_symbol or (_watch_symbols(session, simulation_session)[0] if _watch_symbols(session, simulation_session) else None)
+    watch_symbols = _watch_symbols(session, simulation_session)
+    focus_symbol = simulation_session.focus_symbol or (watch_symbols[0] if watch_symbols else None)
     if not focus_symbol:
         return {
             "symbol": None,
@@ -573,11 +833,20 @@ def _kline_payload(session: Session, simulation_session: SimulationSession) -> d
     bars = session.scalars(
         select(MarketBar)
         .join(Stock)
-        .where(Stock.symbol == focus_symbol)
+        .where(Stock.symbol == focus_symbol, MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME)
         .options(joinedload(MarketBar.stock))
         .order_by(MarketBar.observed_at.desc())
         .limit(48)
     ).all()
+    if not bars:
+        bars = session.scalars(
+            select(MarketBar)
+            .join(Stock)
+            .where(Stock.symbol == focus_symbol, MarketBar.timeframe == "1d")
+            .options(joinedload(MarketBar.stock))
+            .order_by(MarketBar.observed_at.desc())
+            .limit(60)
+        ).all()
     bars = list(reversed(bars))
     return {
         "symbol": focus_symbol,
@@ -605,6 +874,7 @@ def _last_reason_for_track(events: list[SimulationEvent], track: str) -> str | N
 
 
 def _workspace_payload(session: Session, simulation_session: SimulationSession) -> dict[str, Any]:
+    auto_execution_context = phase5_auto_execution_context()
     manual_portfolio, model_portfolio = _ensure_session_portfolios(session, simulation_session)
     watch_symbols = _watch_symbols(session, simulation_session)
     portfolio_context = _portfolio_context(session, simulation_session)
@@ -626,6 +896,7 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
     events = _session_events(session, simulation_session)
     model_advices = _model_advices(session, simulation_session, model_summary)
     focus_symbol = simulation_session.focus_symbol or (watch_symbols[0] if watch_symbols else None)
+    intraday_status = get_intraday_market_status(session, symbols=watch_symbols)
 
     return {
         "session": {
@@ -639,19 +910,29 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
             "initial_cash": simulation_session.initial_cash,
             "current_step": simulation_session.current_step,
             "step_interval_seconds": simulation_session.step_interval_seconds,
-            "step_trigger_label": "按数据刷新推进",
+            "step_trigger_label": "30 分钟定时决策",
             "fill_rule_label": "最新价即时成交",
-            "auto_execute_model": simulation_session.auto_execute_model,
+            "auto_execute_model": _effective_auto_execute_model(simulation_session),
+            "auto_execute_model_requested": _auto_execute_requested(simulation_session),
+            "auto_execute_status": auto_execution_context["auto_execute_status"],
+            "auto_execute_note": auto_execution_context["auto_execute_note"],
             "restart_count": simulation_session.restart_count,
             "started_at": simulation_session.started_at,
             "last_resumed_at": simulation_session.last_resumed_at,
             "paused_at": simulation_session.paused_at,
             "ended_at": simulation_session.ended_at,
             "last_data_time": simulation_session.last_data_time,
+            "market_data_timeframe": INTRADAY_MARKET_TIMEFRAME,
+            "market_data_interval_seconds": int(
+                simulation_session.session_payload.get("market_data_interval_seconds") or INTRADAY_MARKET_INTERVAL_SECONDS
+            ),
+            "last_market_data_at": intraday_status["latest_market_data_at"],
+            "data_latency_seconds": intraday_status["data_latency_seconds"],
+            "intraday_source_status": intraday_status,
             "resumable": simulation_session.status in {"paused", "running"},
         },
         "controls": {
-            "can_start": simulation_session.status == "draft",
+            "can_start": simulation_session.status == "draft" and bool(watch_symbols),
             "can_pause": simulation_session.status == "running",
             "can_resume": simulation_session.status == "paused",
             "can_step": simulation_session.status == "running",
@@ -665,8 +946,19 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
             "initial_cash": simulation_session.initial_cash,
             "benchmark_symbol": simulation_session.benchmark_symbol,
             "step_interval_seconds": simulation_session.step_interval_seconds,
-            "auto_execute_model": simulation_session.auto_execute_model,
-            "editable_fields": ["initial_cash", "watch_symbols", "focus_symbol", "step_interval_seconds", "auto_execute_model"],
+            "market_data_interval_seconds": int(
+                simulation_session.session_payload.get("market_data_interval_seconds") or INTRADAY_MARKET_INTERVAL_SECONDS
+            ),
+            "auto_execute_model": _effective_auto_execute_model(simulation_session),
+            "auto_execute_model_requested": _auto_execute_requested(simulation_session),
+            "auto_execute_status": auto_execution_context["auto_execute_status"],
+            "auto_execute_note": auto_execution_context["auto_execute_note"],
+            "editable_fields": [
+                "initial_cash",
+                "watch_symbols",
+                "focus_symbol",
+                "step_interval_seconds",
+            ],
         },
         "manual_track": _track_state("manual", manual_summary, _last_reason_for_track(events, "manual")),
         "model_track": _track_state("model", model_summary, _last_reason_for_track(events, "model")),
@@ -678,8 +970,21 @@ def _workspace_payload(session: Session, simulation_session: SimulationSession) 
     }
 
 
-def get_simulation_workspace(session: Session) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+def get_simulation_workspace(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=False,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     session.flush()
     return _workspace_payload(session, simulation_session)
 
@@ -687,36 +992,55 @@ def get_simulation_workspace(session: Session) -> dict[str, Any]:
 def update_simulation_config(
     session: Session,
     *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
     initial_cash: float,
     watch_symbols: list[str],
     focus_symbol: str | None,
     step_interval_seconds: int,
     auto_execute_model: bool,
 ) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status == "ended":
         raise ValueError("当前进程已结束，请使用重启创建新进程。")
     if initial_cash <= 0:
         raise ValueError("初始资金必须大于 0。")
     normalized_watch_symbols = [normalize_symbol(symbol) for symbol in watch_symbols if str(symbol).strip()]
     if not normalized_watch_symbols:
-        normalized_watch_symbols = active_watchlist_symbols(session)
+        normalized_watch_symbols = active_watchlist_symbols(session, account_login=owner_login)
     if not normalized_watch_symbols:
         raise ValueError("请至少保留一只自选股票作为模拟池。")
     normalized_focus_symbol = normalize_symbol(focus_symbol) if focus_symbol else normalized_watch_symbols[0]
     if normalized_focus_symbol not in normalized_watch_symbols:
         normalized_focus_symbol = normalized_watch_symbols[0]
+    scope = (
+        WATCHLIST_SCOPE_ACTIVE
+        if normalized_watch_symbols == active_watchlist_symbols(session, account_login=owner_login)
+        else WATCHLIST_SCOPE_CUSTOM
+    )
     if simulation_session.current_step > 0 and initial_cash != simulation_session.initial_cash:
         raise ValueError("模拟已经开始，不能直接修改初始资金；请使用重启。")
 
     simulation_session.focus_symbol = normalized_focus_symbol
     simulation_session.initial_cash = initial_cash
     simulation_session.step_interval_seconds = step_interval_seconds
-    simulation_session.auto_execute_model = auto_execute_model
     simulation_session.session_payload = {
         **simulation_session.session_payload,
         "watch_symbols": normalized_watch_symbols,
+        "watch_symbols_scope": scope,
+        "market_data_interval_seconds": INTRADAY_MARKET_INTERVAL_SECONDS,
+        "market_data_timeframe": INTRADAY_MARKET_TIMEFRAME,
+        "requested_auto_execute_model": auto_execute_model,
     }
+    simulation_session.auto_execute_model = _effective_auto_execute_model(simulation_session)
     manual_portfolio, model_portfolio = _ensure_session_portfolios(session, simulation_session)
     for portfolio in (manual_portfolio, model_portfolio):
         portfolio.benchmark_symbol = simulation_session.benchmark_symbol
@@ -725,6 +1049,7 @@ def update_simulation_config(
             **portfolio.portfolio_payload,
             "watch_symbols": normalized_watch_symbols,
             "starting_cash": initial_cash,
+            "backtest_artifact_id": portfolio_backtest_artifact_id(portfolio.portfolio_key),
         }
         if simulation_session.current_step == 0 and not portfolio.orders:
             portfolio.cash_balance = initial_cash
@@ -737,23 +1062,47 @@ def update_simulation_config(
         event_type="config_updated",
         happened_at=utcnow(),
         title="模拟参数已更新",
-        detail=f"初始资金 {initial_cash:.0f}，股票池 {len(normalized_watch_symbols)} 只，步长 {step_interval_seconds} 秒。",
+        detail=(
+            f"初始资金 {initial_cash:.0f}，股票池 {len(normalized_watch_symbols)} 只，"
+            f"决策步长 {step_interval_seconds} 秒，行情步长 {INTRADAY_MARKET_INTERVAL_SECONDS} 秒。"
+            + (
+                " 模型轨道自动执行已启用，后续会按等权组合研究策略自动生成模拟成交。"
+                if auto_execute_model
+                else ""
+            )
+        ),
         event_payload={
             "watch_symbols": normalized_watch_symbols,
             "focus_symbol": normalized_focus_symbol,
-            "auto_execute_model": auto_execute_model,
+            "auto_execute_model": _effective_auto_execute_model(simulation_session),
+            "requested_auto_execute_model": auto_execute_model,
         },
     )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
-def start_simulation_session(session: Session) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+def start_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status == "ended":
         raise ValueError("当前进程已结束，请使用重启。")
     if simulation_session.status == "running":
         return _workspace_payload(session, simulation_session)
+    if not _watch_symbols(session, simulation_session):
+        raise ValueError("请先至少关注一只股票，再启动模拟。")
     now = utcnow()
     simulation_session.status = "running"
     simulation_session.started_at = simulation_session.started_at or now
@@ -771,14 +1120,28 @@ def start_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=now,
         title="模拟已启动",
         detail="用户轨道与模型轨道已对齐到同一时间线，后续按刷新步推进。",
+        actor_login=actor_login,
         event_payload={"auto_execute_model": simulation_session.auto_execute_model},
     )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
-def pause_simulation_session(session: Session) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+def pause_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status != "running":
         raise ValueError("只有运行中的进程才能暂停。")
     now = utcnow()
@@ -796,13 +1159,27 @@ def pause_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=now,
         title="模拟已暂停",
         detail="双轨时间线已冻结，可继续查看建议、修改焦点或稍后恢复。",
+        actor_login=actor_login,
     )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
-def resume_simulation_session(session: Session) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+def resume_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status != "paused":
         raise ValueError("只有暂停中的进程才能恢复。")
     now = utcnow()
@@ -821,13 +1198,14 @@ def resume_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=now,
         title="模拟已恢复",
         detail="双轨继续沿上次暂停的时间节点推进。",
+        actor_login=actor_login,
     )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
 def _recommendation_for_symbol(session: Session, symbol: str) -> Recommendation | None:
-    return session.scalar(
+    recommendations = session.scalars(
         select(Recommendation)
         .join(Stock)
         .where(Stock.symbol == symbol)
@@ -837,9 +1215,10 @@ def _recommendation_for_symbol(session: Session, symbol: str) -> Recommendation 
             joinedload(Recommendation.prompt_version),
             joinedload(Recommendation.model_run),
         )
-        .order_by(Recommendation.generated_at.desc())
-        .limit(1)
-    )
+        .order_by(*recommendation_recency_ordering())
+    ).all()
+    history = collapse_recommendation_history(recommendations, limit=1)
+    return history[0] if history else None
 
 
 def _create_fill_for_order(
@@ -856,6 +1235,7 @@ def _create_fill_for_order(
     reason: str,
     track: str,
     limit_price: float | None = None,
+    actor_login: str | None = None,
 ) -> None:
     fee = round(max(reference_price * quantity * 0.0003, 5.0), 2)
     tax = round(reference_price * quantity * 0.001, 2) if side == "sell" else 0.0
@@ -870,6 +1250,8 @@ def _create_fill_for_order(
     }
     order = PaperOrder(
         order_key=f"{simulation_session.session_key}-{track}-order-{uuid4().hex[:8]}",
+        owner_login=simulation_session.owner_login,
+        actor_login=actor_login or simulation_session.owner_login,
         portfolio=portfolio,
         stock=stock,
         recommendation=recommendation,
@@ -894,6 +1276,8 @@ def _create_fill_for_order(
     }
     fill = PaperFill(
         fill_key=f"{simulation_session.session_key}-{track}-fill-{uuid4().hex[:8]}",
+        owner_login=simulation_session.owner_login,
+        actor_login=actor_login or simulation_session.owner_login,
         order=order,
         stock=stock,
         filled_at=requested_at,
@@ -919,12 +1303,24 @@ def _create_fill_for_order(
         title=f"{TRACK_LABELS[track]}已成交",
         detail=f"{stock.name} 按最新价 {reference_price:.2f} {'买入' if side == 'buy' else '卖出'} {quantity} 股。理由：{reason}",
         severity="success",
+        actor_login=actor_login,
         event_payload={
             "action_summary": order_payload["action_summary"],
             "reason": reason,
             "price": round(reference_price, 2),
             "quantity": quantity,
-            "risk_flags": recommendation.recommendation_payload.get("reverse_risks", [])[:3] if recommendation is not None else [],
+            "risk_flags": (
+                _recommendation_risk_flags(
+                    _serialize_recommendation(
+                        recommendation,
+                        artifact_root=artifact_root_from_database_url(
+                            session.get_bind().url.render_as_string(hide_password=False) if session.get_bind() else None
+                        ),
+                    )["recommendation"]
+                )
+                if recommendation is not None
+                else []
+            ),
         },
     )
 
@@ -955,13 +1351,23 @@ def _validate_order_request(
 def place_manual_order(
     session: Session,
     *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
     symbol: str,
     side: str,
     quantity: int,
     reason: str,
     limit_price: float | None = None,
 ) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status not in {"running", "paused"}:
         raise ValueError("请先启动模拟，再进行手动下单。")
     manual_portfolio, _model_portfolio = _ensure_session_portfolios(session, simulation_session)
@@ -996,20 +1402,37 @@ def place_manual_order(
         reason=reason,
         track="manual",
         limit_price=limit_price,
+        actor_login=actor_login,
     )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
-def step_simulation_session(session: Session) -> dict[str, Any]:
-    simulation_session = ensure_simulation_session(session)
+def step_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+    anchor_time: datetime | None = None,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status != "running":
         raise ValueError("只有运行中的模拟才能推进单步。")
     _manual_portfolio, model_portfolio = _ensure_session_portfolios(session, simulation_session)
     model_summary = _portfolio_summary(session, simulation_session, model_portfolio)
     simulation_session.current_step += 1
-    next_data_time = (simulation_session.last_data_time or utcnow()) + timedelta(
-        seconds=simulation_session.step_interval_seconds
+    next_data_time = anchor_time or (
+        (simulation_session.last_data_time or utcnow()) + timedelta(
+            seconds=simulation_session.step_interval_seconds
+        )
     )
     simulation_session.last_data_time = next_data_time
     _record_event(
@@ -1021,23 +1444,13 @@ def step_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=next_data_time,
         title=f"第 {simulation_session.current_step} 步刷新",
         detail="共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。",
+        actor_login=actor_login,
         event_payload={"watch_symbols": _watch_symbols(session, simulation_session)},
     )
 
     advices = _model_advices(session, simulation_session, model_summary)
-    primary = next((item for item in advices if item["action"] in {"buy", "sell"} and item["quantity"] > 0), None)
+    primary = next((item for item in advices if item["action"] in {"buy", "sell"} and (item["quantity"] or 0) > 0), None)
     if primary is None:
-        _record_event(
-            session,
-            simulation_session,
-            step_index=simulation_session.current_step,
-            track="model",
-            event_type="model_decision",
-            happened_at=next_data_time,
-            title="模型维持观望",
-            detail="当前刷新步没有满足执行阈值的新动作，模型继续持有并等待下一次刷新。",
-            event_payload={"action_summary": "持有", "risk_flags": []},
-        )
         session.flush()
         return _workspace_payload(session, simulation_session)
 
@@ -1053,14 +1466,31 @@ def step_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=next_data_time,
         symbol=primary["symbol"],
         title="模型给出新建议",
-        detail=f"{primary['stock_name']} 建议 {action_label} {primary['quantity']} 股。主要理由：{reason}",
+        detail=(
+            f"{primary['stock_name']} 按等权组合研究策略给出{action_label} {primary['quantity']} 股，"
+            f"目标权重 {primary['target_weight']:.0%}，当前权重 {primary['current_weight']:.0%}。主要理由：{reason}"
+        ),
+        actor_login=actor_login,
         event_payload={
             "action_summary": f"{action_label} {primary['quantity']} 股",
             "reason_tags": [reason],
             "risk_flags": primary["risk_flags"],
+            "policy_status": primary["policy_status"],
+            "policy_type": primary["policy_type"],
+            "policy_note": primary["policy_note"],
+            "target_weight": primary["target_weight"],
+            "current_weight": primary["current_weight"],
+            "quantity": primary["quantity"],
         },
     )
-    if simulation_session.auto_execute_model and recommendation is not None and primary["quantity"] > 0:
+    if _effective_auto_execute_model(simulation_session) and recommendation is not None and primary["quantity"] and primary["quantity"] > 0:
+        _validate_order_request(
+            model_summary,
+            symbol=primary["symbol"],
+            side="buy" if primary["action"] == "buy" else "sell",
+            quantity=primary["quantity"],
+            reference_price=float(primary["reference_price"]),
+        )
         stock = recommendation.stock
         _create_fill_for_order(
             session,
@@ -1074,13 +1504,48 @@ def step_simulation_session(session: Session) -> dict[str, Any]:
             recommendation=recommendation,
             reason=reason,
             track="model",
+            actor_login=actor_login,
         )
     session.flush()
     return _workspace_payload(session, simulation_session)
 
 
-def restart_simulation_session(session: Session) -> dict[str, Any]:
-    current = ensure_simulation_session(session)
+def advance_running_simulation_session(session: Session, *, owner_login: str = ROOT_ACCOUNT_LOGIN) -> dict[str, Any] | None:
+    simulation_session = _latest_session(session, owner_login=owner_login)
+    if simulation_session is None or simulation_session.status != "running":
+        return None
+    latest_market_data_time = _latest_market_data_time_for_session(session, simulation_session)
+    if latest_market_data_time is None:
+        return None
+    session_data_time = simulation_session.last_data_time
+    comparable_session_time = (
+        session_data_time.replace(tzinfo=None) if session_data_time is not None and session_data_time.tzinfo is not None else session_data_time
+    )
+    comparable_market_time = (
+        latest_market_data_time.replace(tzinfo=None)
+        if latest_market_data_time.tzinfo is not None
+        else latest_market_data_time
+    )
+    if comparable_session_time is not None and comparable_session_time >= comparable_market_time:
+        return None
+    return step_simulation_session(session, owner_login=simulation_session.owner_login, actor_login=simulation_session.owner_login, anchor_time=latest_market_data_time)
+
+
+def restart_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+) -> dict[str, Any]:
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    current = ensure_simulation_session(session, owner_login=owner_login)
     if current.status != "ended":
         current.status = "ended"
         current.ended_at = utcnow()
@@ -1093,10 +1558,12 @@ def restart_simulation_session(session: Session) -> dict[str, Any]:
             happened_at=current.ended_at,
             title="旧进程已归档",
             detail="当前模拟已归档，系统将基于相同参数创建新的双轨进程。",
+            actor_login=actor_login,
         )
     watch_symbols = _watch_symbols(session, current)
     new_session = _new_session(
         session,
+        owner_login=current.owner_login,
         name=current.name,
         status="running",
         initial_cash=current.initial_cash,
@@ -1120,16 +1587,31 @@ def restart_simulation_session(session: Session) -> dict[str, Any]:
         happened_at=started_at,
         title="新模拟已重启",
         detail="双轨已按同一初始资金和股票池重新对齐。",
+        actor_login=actor_login,
         event_payload={"restart_count": new_session.restart_count},
     )
     session.flush()
     return _workspace_payload(session, new_session)
 
 
-def end_simulation_session(session: Session, *, confirm: bool) -> dict[str, Any]:
+def end_simulation_session(
+    session: Session,
+    *,
+    owner_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_login: str = ROOT_ACCOUNT_LOGIN,
+    actor_role: str = ROLE_ROOT,
+    confirm: bool,
+) -> dict[str, Any]:
     if not confirm:
         raise ValueError("结束模拟需要二次确认。")
-    simulation_session = ensure_simulation_session(session)
+    record_account_presence(
+        session,
+        actor_login=actor_login,
+        actor_role=actor_role,
+        target_login=owner_login,
+        mark_acted=True,
+    )
+    simulation_session = ensure_simulation_session(session, owner_login=owner_login)
     if simulation_session.status == "ended":
         return _workspace_payload(session, simulation_session)
     ended_at = utcnow()
@@ -1148,6 +1630,7 @@ def end_simulation_session(session: Session, *, confirm: bool) -> dict[str, Any]
         title="模拟已结束",
         detail="双轨时间线已停止，当前留痕可继续用于复盘和模型迭代。",
         severity="warn",
+        actor_login=actor_login,
     )
     session.flush()
     return _workspace_payload(session, simulation_session)

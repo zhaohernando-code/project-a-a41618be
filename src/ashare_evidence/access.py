@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 import os
 
@@ -21,14 +19,14 @@ class BetaAccessConfig:
 
 
 DEFAULT_ALLOWLIST = {
-    "demo-viewer-key": "viewer",
-    "demo-analyst-key": "analyst",
-    "demo-operator-key": "operator",
+    "viewer-key": "viewer",
+    "analyst-key": "analyst",
+    "operator-key": "operator",
 }
 
 
 def load_beta_access_config() -> BetaAccessConfig:
-    mode = os.getenv("ASHARE_BETA_ACCESS_MODE", "open_demo").strip().lower() or "open_demo"
+    mode = os.getenv("ASHARE_BETA_ACCESS_MODE", "open").strip().lower() or "open"
     header_name = os.getenv("ASHARE_BETA_ACCESS_HEADER", "X-Ashare-Beta-Key").strip() or "X-Ashare-Beta-Key"
     raw_allowlist = os.getenv("ASHARE_BETA_ALLOWLIST", "").strip()
     allowlist: dict[str, str] = {}
@@ -44,8 +42,8 @@ def load_beta_access_config() -> BetaAccessConfig:
 
 def require_beta_access(request: Request) -> BetaAccessContext:
     config = load_beta_access_config()
-    if config.mode in {"open_demo", "disabled", "off"}:
-        return BetaAccessContext(mode=config.mode, role="anonymous", token_id="open-demo")
+    if config.mode in {"open", "disabled", "off"}:
+        return BetaAccessContext(mode=config.mode, role="anonymous", token_id="open-access")
 
     header_value = request.headers.get(config.header_name)
     if not header_value:

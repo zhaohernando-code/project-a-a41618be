@@ -1,0 +1,1128 @@
+{
+  "artifact_id": "phase5-producer-contract-study:history:2026-04-07_to_2026-04-23:3symbols",
+  "artifact_type": "phase5_producer_contract_study",
+  "contract_version": "phase5-producer-contract-study-draft-v1",
+  "created_at": null,
+  "decision": {
+    "approval_state": "narrow_relaxation_recommended",
+    "note": "在当前候选方案里，保留 `0.12` evidence-gap penalty、去掉 `missing_news_evidence` 的硬性 `risk_alert` 覆盖，并把缺证据但其余条件偏正的记录上限收口到 `watch`，是最保守且能恢复 deployable supply 的替代方案。",
+    "recommended_variant_id": "watch_ceiling_keep_penalty"
+  },
+  "focus_records": [
+    {
+      "as_of_date": "2026-04-07",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.2309,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.2309,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.3509,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.2309,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.2309,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-08",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.2965,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.2965,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.1765,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.2965,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.2965,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-09",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.4421,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.4421,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.3221,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.4421,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.4421,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-10",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.1998,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.1998,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.0798,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.1998,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.1998,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-13",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.3213,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.3213,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.2013,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.3213,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.3213,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-15",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0942,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0942,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0258,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0942,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0942,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-16",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0854,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0854,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0346,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0854,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0854,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-17",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0781,
+      "name": "思源电气",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "002028.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0781,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0419,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0781,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0781,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-07",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.2933,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.2933,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.1733,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.2933,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.2933,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-08",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.4577,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.4577,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.3377,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.4577,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.4577,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-09",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.571,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.571,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.451,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.571,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.571,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-10",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.4758,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.4758,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.3558,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.4758,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.4758,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-13",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.5292,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.5292,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.4092,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.5292,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.5292,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-15",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.4041,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.4041,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.2841,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.4041,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.4041,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-16",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.4344,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.4344,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.3144,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.4344,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.4344,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-17",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.3546,
+      "name": "华明装备",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "002270.SZ",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.3546,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.2346,
+          "direction": "reduce"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.3546,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.3546,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-07",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.1899,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "negative",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.1899,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": -0.0699,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.1899,
+          "direction": "reduce"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.1899,
+          "direction": "reduce"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-08",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.1941,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.1941,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.3141,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.1941,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.1941,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-09",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.1964,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.1964,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.3164,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.1964,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.1964,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-10",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.0562,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.0562,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.1762,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.0562,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.0562,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-13",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0407,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0407,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0793,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0407,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0407,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-15",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0857,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0857,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0343,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0857,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0857,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-16",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.088,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.088,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.032,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.088,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.088,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-17",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": -0.0864,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "neutral",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": -0.0864,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.0336,
+          "direction": "watch"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": -0.0864,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": -0.0864,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-20",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.1008,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.1008,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.2208,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.1008,
+          "direction": "watch"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.1008,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-21",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.2712,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.2712,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.3912,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.2712,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.2712,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-22",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.322,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.322,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.442,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.322,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.322,
+          "direction": "watch"
+        }
+      }
+    },
+    {
+      "as_of_date": "2026-04-23",
+      "current_direction": "risk_alert",
+      "degrade_flags": [
+        "missing_news_evidence"
+      ],
+      "evidence_gap_penalty": 0.12,
+      "fusion_score": 0.2718,
+      "name": "中天科技",
+      "news_direction": "neutral",
+      "news_evidence_count": 0,
+      "price_direction": "positive",
+      "symbol": "600522.SH",
+      "variants": {
+        "current_hard_block": {
+          "adjusted_fusion_score": 0.2718,
+          "direction": "risk_alert"
+        },
+        "remove_hard_override_and_penalty": {
+          "adjusted_fusion_score": 0.3918,
+          "direction": "buy"
+        },
+        "remove_hard_override_keep_penalty": {
+          "adjusted_fusion_score": 0.2718,
+          "direction": "buy"
+        },
+        "watch_ceiling_keep_penalty": {
+          "adjusted_fusion_score": 0.2718,
+          "direction": "watch"
+        }
+      }
+    }
+  ],
+  "generated_at": "2026-04-27T16:28:50.811001+08:00",
+  "scope": {
+    "active_watchlist_symbols": [
+      "600522.SH",
+      "002028.SZ",
+      "002270.SZ"
+    ],
+    "include_history": true,
+    "selection_mode": "latest_per_symbol_as_of_day",
+    "symbols": [
+      "600522.SH",
+      "002028.SZ",
+      "002270.SZ"
+    ]
+  },
+  "summary": {
+    "excluded_record_count": 0,
+    "included_as_of_dates": [
+      "2026-04-07",
+      "2026-04-08",
+      "2026-04-09",
+      "2026-04-10",
+      "2026-04-13",
+      "2026-04-14",
+      "2026-04-15",
+      "2026-04-16",
+      "2026-04-17",
+      "2026-04-20",
+      "2026-04-21",
+      "2026-04-22",
+      "2026-04-23",
+      "2026-04-24",
+      "2026-04-27"
+    ],
+    "included_record_count": 45,
+    "missing_news_only_record_count": 28,
+    "missing_news_record_count": 28
+  },
+  "symbol_analysis": [
+    {
+      "missing_news_only_record_count": 8,
+      "name": "思源电气",
+      "record_count": 15,
+      "symbol": "002028.SZ",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 6,
+          "long_count": 7,
+          "reduce": 0,
+          "risk_alert": 8,
+          "watch": 1
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 7,
+          "long_count": 12,
+          "reduce": 3,
+          "risk_alert": 0,
+          "watch": 5
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 7,
+          "long_count": 11,
+          "reduce": 4,
+          "risk_alert": 0,
+          "watch": 4
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 6,
+          "long_count": 11,
+          "reduce": 4,
+          "risk_alert": 0,
+          "watch": 5
+        }
+      }
+    },
+    {
+      "missing_news_only_record_count": 8,
+      "name": "华明装备",
+      "record_count": 15,
+      "symbol": "002270.SZ",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 0,
+          "long_count": 4,
+          "reduce": 3,
+          "risk_alert": 8,
+          "watch": 4
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 0,
+          "long_count": 4,
+          "reduce": 11,
+          "risk_alert": 0,
+          "watch": 4
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 0,
+          "long_count": 4,
+          "reduce": 11,
+          "risk_alert": 0,
+          "watch": 4
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 0,
+          "long_count": 4,
+          "reduce": 11,
+          "risk_alert": 0,
+          "watch": 4
+        }
+      }
+    },
+    {
+      "missing_news_only_record_count": 12,
+      "name": "中天科技",
+      "record_count": 15,
+      "symbol": "600522.SH",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 2,
+          "long_count": 2,
+          "reduce": 1,
+          "risk_alert": 12,
+          "watch": 0
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 9,
+          "long_count": 14,
+          "reduce": 1,
+          "risk_alert": 0,
+          "watch": 5
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 7,
+          "long_count": 13,
+          "reduce": 2,
+          "risk_alert": 0,
+          "watch": 6
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 2,
+          "long_count": 13,
+          "reduce": 2,
+          "risk_alert": 0,
+          "watch": 11
+        }
+      }
+    }
+  ],
+  "variants": [
+    {
+      "buy_count": 8,
+      "changed_direction_count": 1,
+      "direction_counts": {
+        "buy": 8,
+        "reduce": 4,
+        "risk_alert": 28,
+        "watch": 5
+      },
+      "long_count": 13,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 0,
+      "promoted_from_risk_alert_count": 0,
+      "reduce_count": 4,
+      "risk_alert_count": 28,
+      "variant_id": "current_hard_block",
+      "watch_count": 5
+    },
+    {
+      "buy_count": 14,
+      "changed_direction_count": 29,
+      "direction_counts": {
+        "buy": 14,
+        "reduce": 17,
+        "watch": 14
+      },
+      "long_count": 28,
+      "missing_news_only_buy_count": 6,
+      "missing_news_only_long_count": 15,
+      "promoted_from_risk_alert_count": 15,
+      "reduce_count": 17,
+      "risk_alert_count": 0,
+      "variant_id": "remove_hard_override_keep_penalty",
+      "watch_count": 14
+    },
+    {
+      "buy_count": 8,
+      "changed_direction_count": 29,
+      "direction_counts": {
+        "buy": 8,
+        "reduce": 17,
+        "watch": 20
+      },
+      "long_count": 28,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 15,
+      "promoted_from_risk_alert_count": 15,
+      "reduce_count": 17,
+      "risk_alert_count": 0,
+      "variant_id": "watch_ceiling_keep_penalty",
+      "watch_count": 20
+    },
+    {
+      "buy_count": 16,
+      "changed_direction_count": 29,
+      "direction_counts": {
+        "buy": 16,
+        "reduce": 15,
+        "watch": 14
+      },
+      "long_count": 30,
+      "missing_news_only_buy_count": 8,
+      "missing_news_only_long_count": 17,
+      "promoted_from_risk_alert_count": 17,
+      "reduce_count": 15,
+      "risk_alert_count": 0,
+      "variant_id": "remove_hard_override_and_penalty",
+      "watch_count": 14
+    }
+  ]
+}

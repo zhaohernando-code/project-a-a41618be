@@ -1,242 +1,46 @@
 # PROCESS
 
-> Note: if older entries mention GitHub Pages or external dashboard hosting, treat them as historical context only. Current UI delivery is expected through the local self-hosted control plane.
+反回归笔记和可复用经验。状态快照见 PROJECT_STATUS.json。
 
-## 2026-04-14
+## 2026-04-29
 
-- Project scaffold created.
-- Commit ID: pending
+- **多账号回归要先分清“真串号”和“展示误导”**：这次 canonical 用户反馈里，后端隔离其实已经成立，`member` 的 watchlist/simulation 都是空白；真正误导来自前端把“当前账号自选”和“全局候选池”继续混在一个工作台里展示。排查顺序应先用直连或 canonical API 验证账号态，再决定是修数据层还是修呈现层。
+- **`act_as` 不应跨刷新保留**：root 代看别的账号空间时，如果把 `act_as` 持久化到 storage，用户稍后回到 root 页面会误以为“原持仓消失/复盘停止”。这类空间切换更适合单页内临时状态，刷新或重开标签后默认回到 actor 自己的空间。
+- **canonical member 验证不一定非靠手点 dropdown**：当浏览器自动化无法稳定选中账号切换器时，可以用真实根域签名 session 直接请求 canonical `/projects/ashare-dashboard/api/*`，再带 `X-Ashare-Act-As-Login` 验证 edge 注入和成员空间返回值。对这轮问题，这条路径足以证明 `member-a/amoeba` 的真实 canonical watchlist 为空且 simulation 仍是 draft。
 
-## 2026-04-22
+- **多账号隔离落地顺序**：先把身份上下文和数据归属改完，再改前端初始化。member 一旦还沿用旧的 `loadRuntimeSettings()` 启动顺序，就会在 `/settings/runtime` 上直接 403，造成整页白屏；正确顺序必须是 `/auth/context` → root 走 `/settings/runtime`，member 走 `/runtime/overview`。
+- **关注池隔离不能等于分析断流**：自选列表要按账号隔离，但 symbol 级日更/分析资格必须按所有账号 active follows 的并集判断。移除某账号关注时只能删除该账号 follow；只有最后一个 follow 消失时，才允许全局 `watchlist_entries` 失去 active tracking。
+- **模拟盘空白首登约束**：member 首次进入必须拿到独立 draft session，但 `can_start` 不能在空 `watch_symbols` 上误报 true。后端要同时在 workspace controls 和 `start_simulation_session()` 上都加护栏，避免 UI 隐藏了按钮但 API 仍可启动空 session。
+- **局部回归要去掉重 fixture 依赖**：当前仓里已有一组与本次任务无关的 signal-engine fixture 回归（`build_signal_artifacts -> _fusion_state(...)` 参数漂移）。新增多账号测试如果继续复用 `seed_watchlist_fixture()`，会在进本次逻辑前先被旧回归拦住；这种情况下应改成最小自包含测试，只覆盖本轮 contract。
+- **移动端设置 affordance**：只读状态行不能默认带右箭头；只有真实可操作且已接 handler/API 的项目才显示导航 affordance。二态偏好优先用 `Switch`，多选或模型选择才进入二级菜单。
+- **移动端滑动操作视觉**：左滑删除这类 destructive action 的红色背景只能在展开状态出现；闭合态要避免卡片抗锯齿透出红色，展开态要取消卡片相邻侧圆角，避免出现双圆角边框。滑动释放后需吞掉下一次 click，防止误打开详情。
+- **浏览器自动化恢复**：Playwright CLI 验收后必须运行 `scripts/cleanup-browser-automation.sh`。清理范围只包括 `playwright-core` daemon 和 `playwright_chromiumdev_profile-*` Chrome，不能 `pkill Chrome` 误伤用户普通浏览器。
+- **移动端 app 化边界**：手机端不要把 PC 工作台继续压缩或在 `App.tsx` 堆 `isMobile` JSX。正确做法是 `App.tsx` 保持数据/handler 薄入口，移动端进独立 `components/mobile/*` shell；复盘页禁止复用 PC 宽表，必须用移动端卡片/列表表达同一数据。
+- **Pydantic + future annotations 陷阱**：不要同时使用 `from __future__ import annotations` 和 `TYPE_CHECKING` 导入跨模块 Pydantic 类型。Pydantic v2 的 `model_rebuild()` 使用模块自身的 `sys.modules[module].__dict__` 解析前向引用，TYPE_CHECKING-only 类型不在该命名空间中。循环依赖时在 `__init__.py` 所有模块加载后注入类型并调用 `model_rebuild()`。
+- **bash 脚本拼接陷阱**：不要用 `.join("; ")` 拼接数组生成 bash 命令，多余分号（如 `do;`、`then;`）会导致语法错误。改用字符串拼接，并对产物跑 `bash -n` 检查。
+- **API 错误响应 key 约定**：JSON 错误响应用 `detail` 而非 `error`，前端 `core.ts` 只提取 `payload.detail` 展示给用户。key 用错会导致前端显示裸 HTTP 状态码而非中文提示。
+- **LaunchAgent 配置规范**：定时任务用 `RunAtLoad` + `StartInterval`（或 `StartCalendarInterval`），服务进程用 `RunAtLoad` + `KeepAlive`。`StartInterval=300` 无法精确命中特定时钟分钟（如 08:10），需同时配置 `StartCalendarInterval` 数组。
+- **SSH 隧道自愈**：隧道重连失败时先检查远端端口是否被旧 sshd 占坑；清理脚本失败时优先排查 bash 语法。隧道进程需自愈重连循环（指数退避），不能遇错即退。
 
-- Problem: 本地发布会复用长生命周期的 baseline worktree；一旦该工作树残留了 `frontend/node_modules` 这类依赖符号链接，通用的目录忽略规则 `node_modules/` 不会命中这个 symlink，`git status` 就会把它当未跟踪文件，导致 auto-publish 反复以“无可提交变更但有脏工作树”失败。
-- Resolution: 为前端依赖路径补了精确忽略规则 `frontend/node_modules`，并清理 baseline worktree 里的残留依赖链接，让发布基线重新只反映仓库内真实改动。
-- Prevention: 以后凡是会在工作树内出现的依赖缓存、构建产物或符号链接，不能只依赖“目录型”忽略规则；如果发布/基线工作树可能残留 symlink，必须显式忽略该路径或把依赖放到仓库外。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog publish-state remediation
+## 2026-04-28
 
-- Problem: 前端依赖 `echarts` 在当前镜像源安装结果里缺少 `package.json` 声明的顶层 `index.d.ts`；若只补一个宽泛的 `export *` shim，`tsc` 仍可能在 `import * as echarts` 这类命名空间导入上丢失 `init` 等成员，继续把发布卡在 build gate。
-- Resolution: 在仓内保留显式 `echarts` 类型 shim，把声明直接落到包内真实存在的 `echarts/types/dist/echarts.d.ts`，并在业务代码里优先使用与该声明一致的命名导入，而不是继续依赖脆弱的命名空间导入推断。
-- Prevention: 后续为第三方库补本地类型入口时，不能只验证“声明文件能找到”；还必须用项目里的真实导入方式跑一次最小化类型检查，确认命名空间导入、命名导入或默认导入和 shim 形态一致，避免把不完整的兜底声明再次带进发布链路。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=watchdog build remediation
+- **live-facing 任务完成定义**：repo 改动 → 测试 → publish → runtime refresh → 真实浏览器验收。缺任一步都不能算完成。
+- **浏览器验收优先用 Safari**。Chrome 出现旧缓存页/空白页/异常 profile，但 curl/health/assets 正常时，直接切 Safari 复核。
+- **canonical "打不开" 三步排查**：(1) `localhost 5173/8000` 是否健康？(2) canonical 是否只是 302 回登录页？(3) `com.codex.project-tunnel.ashare-dashboard` 是否被远端旧端口占坑？
+- **canonical stale 排查**：先查 tunnel / remote port ownership，不要先误判为 repo 或 runtime 代码失效。
+- **DeepSeek timeout 排查**：先对照运行时 `urlopen(..., timeout=...)` 阈值，再判断 provider 故障。当前机器默认代理链路对 DeepSeek 比显式 no-proxy 更稳，不能想当然把"走代理"当根因。
+- **simulation 刷新**：不允许只 restart session，必须 `restart → step → rebuild`。持续运行时用"交易时段后台 tick + 单次 anchored step"，不要复用研究刷新链路。
+- **Phase 5 holding-policy artifact**：必须容忍 payload 里 legacy `backtest_artifact_id` 漂移，优先使用真实存在的 artifact。
+- **historical validation**：不能复用 `as_of_data_time` 之后的 future exit bars，否则 horizon study 会被未来泄漏污染。
+- **盘后 freshness 文案**：用户可见层用 `截至 MM/DD HH:MM` 快照表达，不显示原始秒数。
+- **follow-up prompt**：不要把 recommendation 结论前置成"答案模板"，先给事实、验证状态和冲突要求，系统结论放最后。
+- **运营复盘文案**：同一状态优先压成一条摘要，不在多个位置重复堆叠。
+- **Safari 缓存**：Safari 可能保留旧标签页内存态，页面自相矛盾时先刷新再判断。
+- **dirty worktree 发布**：应通过临时干净快照仓执行，manifest 路径写回 durable docs。
 
-## 2026-04-14
+## 2026-04-27 之前
 
-- Problem: 免费 A 股数据源在授权、稳定性、字段覆盖和新闻可分发性上差异很大，若不先做基线评估，后续数据底座和建议引擎会反复返工。
-- Resolution: 完成了行情、财务、板块、公告、新闻与量化框架的分层评估，明确一期采用 `Tushare Pro + 巨潮资讯 + Qlib` 的低成本主路线，并要求在数据底座内置 `license_tag`、`source_lineage` 和可替换适配层。
-- Prevention: 以后涉及金融数据接入时，先确认来源授权、付费模式、升级触发条件和字段级展示边界，再开始表结构与采集实现。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=数据与开源基线评估
-
-## 2026-04-14
-
-- Problem: project flow research outputs had completed in the step worktree, but the project repository was never provisioned and the successful research result was not synchronized back into the canonical project baseline.
-- Resolution: Synced the latest research artifacts back into the project root, created the GitHub repository `zhaohernando-code/project-a-a41618be`, and prepared the project state to continue from the post-research decision gate.
-- Prevention: Auto-created repositories now use a stable GitHub-safe ASCII name, trust the repository creation response directly, and internal project steps no longer fail just because no origin was configured.
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, source=local remediation
-
-## 2026-04-15
-
-- Problem: 第 2 步需要先把“建议可回溯”固化为底层 schema，否则后续接入真实 Tushare / 巨潮 / Qlib 时容易把证据字段散落在业务代码里，导致第 3 步建模和第 4 步解释页重复返工。
-- Resolution: 新建了 `ashare_evidence` 后端包，落地了统一 lineage mixin、SQLAlchemy 域模型、demo provider、采集服务、trace API/CLI 和 unittest。当前已能把一条建议追溯到行情、公告、板块、特征、模型版本、提示词版本和模拟成交。
-- Prevention: 后续所有真实 provider 都必须沿当前 contract 输出强制血缘字段，禁止在第 3 步绕开 `recommendation_evidence` 或单独存放无版本的建议文本。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=证据化数据底座
-
-## 2026-04-15
-
-- Problem: 初版 `lineage_hash` 只基于局部 payload 计算，导致不同模拟成交在 payload 模板相同时可能出现同一 hash，审计粒度不足。
-- Resolution: 调整为对完整规范化记录计算 `lineage_hash`，并在测试中补充模拟成交 hash 不同的断言。
-- Prevention: 以后新增任何证据记录时，hash 计算必须覆盖完整业务字段，不能只覆盖局部附加 payload。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=证据化数据底座
-
-## 2026-04-15
-
-- Problem: 第 3 步如果继续沿用静态 demo recommendation，就无法证明“价格基线 / 新闻因子 / LLM 因子 / 融合评分 / 降级规则”这条链路已经真正落地，后续接真实 provider 时会再次返工。
-- Resolution: 新增 `signal_engine`，把 demo provider 改造成“原始行情和新闻证据 -> 因子快照 -> horizon 模型结果 -> recommendation”的可执行链路，并把 `confidence_expression`、`downgrade_conditions`、`factor_breakdown`、`validation_snapshot` 直接暴露到 API/CLI。
-- Prevention: 后续接入真实 `Tushare / 巨潮 / Qlib` 或真实 LLM 时，必须沿当前 signal engine contract 接入，禁止重新回到在 provider 中手写 recommendation 文本的方式。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=信号建模与建议引擎
-
-## 2026-04-15
-
-- Problem: 如果用户看板阶段仍让前端自行拼接 recommendation、trace、行情、新闻和术语解释，后续一旦 recommendation schema 或风控口径变化，候选页、单票页和 GPT 追问入口会一起返工。
-- Resolution: 新增 `dashboard_demo.py` 和 `dashboard.py`，把多股票 watchlist、上一版/当前版建议、变化原因、风险面板、术语解释和 GPT 追问上下文统一下沉为后端 contract；同时新增 `frontend/` 的 `Vite + React + TypeScript` 工程直接消费这些接口。
-- Prevention: 后续接真实数据或真实 GPT 服务时，继续沿当前 `/dashboard/candidates`、`/stocks/{symbol}/dashboard` 和 `copy_prompt/evidence_packet` 结构扩展，避免把解释逻辑重新散落到前端。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
-
-## 2026-04-15
-
-- Problem: 当前环境里的 `npm` 实际运行在 Node 16，直接使用 `Vite 5` 会触发 engine 不兼容，影响前端 build 验证。
-- Resolution: 将前端工具链调整为 `Vite 4` 兼容组合，并把构建脚本改为 `tsc --noEmit -p tsconfig.app.json && vite build`，避免产生额外的编译输出文件。
-- Prevention: 以后新建前端工程前先确认 `node` 与 `npm` 实际版本，优先选取与当前运行时兼容的 Vite/插件组合。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=用户看板与解释闭环
-
-## 2026-04-15
-
-- Problem: 第 6 步需要给组合层补历史净值、收益归因和建议命中复盘，但如果把历史 seed 订单也直接挂到当前 recommendation 上，单票 trace 会被旧订单污染，用户无法分清“当前建议触发的订单”和“组合历史仓位”。
-- Resolution: 调整 `ingest_bundle`，只有 `order_record.recommendation_key` 与当前 recommendation 精确匹配时，订单才写入 `recommendation_id`；历史 seed 订单仅用于组合运营面板和回撤/基准演算。
-- Prevention: 以后新增任何模拟交易历史样本时，都要显式区分 recommendation-linked orders 与 portfolio-history orders，禁止默认把同 bundle 内的所有订单都挂到当前 recommendation。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
-
-## 2026-04-15
-
-- Problem: 前端新增“模拟交易与内测”视图时，当前 worktree 里没有 `node_modules`，直接 `npm run build` 会因为找不到本地 `tsc` 而失败。
-- Resolution: 使用本机缓存执行 `npm install --prefer-offline --no-audit --fund=false` 补齐依赖后重新 build，确认 `Vite + React + TypeScript` 前端可以成功产出静态包。
-- Prevention: 以后在新 worktree 验证前端改动前，先确认依赖目录是否已准备好；若网络受限，优先尝试 `--prefer-offline` 走本机缓存。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
-
-## 2026-04-15
-
-- Problem: 并发对同一个 SQLite 文件同时执行 `load-dashboard-demo` 与查询命令时，`create_all()` 之间会发生建表竞态，触发 `table stocks already exists`。
-- Resolution: 本轮验证改为串行初始化和查询，避免把第 6 步的运营面板结果建立在竞态数据库上。
-- Prevention: 后续若要并发验证多个 CLI，使用不同的临时数据库文件，或先单独完成初始化再并发读写。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=分离式模拟交易与内测准入
-
-## 2026-04-15
-
-- Problem: 验收环境里的前端部署虽然能访问，但候选股、单票分析、运营看板和 demo 初始化都硬依赖在线 API；一旦后端不可达，GitHub Pages 页面就失去核心功能，无法形成最小可用闭环。
-- Resolution: 新增 `frontend_snapshot` 导出器，把现有 dashboard contract 直接生成前端离线快照；前端改成“在线 API / 离线快照”双模式，并用 `Ant Design` 重构顶部操作面板与三大主视图。
-- Prevention: 以后所有静态部署前端如果依赖独立后端，都必须提前设计离线降级路径或可演示的内置快照，验收文档里必须给出不依赖隐含环境的实际操作步骤。
-- Note: 本轮仍无法执行 `git add -A`，同样受限于 `.git/worktrees/.../index.lock` 无法创建。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-15
-
-- Problem: 候选股列表之前完全依赖固定 demo watchlist，导致用户无法把自己的股票纳入候选池，也无法在加入后自动生成单票分析和候选排序。
-- Resolution: 新增持久化 `watchlist_entries`、`/watchlist` 增删改接口、动态股票场景生成器和前端自选池操作区；现在输入股票代码后会立即生成上一版/当前版 recommendation，并同步进入候选股、单票分析和离线快照 contract。
-- Prevention: 以后任何“自选池”需求都必须先落到可持久化的 watchlist 模型和统一分析入口，不能再只在前端维护一份静态 symbol 列表。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-15
-
-- Problem: 在线模式之前只读取构建时的 `VITE_API_BASE_URL`，页面里只有 `access key` 输入，没有后端地址配置入口；用户切到在线 API 后并不知道应该填什么地址，也无法在已部署页面上自行接入后端。
-- Resolution: 前端新增运行时 `API Base URL` 配置，持久化到 `localStorage`，并在顶部“在线接入”里同时暴露后端地址、access key、恢复默认和明确提示文案，说明这里填写的是本项目后端地址，例如 `http://127.0.0.1:8000`，不是第三方行情或模型 API。
-- Prevention: 以后凡是前后端分离的静态前端，只要支持“在线模式”，就必须同时提供运行时的后端地址配置入口和示例地址，不能只依赖构建时环境变量。
-- Note: 本轮再次尝试 `git add` / `git commit`，仍然因为 `.git/worktrees/task-mnzv6k65-yigow8/index.lock` 无法创建而失败，提交与推送继续阻塞在 worktree 元数据写权限。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-15
-
-- Problem: 顶部 `候选股 / 当前焦点 / 最近刷新` 使用大号 `Statistic` 卡片并以 `2x2` 排列，头部高度被无效信息占据，压缩了真正的操作区。
-- Resolution: 将顶部统计改为自定义紧凑指标条，缩小标题和数值字号、卡片内边距与整体 topbar 间距，并把桌面端统计区调整为四列、移动端调整为两列回落。
-- Prevention: 后续新增顶部摘要信息时，优先采用紧凑指标或标签式表达，避免把非核心摘要做成大号展示卡片。
-- Note: 当前 worktree 仍无法创建 `.git/worktrees/.../index.lock`，本轮变更已完成并验证，但不能在该环境内执行 commit / push。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-15
-
-- Problem: 顶部 `候选股 / 当前焦点 / 最近刷新` 在返修后仍然偏高，标签与数值上下堆叠导致头部继续占据过多垂直空间。
-- Resolution: 进一步压缩 `workspace-topbar` 的 padding、间距与标题说明字号，并把顶部摘要改成单行横向指标条，收紧标签/数值字号、圆角和内边距。
-- Prevention: 后续顶部摘要默认先用单行指标条验证信息密度；如果一组信息不驱动操作，不再给它独立的大高度卡片。
-- Validation: `cd frontend && npm ci && npm run build`
-- Note: 本轮尝试 `git add` / `git commit` 仍失败，worktree 不能创建 `.git/worktrees/task-mnzvewru-wx9o5x/index.lock`。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-15
-
-- Problem: 用户在静态前端里想用“自选模式”时，仍被迫理解并配置“在线 API”，实际又分不清这里指的是项目后端还是第三方行情接口，导致自选池在无后端地址时近乎不可用。
-- Resolution: 前端新增浏览器本地离线自选池，离线模式下也支持新增/移除/重分析股票，并在前端本地生成同结构演示分析；同时把文案统一改成“在线 API = 本项目后端，不是 Tushare/AkShare/OpenAI”。
-- Prevention: 后续凡是带离线演示能力的前端，只要存在用户写操作，就必须明确提供“本地模式”或“项目后端模式”二选一，不能再把核心操作默认锁死到隐含后端配置上。
-- Validation: `cd frontend && npm ci --prefer-offline --no-audit --fund=false && npm run build`; `PYTHONPATH=src python3 -m unittest discover -s tests`
-- Note: 当前 worktree 仍未验证 git 提交链路，历史问题仍是 `.git/worktrees/.../index.lock` 写权限受限。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=Address acceptance feedback
-
-## 2026-04-19
-
-- Problem: 控制中台里的工具入口仍显示“当前工具还在补齐交付物，暂时不能直接打开”，但 `ashare-dashboard` 实际已经具备 `frontend/package.json`、GitHub Pages workflow 和本地可服务的静态产物，问题不在业务项目缺交付，而在控制台仍把 `self_hosted + pending` 的工具一律拦截。
-- Resolution: 核对了运行态项目记录与已发布静态包，确认当前真正缺的是过时的 `deployment_ready` 门禁；随后刷新控制台发布包，放行 `self_hosted` 且未失败的工具直接打开本地 `/tools/<id>`，避免把已本地发布的项目继续挡在入口页。
-- Prevention: 后续控制台对 UI 项目的可打开判定，不能只依赖陈旧的 `deploymentStatus`；只要存在可服务的本地构建产物且部署提供方为 `self_hosted`，就应优先放行本地工具路由。
-- Validation: `cd /root/codex/release/.codex-system/worktrees/dashboard-ui/task-mo5avwpw-gox7nh && npm install --prefer-offline --include=dev --no-audit --fund=false && npm run build`
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=tool-entry remediation
-
-## 2026-04-21
-
-- Problem: 运行时配置页先展示了 `AKShare` 的“待配置”入口，但后端并没有真实适配器，导致用户误以为只差前端配置；在自托管模式下，这类“前端先行”会掩盖服务端未接通的真实缺陷。
-- Resolution: `AKShare` 已接入后端主数据解析链，`stock_master` 现在会在无 `Tushare` token 时按真实适配器查询 `stock_individual_info_em` 解析股票简称、行业和上市时间；运行态状态也改为按后端适配器真实可用性展示，而不是把未接入能力伪装成“待配置”。
-- Prevention: 以后任何数据源、模型、配置面板或服务开关，只有在后端适配器、验证链路和发布路径都已落地后，前端才能展示入口或状态；若后端尚未接通，UI 必须明确标记为未接入，不能把缺失实现包装成用户可配置项。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=runtime provider integration discipline
-
-## 2026-04-21
-
-- Problem: 部署环境已经从 GitHub Pages 迁移到自托管服务器，但项目仍保留“在线 API / 离线快照”双模式、浏览器本地自选池和用户侧在线接入配置，这些静态站假设与新的服务端真实数据模式冲突。
-- Resolution: 前端收口为统一服务端模式；新增 `app_settings`、`provider_credentials`、`model_api_keys` 三类 SQLite 配置实体；新增 `/settings/runtime`、模型 Key 管理、数据源凭据管理和 `/analysis/follow-up` 分析接口；补齐 `AKShare + Tushare` 统一字段映射摘要、`Redis` 关注池缓存 TTL 和模型 Key 默认/显式选择/故障切换逻辑。
-- Prevention: 后续凡是部署形态已经确定为自托管服务器的项目，不再为了静态演示保留离线快照主路径；如果必须保留历史快照工具，也要明确它是非主链路并从 UI 和验收文档中移除。
-- Validation: `python3 -m py_compile src/ashare_evidence/models.py src/ashare_evidence/runtime_config.py src/ashare_evidence/llm_service.py src/ashare_evidence/api.py src/ashare_evidence/operations.py src/ashare_evidence/schemas.py tests/test_runtime_config.py`; `cd frontend && npm run build`
-- Note: `PYTHONPATH=src python3 -m unittest discover -s tests` 仍无法执行，原因是当前沙箱缺少 `fastapi`、`sqlalchemy` 等依赖且网络受限，无法安装。
-- Commit ID: pending
-- Context: project=一个关于a股的当前数据和投资建议看板, step=deployment-migration refactor
-
-## 2026-04-21
-
-- Problem: 在自托管工具路由下，前端仍允许历史 `API Base` 覆盖值优先于当前挂载路径，导致页面即使已经从 `/tools/ashare-dashboard` 提供，也可能继续把请求打到过时的 `:8000` 或别的旧地址；与此同时，若控制台没有真正托管后端进程，前端回退再多次也无法修复线上页面。
-- Resolution: 前端 API 基址探测现在优先使用当前工具挂载路径推导出的 `/tools/ashare-dashboard/api/*`，把历史本地覆盖值降级为次选；同时由控制台负责在该工具路由后启动并代理真实后端，而不是让页面自己猜测后端位置。
-- Prevention: 自托管服务端模式下，项目必须只有一个控制面拥有的规范 API 入口，前端只能把浏览器里的历史覆盖值当调试兜底，不能让它覆盖当前真实部署路径。
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 前端 API 探测只命中单一路径时，遇到代理/部署基址偏差会返回 `Tool not found`（被当作致命错误），导致看板持续“面板加载失败”。
-- Resolution: 恢复前端 `API Base` 的路径回退策略：对每个候选基址先尝试 `base/api/{path}` 再尝试 `base/{path}`，并在无显式基址时保留当前的 `/api` 回退，以减少“静态路由误伤”导致的线上红屏。
-- Prevention: 任何服务端模式前端在无显式基址时，都应保留 `/<api-prefix>` 与 `/<raw>` 的双探测路径；仅在基址明确且稳定后才允许缩减探测。
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: `404 JSON` 响应（含 `Not Found` / `tool not found`）在仍有备选 API 地址时会被直接抛错，导致基址前缀猜测失败后没有继续尝试下一条请求。
-- Resolution: 前端 `request` 改为对 `404` 与可疑“未找到”响应统一走探测回退，并放宽 `HTML` 回退条件，不再仅依赖未显式基址。
-- Prevention: API 层只要存在多个候选地址，路由级 404 应按“继续探测”处理；`/api` 与非 `/api` 前缀应同时保留，直到确认后端稳定。
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 原来的“运营复盘/手动模拟”只有两个静态组合快照和聚合审计指标，没有真正的模拟会话、共享时间线和控制按钮，用户虽然能看结果，却无法在同一时间节点下把“我怎么做”与“模型怎么做”持续对比，也无法恢复暂停中的进程。
-- Resolution: 新增持久化 `simulation_sessions + simulation_events` 状态机，把双轨模拟收口为单个可恢复会话；前端运营页也改成围绕该会话的启动/暂停/单步推进/重启/结束、手动下单、模型建议、K 线和时点差异工作台。
-- Prevention: 以后凡是“手动 vs 模型”这类长期模拟需求，不能再只用两个 `paper_portfolios` 拼出结果页；必须先定义会话实体、共享时间线、控制动作和统一事件留痕，再让组合汇总挂在会话之下。
-- Validation: `PYTHONPATH=src .venv/bin/python -m unittest tests.test_dashboard_views tests.test_simulation_workspace`; `cd frontend && npm run build`
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 用户新增自选股时，未知代码会落入演示用动态场景生成器的随机行业模板，导致真实股票可能被错误展示为 `医药生物` 等无关板块；而且一旦错误板块已写入库，后续修正后旧 `sector_membership` 仍可能继续参与候选页排序与展示。
-- Resolution: 自选新增链路现在先走主数据解析层，优先读取本地已知映射并支持按已配置 `Tushare` 凭据调用 `stock_basic` 获取真实 `name / industry / list_date`；拿不到真实行业时改用中性“待确认行业”而不是随机板块；重分析前还会把当前股票上不再属于新结果的旧行业归属标记失效。
-- Prevention: 以后任何“用户输入证券代码 -> 自动生成分析”的链路，都不能直接把演示模板当真实主数据；未知标的宁可明确标记“待确认”，也不能随机给出具体行业；同时修正主数据时必须同步处理历史残留归属，避免“新旧行业并存”。
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 详情页和运营面板之前沿用了“候选股榜单里的当前 symbol”作为焦点来源；当用户自选变更后，如果新标的不在候选前列或前端还握着一个过期 symbol，模拟仓面板就可能继续盯旧票，甚至因为无效 `sample_symbol` 让 `/dashboard/operations` 降级失败。
-- Resolution: 前端当前焦点改为优先从实际自选池续接；后端运营面板对 `sample_symbol` 做了自选池内回退，不再让仅用于体积测量的 symbol 选择影响组合看板主响应。
-- Prevention: 以后凡是“自选池 + 候选排序 + 单票详情/运营面板”并存的页面，焦点 symbol 的真相必须来自当前自选池；榜单排序只能影响展示顺序，不能决定状态续接或让无效 symbol 打断主面板。
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 运营复盘页把双轨模拟台当成必成功的阻塞依赖；一旦 `/simulation/workspace` 失败，前端会吞掉错误后一直停在骨架屏。同时后端在构建模拟工作区时会按全量 `MarketBar` 重算行情历史，数据量一上来就容易把“看起来卡住”放大成真实超时。
-- Resolution: 运营复盘改成“运营概览”和“双轨模拟台”分开加载，任何一侧失败都要在页面内明确提示并允许重试，而不是继续假装加载中；后端行情历史聚合也收窄到当前自选池/会话股票池，并对缺失价格序列做容错。
-- Prevention: 以后聚合型工作区不能把次级面板的失败伪装成全页 loading；所有重算链路都要先按当前上下文裁剪数据范围，再考虑展示层拼装。
-- Validation: `cd frontend && npm run build`; `python3 -m py_compile src/ashare_evidence/operations.py src/ashare_evidence/simulation.py src/ashare_evidence/api.py`
-- Commit ID: pending
-
-## 2026-04-21
-
-- Problem: 运营复盘页首次进入时并发请求 `/dashboard/operations` 和带写入副作用的 `/simulation/workspace`；在 SQLite/低 IOPS 场景下，这种“读面板 + GET 内建档”并发很容易放大成锁等待或超时，最终前端只能看到“双轨模拟台暂时不可用”的假降级。
-- Resolution: 运营复盘首屏改为单次工作区请求，由 `/dashboard/operations` 直接内嵌模拟工作区；同时模拟工作区内部复用同一份行情上下文，不再为用户轨道和模型轨道重复扫描一次历史价格。
-- Prevention: 以后只要 GET 接口会隐式建档、补状态或写留痕，就不能和同页其他聚合 GET 并发触发；这类首屏工作区要么合并成单个 contract，要么先消除 GET 写入副作用，再谈并发加载。
-- Commit ID: pending
+- **项目入口**：固定以 PROJECT_STATUS.json、DECISIONS.md 为主，不回到根目录散落 phase 文档模式。
+- **"统一账号"三层边界**：谁发身份、谁消费身份、谁负责路由授权。任一层仍是单账号就不能描述为"已支持多账户"。
+- **"系统能力"三层归属**：每项能力必须说明属于 Web 控制面、会话工具、还是本机 CLI/脚本，不能因中台有按钮就假设当前环境也有同样入口。
+- **Phase 5 真值源**：以 runtime DB 为准，repo 本地库不再当作 live 评估的替代品。

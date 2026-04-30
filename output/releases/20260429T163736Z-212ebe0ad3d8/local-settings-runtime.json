@@ -1,0 +1,153 @@
+{
+  "anti_stampede": {
+    "empty_result_ttl_seconds": 15,
+    "jitter_ratio": 0.2,
+    "lock_timeout_seconds": 8,
+    "serve_stale_on_error": true,
+    "singleflight": true
+  },
+  "cache_backend": "Redis",
+  "cache_policies": [
+    {
+      "dataset": "quote",
+      "label": "实时行情",
+      "stale_if_error_seconds": 30,
+      "ttl_seconds": 5,
+      "warm_on_watchlist": true
+    },
+    {
+      "dataset": "kline",
+      "label": "K线数据",
+      "stale_if_error_seconds": 300,
+      "ttl_seconds": 60,
+      "warm_on_watchlist": true
+    },
+    {
+      "dataset": "financial_report",
+      "label": "财报数据",
+      "stale_if_error_seconds": 172800,
+      "ttl_seconds": 86400,
+      "warm_on_watchlist": true
+    }
+  ],
+  "data_sources": [
+    {
+      "base_url": null,
+      "credential_configured": false,
+      "credential_required": false,
+      "docs_url": "https://akshare.akfamily.xyz/data/stock/stock.html",
+      "enabled": true,
+      "freshness_note": "A 股实时行情可直接抓取公开站点封装结果；部分历史/复权字段需注意口径差异。",
+      "intraday_runtime_ready": true,
+      "intraday_status_label": "分钟兜底可用",
+      "notes": [
+        "AKShare 实时行情文档展示 `stock_zh_a_spot_em` 和分钟线 `stock_zh_a_hist_min_em`。",
+        "AKShare 文档特别提示 `stock_zh_a_hist` 后复权历史上可能出现负值，需要领域层显式标记复权口径。"
+      ],
+      "provider_name": "akshare",
+      "role": "实时行情与公开站点补缺",
+      "runtime_ready": true,
+      "status_label": "已接入",
+      "supports_intraday": true
+    },
+    {
+      "base_url": null,
+      "credential_configured": false,
+      "credential_required": true,
+      "docs_url": "https://tushare.pro/document/2?doc_id=27",
+      "enabled": true,
+      "freshness_note": "日线 `daily` 为交易日 15:00-16:00 入库；财务指标 `fina_indicator` 随财报实时更新。",
+      "intraday_runtime_ready": false,
+      "intraday_status_label": "实时分钟需权限",
+      "notes": [
+        "Tushare `daily` 文档说明是未复权行情；复权需使用 `pro_bar`。",
+        "Tushare `daily_basic` 与 `fina_indicator` 适合作为结构化财务与换手率补充。"
+      ],
+      "provider_name": "tushare",
+      "role": "日线/K线、财报与结构化指标",
+      "runtime_ready": false,
+      "status_label": "需 Token",
+      "supports_intraday": true
+    }
+  ],
+  "default_model_api_key_id": 1,
+  "deployment_mode": "self_hosted_server",
+  "deployment_notes": [
+    "前端不再暴露离线快照和在线 API 模式切换，统一走服务端真实数据链路。",
+    "一期持久化以 SQLite 为主，后续通过仓储边界平滑切换到更重的 SQL 方案。"
+  ],
+  "field_mappings": [
+    {
+      "akshare_field": "最新价",
+      "canonical_field": "last_price",
+      "dataset": "quote",
+      "notes": "实时行情统一为 latest price，盘后可回落到最新日线 close。",
+      "tushare_field": "close / price"
+    },
+    {
+      "akshare_field": "换手率",
+      "canonical_field": "turnover_rate_pct",
+      "dataset": "quote",
+      "notes": "统一使用百分比口径，进入领域层前不再保留源端差异。",
+      "tushare_field": "turnover_rate"
+    },
+    {
+      "akshare_field": "日期 / 时间",
+      "canonical_field": "trade_time",
+      "dataset": "kline",
+      "notes": "统一写成 Asia/Shanghai 语义的观测时间戳。",
+      "tushare_field": "trade_date / time"
+    },
+    {
+      "akshare_field": "adjust",
+      "canonical_field": "adjustment",
+      "dataset": "kline",
+      "notes": "统一为 none/qfq/hfq，禁止把 provider 原始枚举泄漏到业务层。",
+      "tushare_field": "pro_bar adj"
+    },
+    {
+      "akshare_field": "REPORT_DATE / 日期",
+      "canonical_field": "report_period",
+      "dataset": "financial_report",
+      "notes": "统一使用报告期，不直接依赖单个源的公告字段命名。",
+      "tushare_field": "end_date"
+    },
+    {
+      "akshare_field": "营业总收入 / 营业收入",
+      "canonical_field": "revenue",
+      "dataset": "financial_report",
+      "notes": "统一先落标准字段，再把源字段保存在 raw_payload。",
+      "tushare_field": "total_revenue / revenue"
+    }
+  ],
+  "generated_at": "2026-04-29T16:37:59.139326Z",
+  "llm_failover_enabled": true,
+  "model_api_keys": [
+    {
+      "base_url": "https://api.deepseek.com",
+      "created_at": "2026-04-27T15:16:44.917525",
+      "enabled": true,
+      "id": 1,
+      "is_default": true,
+      "last_checked_at": "2026-04-28T02:47:20.218032",
+      "last_error": null,
+      "last_status": "healthy",
+      "masked_key": "sk-d...18da",
+      "model_name": "deepseek-v4-pro",
+      "name": "deepseek-v4-pro",
+      "priority": 100,
+      "provider_name": "deepseek",
+      "updated_at": "2026-04-28T02:47:20.228823"
+    }
+  ],
+  "provider_cooldown_seconds": 30,
+  "provider_credentials": [],
+  "provider_order": [
+    "akshare",
+    "tushare"
+  ],
+  "provider_selection_mode": "runtime_policy",
+  "storage_engine": "SQLite",
+  "watchlist_cache_only": true,
+  "watchlist_scope": "global_shared_pool"
+}

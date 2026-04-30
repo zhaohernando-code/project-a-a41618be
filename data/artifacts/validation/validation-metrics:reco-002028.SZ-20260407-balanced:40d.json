@@ -1,0 +1,76 @@
+{
+  "artifact_id": "validation-metrics:reco-002028.SZ-20260407-balanced:40d",
+  "bucket_returns": [
+    {
+      "bucket": "bottom",
+      "mean_excess_return": 0.295977,
+      "sample_count": 21
+    },
+    {
+      "bucket": "middle",
+      "mean_excess_return": 0.256667,
+      "sample_count": 21
+    },
+    {
+      "bucket": "top",
+      "mean_excess_return": 0.007857,
+      "sample_count": 22
+    }
+  ],
+  "bucket_spread_mean": -0.28812,
+  "bucket_spread_std": 0.249083,
+  "coverage": 1.0,
+  "coverage_ratio": 1.0,
+  "feature_drift_summary": {
+    "coverage_status": "full_baseline",
+    "evaluation_observation_count": 84,
+    "feature_snapshot_count": 684,
+    "horizon": 40,
+    "status": "stable_fixture_snapshot"
+  },
+  "horizon": 40,
+  "ic_mean": 0.475569,
+  "industry_slice_metrics": [],
+  "manifest_id": "rolling-validation:reco-002028.SZ-20260407-balanced",
+  "market_regime_metrics": [
+    {
+      "coverage_status": "full_baseline",
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "net_excess_return": 0.183915,
+      "rank_ic_mean": -0.524863
+    }
+  ],
+  "net_excess_return": 0.183915,
+  "period_metrics": [
+    {
+      "horizon": 40,
+      "mean_excess_return": 0.184037,
+      "mean_return": 0.184037,
+      "sample_count": 64,
+      "walk_forward_window_count": 25
+    }
+  ],
+  "positive_excess_rate": 0.78125,
+  "rank_ic_ir": -8.0,
+  "rank_ic_mean": -0.524863,
+  "rank_ic_std": 0.065608,
+  "sample_count": 64,
+  "status": "research_candidate",
+  "status_note": "Phase 2 规则基线已完成 walk-forward 产物生成，但尚未进入 verified 审批。",
+  "subperiod_stats": [
+    {
+      "positive_excess_rate": 1.0,
+      "rank_ic_mean": -0.627933,
+      "sample_count": 32,
+      "slice_label": "early"
+    },
+    {
+      "positive_excess_rate": 0.5625,
+      "rank_ic_mean": -0.085044,
+      "sample_count": 32,
+      "slice_label": "late"
+    }
+  ],
+  "turnover": 0.035039,
+  "turnover_mean": 0.035039
+}

@@ -1,0 +1,247 @@
+{
+  "project": "stock_dashboard",
+  "current_phase": {
+    "id": "phase-5",
+    "label": "Real Validation Rebuild and Model Portfolio Policy Research"
+  },
+  "current_milestone": {
+    "id": "phase-5-validation-policy-research",
+    "label": "Lock benchmark and label semantics, rebuild expanding-watchlist rolling validation, and evaluate simulation-only automatic holding policy artifacts"
+  },
+  "status": "in_progress",
+  "owner": "codex",
+  "updated_at": "2026-04-30T01:28:00+08:00",
+  "progress_summary": "Multi-account isolation v1 remains implemented and published, and the latest user-reported regression has now been traced to two live interaction issues rather than a fresh backend data-leak. First, canonical `/stocks` traffic is now fail-closed on trusted root-domain identity headers and the edge forwards real `X-HZ-User-Login` / `X-HZ-User-Role`, so authenticated member requests no longer fall back to legacy `dev_open/root`. Second, the frontend no longer keeps `act_as` across refreshes or reopened tabs, and desktop candidate presentation now separates `当前账号自选` from `全局候选池` instead of rendering one merged table that looked like a shared watchlist. Local verification passed with `npm --prefix frontend run build` and `PYTHONPATH=src python3 -m unittest tests.test_multi_account_isolation`. A fresh runtime publish was executed from clean snapshot `/private/tmp/stock-dashboard-hotfix-publish-CjDt9t/repo`; manifest: `/private/tmp/stock-dashboard-hotfix-publish-CjDt9t/repo/output/releases/20260429T172309Z-6db1ad0913fd/manifest.json`. Live verification now covers three paths: Safari on the canonical root session still shows the legacy root holding (`002028.SZ` 100 股, `净值 199,458.94`, `今日盈亏 -541.06`); canonical edge API calls with a real signed root-domain session confirm both `member-a` and `amoeba` resolve to `watchlist=[]` and `simulation draft/watch_symbols=[]`; and the served mobile homepage on the root session shows the newer `X 只属于当前账号自选` wording that distinguishes personal watchlist state from global candidates.",
+  "blockers": [
+    "Full browser-side member acceptance is still not closed. The canonical root session clearly shows the account selector and lists real member spaces (`amoeba`, `member-a`), but Safari automation still did not reliably complete the dropdown selection interaction. The served member blank-state is therefore verified through real canonical edge/API responses with a signed root session plus `X-Ashare-Act-As-Login`, rather than an end-to-end browser click path.",
+    "Validation manifests and portfolio backtests have now been rebuilt on the real database under the expanding-watchlist join-date-forward benchmark contract, but replay artifacts still cannot materialize on current real data because none of the active-watchlist recommendations yet have a full 20-trading-day forward review window. The replay builder bug that previously hard-coded `records[1]` is fixed, so this is now a data-window blocker rather than a rebuild-path blocker.",
+    "The simulation model track now has a concrete `phase5_simulation_topk_equal_weight_v1` research-candidate target-weight policy, the live runtime database has a durable `phase5_holding_policy_study` snapshot, and the published refresh path no longer stalls at zero-step sessions or one-cycle pending rebuilds: the latest live refresh has already lifted holding-policy to `9portfolios` with `excluded_reasons={}`, `mean_turnover=0.037037`, `mean_invested_ratio=0.079822`, `mean_active_position_count=0.444444`, and `mean_annualized_excess_return_after_baseline_cost=0.000581`. However, the policy still remains non-promotable. `mean_rebalance_interval_days` is still missing because all live rebalance evidence still sits on the same trading date, `mean_invested_ratio` and `mean_active_position_count` remain weak even after four real order events, and horizon artifacts are still narrow at `3` symbols / `2` as-of dates while `002270.SZ` continues to look like a `20d/40d` instability outlier. The active blocker is therefore no longer missing runtime artifact wiring, a dead simulation evidence path, or same-run rebuild lag, but insufficient multi-date / multi-rebalance breadth to prove that the repaired validation path and newer producer contract materially improve primary-horizon selection and holding-policy credibility on real runtime data."
+  ],
+  "next_step": "Have the user hard-refresh any stale pre-hotfix tabs and confirm that member pages now show an empty personal watchlist while root pages keep the original holdings. If a specific browser/session still renders merged self-select state after reload, capture that exact browser + tab path and reproduce it against the canonical selector flow.",
+  "linked_docs": [
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/PROJECT_PLAN.md",
+      "role": "primary_plan"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/DECISIONS.md",
+      "role": "decision_log"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/archive/RESEARCH_NOTES.md",
+      "role": "research_log"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/PROCESS.md",
+      "role": "execution_log"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/archive/PHASE0_AUDIT.md",
+      "role": "current_audit"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/contracts/PHASE0_DATA_METRIC_CONTRACT.md",
+      "role": "contract_spec"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/contracts/PHASE1_PHASE2_ARTIFACT_CONTRACT.md",
+      "role": "artifact_contract"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/contracts/PHASE5_RESEARCH_CONTRACT.md",
+      "role": "phase_5_contract"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/docs/contracts/PHASE5_CREDIBILITY_REMEDIATION_PLAN.md",
+      "role": "credibility_remediation_plan"
+    },
+    {
+      "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/src/ashare_evidence/research_artifact_store.py",
+      "role": "artifact_storage"
+    }
+  ],
+  "validation_state": {
+    "research_reset": "completed",
+    "current_state_audit": "completed",
+    "external_methodology_refresh": "completed",
+    "product_contract_cleanup": "completed",
+    "quant_rebuild_backlog": "completed",
+    "data_metric_contract_spec": "completed",
+    "phase_1_schema_service_rewrite": "completed",
+    "phase_2_artifact_producers": "completed",
+    "phase_2_quant_core_rebuild": "completed",
+    "phase_2_manual_research_artifacts": "completed",
+    "phase_3_product_rewrite": "completed",
+    "phase_4_backend_contract": "completed",
+    "phase_4_queue_workspace_productization": "completed",
+    "phase_4_governance_polish": "completed",
+    "phase_5_validation_policy_research": "in_progress"
+  },
+  "latest_findings": [
+    {
+      "id": "F001",
+      "severity": "high",
+      "title": "Active in Phase 5: validation/portfolio artifacts are now rebuilt on the real database under the expanding-watchlist join-date-forward benchmark contract, while replay remains blocked on insufficient 20-trading-day forward history even after fixing same-day replay candidate selection"
+    },
+    {
+      "id": "F002",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-25: main signal contract no longer represents manual review as a scored LLM factor; it is now an explicit non-scoring manual review layer with legacy compat only"
+    },
+    {
+      "id": "F003",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-25: benchmark path and replay artifacts now use active-watchlist equal-weight proxy instead of synthetic demo paths"
+    },
+    {
+      "id": "F004",
+      "severity": "medium",
+      "title": "Active in Phase 5: the real-db `phase5_holding_policy_study` snapshot and redesign experiments still indicate a diagnostic-only state rather than a promotable policy. The runtime artifact-resolution bug that had been forcing `0portfolios` is now fixed, and the latest runtime refresh includes `3` portfolios; however, the gate still remains `draft_gate_insufficient_evidence` because deployment / position-count evidence is still too weak, and horizon evidence still only spans `3` symbols / `2` as-of dates."
+    },
+    {
+      "id": "F005",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: the authenticated canonical route `/projects/ashare-dashboard/` serves the same runtime bundle as local preview; the earlier timeout came from the local proxy path, not a server-side outage"
+    },
+    {
+      "id": "F006",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: refreshed authenticated browser acceptance on the canonical route now passes for `单票分析 / 运营复盘 / 设置`, with fresh captures showing the previously blocking migration-state wording, internal contract fields, phase labels, and runtime enums removed from the live UI"
+    },
+    {
+      "id": "F007",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: the operations-review `用户轨道 / 模型轨道` table-overflow regression is now published and rechecked on the live canonical route after login, with containment kept inside each track card instead of relying on repo-only fixes"
+    },
+    {
+      "id": "F008",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: the operations focus workspace now keeps K-line data available via daily fallback, limits row-click behavior to simulation focus updates instead of whole-page refresh, keeps default watch-symbol membership synced to the active watchlist, and allows beta-write users to create/execute manual research requests without an operator-only block"
+    },
+    {
+      "id": "F009",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: default builtin manual-research execution now uses the local Codex CLI with `gpt-5.5` when no model API key is selected, instead of leaving a queued placeholder request"
+    },
+    {
+      "id": "F010",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: manual-research-related frontend calls no longer fail at the old 10-second timeout threshold; the canonical live route now keeps builtin Codex execution alive past that window and returns a real receipt instead of surfacing `请求超时（>10s）`"
+    },
+    {
+      "id": "F011",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-26: manual-research request serialization now hydrates current validation artifacts before stale detection, so completed reviews are no longer falsely rendered as `结果过期` when raw `historical_validation` payload fields are empty"
+    },
+    {
+      "id": "F012",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: public direction claims on the live dashboard are now gated by artifact-backed validation status, sample coverage, and minimal evidence thresholds, so under-validated symbols are downgraded to `watch` or `risk_alert` instead of exposing raw model direction as the user-facing conclusion"
+    },
+    {
+      "id": "F013",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: the live dashboard no longer exposes placeholder fusion-layer copy, raw degrade tokens, or internal Phase-2 explanatory text in recommendation evidence; user-visible explanations are now normalized into readable research language across producer, service hydration, and frontend fallbacks"
+    },
+    {
+      "id": "F014",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: same-`as_of_data_time` late stale backfills no longer override fresher effective recommendation versions across dashboard, replay, simulation, and manual-research consumers; the live route now preserves current trigger explanations without letting `market_data_stale` reruns mechanically rewrite the same snapshot"
+    },
+    {
+      "id": "F015",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: runtime Phase 5 research-data drift no longer blocks professionalism assessment. The runtime DB now rebuilds through `phase5-daily-refresh --analysis-only`, local plus canonical Safari verification shows artifact-backed `research_candidate / observe_only` summaries, and the later holding-policy artifact-resolution fix has moved runtime evidence from the false `0portfolios` state to `3` included portfolios. This remains non-promotional because deployment-quality evidence and horizon breadth are still too thin."
+    },
+    {
+      "id": "F016",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: Phase 5 historical validation no longer leaks future exit bars beyond each recommendation `as_of_data_time`; repo research rebuilds now show `40d` as the dominant horizon after removing those invalid observations, and the published runtime/canonical routes continue to serve the repaired validation path."
+    },
+    {
+      "id": "F017",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: the canonical route was no longer stale because a dead `com.codex.project-tunnel.ashare-dashboard` LaunchAgent and zombie remote forwards on ports `3101/4101` were cleared; after restarting the tunnel, Safari canonical verification again matched the live runtime with `002028.SZ` and `最近分析 04/27 19:58`."
+    },
+    {
+      "id": "F018",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: Phase 5 holding-policy runtime study no longer misclassifies live auto-model portfolios as all-missing artifacts when payload `backtest_artifact_id` pointers lag behind the actual `sim-*` portfolio keys. After publishing the fallback lookup and refreshing the runtime DB, holding-policy advanced from `0portfolios` to `3` included portfolios, while release parity also stopped false-failing on second-level `data_latency_seconds` drift."
+    },
+    {
+      "id": "F019",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: runtime `phase5-daily-refresh` no longer generates empty zero-step model sessions. The published refresh path now auto-steps the restarted simulation once, live runtime evidence has produced real `model_decision + order_filled` events, and holding-policy has advanced to a `6portfolios` artifact with non-zero turnover / exposure metrics while localhost and canonical Chrome both show `最近刷新 04/27 21:01` for `002028.SZ`."
+    },
+    {
+      "id": "F020",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: the same-run runtime rebuild path now carries the newest stepped model portfolio into the live holding-policy study immediately, and Phase 5 live verification now explicitly targets the runtime database instead of the repo-local SQLite copy. A fresh runtime refresh advanced the study to `phase5-holding-policy-study:auto_model:2026-04-27:9portfolios`, with Safari localhost/canonical both showing `最近刷新 04/27 21:48` and `最近分析 04/27 21:46` for `002028.SZ`."
+    },
+    {
+      "id": "F021",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: operations-review model holdings no longer lag behind the latest filled action when the session clock is newer than the freshest `5min` market bar. Portfolio replay now anchors to `simulation_session.last_data_time`, so the live localhost/canonical `运营复盘` page shows the same `600522.SH / 中天科技 / 1000 股` holding that already existed in runtime `simulation_events`, `paper_orders`, and `paper_fills`."
+    },
+    {
+      "id": "F022",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: live operations-review copy no longer repeats the same validation/governance warning across multiple panels, post-close freshness no longer shows raw seconds, and governance track labels now read `用户轨道 / 模型轨道` on the canonical page."
+    },
+    {
+      "id": "F023",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-27: the live follow-up prompt for `002028.SZ` no longer front-loads the system recommendation as the answer scaffold; it now forces fact-vs-inference separation, requires explicit explanation of validation-metric conflicts, and has been verified live after publish while the latest manual-research receipt was simultaneously confirmed as a successful DeepSeek (`deepseek-v4-pro`) execution."
+    },
+    {
+      "id": "F024",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-28: DeepSeek follow-up failures for `600522.SH` were traced to the OpenAI-compatible transport's 30-second read timeout rather than a broken request flow or a proxy misroute. Local reproduction showed the default proxied path completes while explicit no-proxy still times out on this machine, and the published 75-second timeout now lets the same live follow-up complete successfully."
+    },
+    {
+      "id": "F025",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-28: the canonical stock-dashboard route was not down at the app layer; localhost runtime stayed healthy while the public tunnel had fallen back into a stale remote-port condition on `3101/4101`. Clearing the old remote forward and restarting `com.codex.project-tunnel.ashare-dashboard` restored the tunnel, while unauthenticated canonical requests continue to redirect to the shared login wall by design."
+    },
+    {
+      "id": "F026",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-28: intraday market refresh and simulation stepping no longer depend on opening the frontend. The published backend now runs a trading-session background tick, keeps active-watchlist `5min` bars moving, and advances the running simulation session to each newly landed market bar without restarting the session."
+    },
+    {
+      "id": "F027",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-28: candidate/self-select returns no longer render with reversed gain/loss colors, and `运营复盘` now exposes an in-place `分析报告` action so operators can open a compact stock analysis modal directly from either track table."
+    },
+    {
+      "id": "F028",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-28: manual-research follow-up request views no longer borrow another request's completed LLM result. Queued requests now stay request-scoped until they execute, and a fresh live `600522.SH` request was verified first in queued form and then through a successful `200 OK` execution without reproducing the old `404 Not Found` path."
+    },
+    {
+      "id": "F029",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-29: dashboard homepage and operations page returned 500 Internal Server Error after schema split. Root cause: `from __future__ import annotations` + TYPE_CHECKING imports prevented Pydantic v2.13 from resolving cross-module types. Fixed by per-file dependency analysis: removed future annotations where safe, and used __init__.py namespace injection + model_rebuild() for the stock↔simulation↔operations circular chain."
+    },
+    {
+      "id": "F030",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-29: operations workspace intermittently showed '403 Forbidden' with no actionable message. Three-layer fix: (1) VPS proxy JSON error key changed from `error` to `detail` so frontend extracts the Chinese message; (2) backend env explicitly set ASHARE_BETA_ACCESS_MODE=open; (3) access.py future annotations removed."
+    },
+    {
+      "id": "F031",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-29: 5-minute market data only refreshed when frontend was open. Created `com.codex.ashare-dashboard.scheduled-refresh` LaunchAgent (StartInterval=300); extended market-hour window to 09:31/13:01; added AKShare trading-day check with daily cache to skip holidays."
+    },
+    {
+      "id": "F032",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-29: SSH tunnel to VPS failed to recover after restart because `buildRemoteCleanupScript()` generated bash with syntax errors (`do;`/`then;`). Fixed by replacing .join('; ') with string concatenation; added bash -n test; added auto-reconnect loop with exponential backoff (1s→60s) and 5-retry cleanup."
+    },
+    {
+      "id": "F033",
+      "severity": "resolved",
+      "title": "Resolved on 2026-04-29: mobile homepage candidate trend charts were not visible because the candidate list API did not expose daily `price_chart` data, and the first publish attempt exposed a stock schema import cycle. Candidate responses now include real daily chart payloads, the schema cycle is fixed with TYPE_CHECKING-only cross-module imports plus a plain candidate chart payload type, and localhost/canonical mobile browser checks confirm four ECharts canvas mini trends render on candidate cards."
+    }
+  ]
+}

@@ -1,0 +1,5046 @@
+{
+  "access_control": {
+    "active_users": 0,
+    "alerts": [
+      "API 读接口支持 allowlist key；写入和 bootstrap 仍建议仅对 operator 暴露。",
+      "前端若运行在公开静态托管环境，应由后端或反向代理继续兜底，不依赖前端隐藏 access key。"
+    ],
+    "allowlist_slots": 0,
+    "audit_log_retention_days": 180,
+    "auth_mode": "open",
+    "beta_phase": "closed_beta",
+    "export_policy": "默认只开放截图和证据链接，不开放原始分发与批量导出。",
+    "required_header": "X-Ashare-Beta-Key",
+    "roles": [
+      "viewer",
+      "analyst",
+      "operator"
+    ],
+    "session_ttl_minutes": 480
+  },
+  "data_latency_seconds": 34289,
+  "intraday_source_status": {
+    "data_latency_seconds": 34289,
+    "decision_interval_seconds": 1800,
+    "fallback_used": true,
+    "last_success_at": "2026-04-27T03:17:27.611073+00:00",
+    "latest_market_data_at": "2026-04-27T03:15:00+00:00",
+    "market_data_interval_seconds": 300,
+    "message": "已同步 4 只标的的 5 分钟行情，新增或更新 84 根 K 线。",
+    "provider_label": "AKShare 分钟兜底",
+    "provider_name": "akshare",
+    "source_kind": "akshare_hist_min_em",
+    "stale": true,
+    "status": "ready",
+    "symbol_count": 4,
+    "timeframe": "5min"
+  },
+  "last_market_data_at": "2026-04-27T03:15:00",
+  "launch_gates": [
+    {
+      "current_value": "manual=用户手动轨道; auto=模型自动轨道",
+      "gate": "分离式模拟交易",
+      "status": "pass",
+      "threshold": "至少 1 个手动仓 + 1 个自动仓，且独立记账。"
+    },
+    {
+      "current_value": "100%",
+      "gate": "A 股规则合规",
+      "status": "pass",
+      "threshold": "mandatory checks 通过率 100%。"
+    },
+    {
+      "current_value": "bound=6/8, manifest=6/8, verified=0, pending=2",
+      "gate": "组合回测产物绑定",
+      "status": "warn",
+      "threshold": "manual/auto 组合都要绑定 backtest artifact 与 manifest；正式验证仍需替换 synthetic benchmark。"
+    },
+    {
+      "current_value": "manual 0.0% / auto 0.0%",
+      "gate": "回撤保护",
+      "status": "pass",
+      "threshold": "manual > -12%，auto > -15%。"
+    },
+    {
+      "current_value": "当前仍是演示口径，已从正式上线判定中降级。",
+      "gate": "建议命中复盘覆盖",
+      "status": "warn",
+      "threshold": "真实 benchmark 与正式复盘口径完成重建后，才允许恢复该门槛。"
+    },
+    {
+      "current_value": "mode=open, allowlist=0, retention=180d",
+      "gate": "访问控制",
+      "status": "warn",
+      "threshold": "allowlist、角色分层、180 天审计留档齐备。"
+    },
+    {
+      "current_value": "stock 10.8ms / ops 249.3ms / ops payload 145.0kb",
+      "gate": "刷新与性能预算",
+      "status": "pass",
+      "threshold": "stock <= 250ms，operations <= 320ms，payload 不超预算。"
+    }
+  ],
+  "manual_research_queue": {
+    "counts": {
+      "completed_current": 0,
+      "completed_stale": 3,
+      "failed": 0,
+      "in_progress": 0,
+      "queued": 1
+    },
+    "focus_request": {
+      "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+      "attempted_keys": [
+        {
+          "error": null,
+          "key_id": null,
+          "model_name": "gpt-5.5",
+          "name": "builtin-gpt",
+          "provider_name": "openai",
+          "status": "success"
+        }
+      ],
+      "completed_at": "2026-04-26T13:28:45.713806",
+      "executor_kind": "builtin_gpt",
+      "failed_at": null,
+      "failover_used": false,
+      "failure_reason": null,
+      "id": 4,
+      "manual_llm_review": {
+        "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+        "citations": [
+          "pipeline://signal-engine/model-result/600589.SH/20260424/28d",
+          "pipeline://signal-engine/price-baseline/600589.SH/20260424",
+          "pipeline://signal-engine/news-event/600589.SH/20260424",
+          "pipeline://signal-engine/llm-assessment/600589.SH/20260424",
+          "验证指标记录.SH-20260424-28d",
+          "滚动验证记录.SH-20260424-28d"
+        ],
+        "decision_note": "这份人工研究应作为风险控制和仓位决策的辅助输入，而不是单独交易依据。它支持当前“偏谨慎；中等置信”的建议：在验证状态未完成、价格与事件信号仍冲突前，更适合降仓、控制敞口或等待反向确认。",
+        "disagreements": [
+          "正向事件证据来自限制性股票激励计划回购注销部分限制性股票的法律意见书，但该正向证据与潜在亏损公告风险并存。",
+          "价格基线因子、新闻事件因子与 LLM 评估因子之间存在冲突，因此当前信号不是单向看多或单向看空。",
+          "人工研究状态为 completed / manual，但历史验证仍待重建，人工结论不能替代量化验证结果。"
+        ],
+        "executor_kind": "builtin_gpt",
+        "generated_at": "2026-04-26T13:28:45.713806Z",
+        "model_label": "openai:gpt-5.5",
+        "question": "你对这只股票后续的看法",
+        "raw_answer": "事实：当前建议为“偏谨慎；中等置信”，并明确当前更适合降仓或等待反向确认。观察窗口为 观察窗口以滚动验证结论为准，目标 horizon 为 20日超额收益。证据中存在正向事件，即“大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书”；同时也存在主要风险，即“关于未弥补亏损达到实收股本总额三分之一的公告”仍是潜在反向事件。另一个事实是，正负事件冲突度为 33%，价格与事件信号存在冲突，LLM 因子会被自动削权。历史验证状态仍为 口径校准中，验证样本量、RankIC 均值、正超额占比未提供。\n\n推断：这些证据整体支持维持当前偏谨慎看法，而不是上调为积极。原因是正向事件虽然存在，但尚不足以覆盖潜在反向事件和价格-事件冲突；在验证指标缺失且历史验证待重建的情况下，信号强度不宜被放大。后续更合理的处理是继续观察，而不是把新闻事件单独作为增强买入判断的依据。\n\n失效条件：如果后续价格基线因子、新闻事件因子和 LLM 评估因子不再冲突，并且 口径校准中 的历史验证完成后给出可支持的样本量、RankIC 均值和正超额占比，则当前“偏谨慎”的判断可能失效。若潜在反向事件被新的证据削弱，同时 20日超额收益 的验证结果改善，也会削弱当前降仓或等待确认的结论。相反，如果未弥补亏损相关风险进一步强化，或价格信号继续与事件信号冲突，则当前谨慎判断仍然有效。\n\n继续观察的更新时间点：以 20260424 这版证据为基准，应重点观察 T+14 个交易日、T+20 个交易日、T+28 个交易日和 T+56 个交易日。T+14 用于检查短期反向确认是否出现；T+20 对应目标 horizon 20日超额收益；T+28 对应当前 28d 验证 artifact 和 manifest；T+56 对应观察窗口上沿。同时，一旦 口径校准中 完成，也需要立即更新判断。",
+        "request_id": 4,
+        "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+        "requested_at": "2026-04-26T13:28:01.587845",
+        "review_verdict": "supports_current_recommendation",
+        "risks": [
+          "关于未弥补亏损达到实收股本总额三分之一的公告仍是潜在反向事件。",
+          "正负事件冲突度为 33%，新闻因子不宜单独抬高建议强度。",
+          "价格与事件信号存在冲突，LLM 因子会被自动削权。",
+          "历史验证状态为 口径校准中，验证样本量、RankIC 均值、正超额占比均未提供。"
+        ],
+        "source_packet": [
+          "recommendation_key:reco-600589.SH-20260424-balanced",
+          "direction:reduce",
+          "confidence_label:中等",
+          "target_horizon:14-56 trade days",
+          "primary_model_result_key:result-600589.SH-20260424-28d",
+          "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+          "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+        ],
+        "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+        "status": "stale",
+        "status_note": "Manual review artifact generated.",
+        "summary": "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
+        "trigger_mode": "manual"
+      },
+      "model_api_key_id": null,
+      "question": "你对这只股票后续的看法",
+      "recommendation_key": "reco-600589.SH-20260424-balanced",
+      "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+      "requested_at": "2026-04-26T13:28:01.587845",
+      "requested_by": "open-access",
+      "selected_key": {
+        "base_url": "codex-cli://local",
+        "id": null,
+        "model_name": "gpt-5.5",
+        "name": "builtin-gpt",
+        "provider_name": "openai"
+      },
+      "source_packet": [
+        "recommendation_key:reco-600589.SH-20260424-balanced",
+        "direction:reduce",
+        "confidence_label:中等",
+        "target_horizon:14-56 trade days",
+        "primary_model_result_key:result-600589.SH-20260424-28d",
+        "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+        "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+      ],
+      "source_packet_hash": "ade2e8e609f7f393ace61a380a861da18b3256be859d45d122c98ed5c6399bde",
+      "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+      "started_at": "2026-04-26T13:28:01.704863",
+      "status": "stale",
+      "status_note": "Manual review artifact generated.",
+      "superseded_by_request_id": null,
+      "symbol": "600589.SH",
+      "trigger_source": "manual_research_ui",
+      "validation_artifact_id": "validation-metrics:result-600589.SH-20260424-28d",
+      "validation_manifest_id": "rolling-validation:result-600589.SH-20260424-28d"
+    },
+    "focus_symbol": "600589.SH",
+    "generated_at": "2026-04-27T12:46:29.757978Z",
+    "recent_items": [
+      {
+        "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+        "attempted_keys": [
+          {
+            "error": null,
+            "key_id": null,
+            "model_name": "gpt-5.5",
+            "name": "builtin-gpt",
+            "provider_name": "openai",
+            "status": "success"
+          }
+        ],
+        "completed_at": "2026-04-26T13:28:45.713806",
+        "executor_kind": "builtin_gpt",
+        "failed_at": null,
+        "failover_used": false,
+        "failure_reason": null,
+        "id": 4,
+        "manual_llm_review": {
+          "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "citations": [
+            "pipeline://signal-engine/model-result/600589.SH/20260424/28d",
+            "pipeline://signal-engine/price-baseline/600589.SH/20260424",
+            "pipeline://signal-engine/news-event/600589.SH/20260424",
+            "pipeline://signal-engine/llm-assessment/600589.SH/20260424",
+            "验证指标记录.SH-20260424-28d",
+            "滚动验证记录.SH-20260424-28d"
+          ],
+          "decision_note": "这份人工研究应作为风险控制和仓位决策的辅助输入，而不是单独交易依据。它支持当前“偏谨慎；中等置信”的建议：在验证状态未完成、价格与事件信号仍冲突前，更适合降仓、控制敞口或等待反向确认。",
+          "disagreements": [
+            "正向事件证据来自限制性股票激励计划回购注销部分限制性股票的法律意见书，但该正向证据与潜在亏损公告风险并存。",
+            "价格基线因子、新闻事件因子与 LLM 评估因子之间存在冲突，因此当前信号不是单向看多或单向看空。",
+            "人工研究状态为 completed / manual，但历史验证仍待重建，人工结论不能替代量化验证结果。"
+          ],
+          "executor_kind": "builtin_gpt",
+          "generated_at": "2026-04-26T13:28:45.713806Z",
+          "model_label": "openai:gpt-5.5",
+          "question": "你对这只股票后续的看法",
+          "raw_answer": "事实：当前建议为“偏谨慎；中等置信”，并明确当前更适合降仓或等待反向确认。观察窗口为 观察窗口以滚动验证结论为准，目标 horizon 为 20日超额收益。证据中存在正向事件，即“大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书”；同时也存在主要风险，即“关于未弥补亏损达到实收股本总额三分之一的公告”仍是潜在反向事件。另一个事实是，正负事件冲突度为 33%，价格与事件信号存在冲突，LLM 因子会被自动削权。历史验证状态仍为 口径校准中，验证样本量、RankIC 均值、正超额占比未提供。\n\n推断：这些证据整体支持维持当前偏谨慎看法，而不是上调为积极。原因是正向事件虽然存在，但尚不足以覆盖潜在反向事件和价格-事件冲突；在验证指标缺失且历史验证待重建的情况下，信号强度不宜被放大。后续更合理的处理是继续观察，而不是把新闻事件单独作为增强买入判断的依据。\n\n失效条件：如果后续价格基线因子、新闻事件因子和 LLM 评估因子不再冲突，并且 口径校准中 的历史验证完成后给出可支持的样本量、RankIC 均值和正超额占比，则当前“偏谨慎”的判断可能失效。若潜在反向事件被新的证据削弱，同时 20日超额收益 的验证结果改善，也会削弱当前降仓或等待确认的结论。相反，如果未弥补亏损相关风险进一步强化，或价格信号继续与事件信号冲突，则当前谨慎判断仍然有效。\n\n继续观察的更新时间点：以 20260424 这版证据为基准，应重点观察 T+14 个交易日、T+20 个交易日、T+28 个交易日和 T+56 个交易日。T+14 用于检查短期反向确认是否出现；T+20 对应目标 horizon 20日超额收益；T+28 对应当前 28d 验证 artifact 和 manifest；T+56 对应观察窗口上沿。同时，一旦 口径校准中 完成，也需要立即更新判断。",
+          "request_id": 4,
+          "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "requested_at": "2026-04-26T13:28:01.587845",
+          "review_verdict": "supports_current_recommendation",
+          "risks": [
+            "关于未弥补亏损达到实收股本总额三分之一的公告仍是潜在反向事件。",
+            "正负事件冲突度为 33%，新闻因子不宜单独抬高建议强度。",
+            "价格与事件信号存在冲突，LLM 因子会被自动削权。",
+            "历史验证状态为 口径校准中，验证样本量、RankIC 均值、正超额占比均未提供。"
+          ],
+          "source_packet": [
+            "recommendation_key:reco-600589.SH-20260424-balanced",
+            "direction:reduce",
+            "confidence_label:中等",
+            "target_horizon:14-56 trade days",
+            "primary_model_result_key:result-600589.SH-20260424-28d",
+            "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+            "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+          ],
+          "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+          "status": "stale",
+          "status_note": "Manual review artifact generated.",
+          "summary": "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
+          "trigger_mode": "manual"
+        },
+        "model_api_key_id": null,
+        "question": "你对这只股票后续的看法",
+        "recommendation_key": "reco-600589.SH-20260424-balanced",
+        "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+        "requested_at": "2026-04-26T13:28:01.587845",
+        "requested_by": "open-access",
+        "selected_key": {
+          "base_url": "codex-cli://local",
+          "id": null,
+          "model_name": "gpt-5.5",
+          "name": "builtin-gpt",
+          "provider_name": "openai"
+        },
+        "source_packet": [
+          "recommendation_key:reco-600589.SH-20260424-balanced",
+          "direction:reduce",
+          "confidence_label:中等",
+          "target_horizon:14-56 trade days",
+          "primary_model_result_key:result-600589.SH-20260424-28d",
+          "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+          "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+        ],
+        "source_packet_hash": "ade2e8e609f7f393ace61a380a861da18b3256be859d45d122c98ed5c6399bde",
+        "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+        "started_at": "2026-04-26T13:28:01.704863",
+        "status": "stale",
+        "status_note": "Manual review artifact generated.",
+        "superseded_by_request_id": null,
+        "symbol": "600589.SH",
+        "trigger_source": "manual_research_ui",
+        "validation_artifact_id": "validation-metrics:result-600589.SH-20260424-28d",
+        "validation_manifest_id": "rolling-validation:result-600589.SH-20260424-28d"
+      },
+      {
+        "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426131019662175",
+        "attempted_keys": [
+          {
+            "error": null,
+            "key_id": null,
+            "model_name": "gpt-5.5",
+            "name": "builtin-gpt",
+            "provider_name": "openai",
+            "status": "success"
+          }
+        ],
+        "completed_at": "2026-04-26T13:11:01.959194",
+        "executor_kind": "builtin_gpt",
+        "failed_at": null,
+        "failover_used": false,
+        "failure_reason": null,
+        "id": 3,
+        "manual_llm_review": {
+          "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "citations": [
+            "pipeline://signal-engine/model-result/600589.SH/20260424/28d",
+            "pipeline://signal-engine/price-baseline/600589.SH/20260424",
+            "pipeline://signal-engine/news-event/600589.SH/20260424",
+            "pipeline://signal-engine/llm-assessment/600589.SH/20260424",
+            "验证指标记录.SH-20260424-28d",
+            "滚动验证记录.SH-20260424-28d"
+          ],
+          "decision_note": "这份人工研究应作为风险控制和仓位决策的辅助输入，而不是单独交易依据。它支持当前“偏谨慎；中等置信”的建议：在验证状态未完成、价格与事件信号仍冲突前，更适合降仓、控制敞口或等待反向确认。",
+          "disagreements": [
+            "正向事件证据来自限制性股票激励计划回购注销部分限制性股票的法律意见书，但该正向证据与潜在亏损公告风险并存。",
+            "价格基线因子、新闻事件因子与 LLM 评估因子之间存在冲突，因此当前信号不是单向看多或单向看空。",
+            "人工研究状态为 completed / manual，但历史验证仍待重建，人工结论不能替代量化验证结果。"
+          ],
+          "executor_kind": "builtin_gpt",
+          "generated_at": "2026-04-26T13:28:45.713806Z",
+          "model_label": "openai:gpt-5.5",
+          "question": "你对这只股票后续的看法",
+          "raw_answer": "事实：当前建议为“偏谨慎；中等置信”，并明确当前更适合降仓或等待反向确认。观察窗口为 观察窗口以滚动验证结论为准，目标 horizon 为 20日超额收益。证据中存在正向事件，即“大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书”；同时也存在主要风险，即“关于未弥补亏损达到实收股本总额三分之一的公告”仍是潜在反向事件。另一个事实是，正负事件冲突度为 33%，价格与事件信号存在冲突，LLM 因子会被自动削权。历史验证状态仍为 口径校准中，验证样本量、RankIC 均值、正超额占比未提供。\n\n推断：这些证据整体支持维持当前偏谨慎看法，而不是上调为积极。原因是正向事件虽然存在，但尚不足以覆盖潜在反向事件和价格-事件冲突；在验证指标缺失且历史验证待重建的情况下，信号强度不宜被放大。后续更合理的处理是继续观察，而不是把新闻事件单独作为增强买入判断的依据。\n\n失效条件：如果后续价格基线因子、新闻事件因子和 LLM 评估因子不再冲突，并且 口径校准中 的历史验证完成后给出可支持的样本量、RankIC 均值和正超额占比，则当前“偏谨慎”的判断可能失效。若潜在反向事件被新的证据削弱，同时 20日超额收益 的验证结果改善，也会削弱当前降仓或等待确认的结论。相反，如果未弥补亏损相关风险进一步强化，或价格信号继续与事件信号冲突，则当前谨慎判断仍然有效。\n\n继续观察的更新时间点：以 20260424 这版证据为基准，应重点观察 T+14 个交易日、T+20 个交易日、T+28 个交易日和 T+56 个交易日。T+14 用于检查短期反向确认是否出现；T+20 对应目标 horizon 20日超额收益；T+28 对应当前 28d 验证 artifact 和 manifest；T+56 对应观察窗口上沿。同时，一旦 口径校准中 完成，也需要立即更新判断。",
+          "request_id": 4,
+          "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "requested_at": "2026-04-26T13:28:01.587845",
+          "review_verdict": "supports_current_recommendation",
+          "risks": [
+            "关于未弥补亏损达到实收股本总额三分之一的公告仍是潜在反向事件。",
+            "正负事件冲突度为 33%，新闻因子不宜单独抬高建议强度。",
+            "价格与事件信号存在冲突，LLM 因子会被自动削权。",
+            "历史验证状态为 口径校准中，验证样本量、RankIC 均值、正超额占比均未提供。"
+          ],
+          "source_packet": [
+            "recommendation_key:reco-600589.SH-20260424-balanced",
+            "direction:reduce",
+            "confidence_label:中等",
+            "target_horizon:14-56 trade days",
+            "primary_model_result_key:result-600589.SH-20260424-28d",
+            "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+            "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+          ],
+          "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+          "status": "stale",
+          "status_note": "Manual review artifact generated.",
+          "summary": "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
+          "trigger_mode": "manual"
+        },
+        "model_api_key_id": null,
+        "question": "如果我只关注未来两周，哪些证据最值得盯？",
+        "recommendation_key": "reco-600589.SH-20260424-balanced",
+        "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426131019662175",
+        "requested_at": "2026-04-26T13:10:19.662175",
+        "requested_by": "open-access",
+        "selected_key": {
+          "base_url": "codex-cli://local",
+          "id": null,
+          "model_name": "gpt-5.5",
+          "name": "builtin-gpt",
+          "provider_name": "openai"
+        },
+        "source_packet": [
+          "recommendation_key:reco-600589.SH-20260424-balanced",
+          "direction:reduce",
+          "confidence_label:中等",
+          "target_horizon:14-56 trade days",
+          "primary_model_result_key:result-600589.SH-20260424-28d",
+          "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+          "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+        ],
+        "source_packet_hash": "ade2e8e609f7f393ace61a380a861da18b3256be859d45d122c98ed5c6399bde",
+        "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+        "started_at": "2026-04-26T13:10:19.996231",
+        "status": "stale",
+        "status_note": "Manual review artifact generated.",
+        "superseded_by_request_id": null,
+        "symbol": "600589.SH",
+        "trigger_source": "manual_research_ui",
+        "validation_artifact_id": "validation-metrics:result-600589.SH-20260424-28d",
+        "validation_manifest_id": "rolling-validation:result-600589.SH-20260424-28d"
+      },
+      {
+        "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426120539082288",
+        "attempted_keys": [
+          {
+            "error": null,
+            "key_id": null,
+            "model_name": "gpt-5.5",
+            "name": "builtin-gpt",
+            "provider_name": "openai",
+            "status": "success"
+          }
+        ],
+        "completed_at": "2026-04-26T12:06:23.595148",
+        "executor_kind": "builtin_gpt",
+        "failed_at": null,
+        "failover_used": false,
+        "failure_reason": null,
+        "id": 2,
+        "manual_llm_review": {
+          "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "citations": [
+            "pipeline://signal-engine/model-result/600589.SH/20260424/28d",
+            "pipeline://signal-engine/price-baseline/600589.SH/20260424",
+            "pipeline://signal-engine/news-event/600589.SH/20260424",
+            "pipeline://signal-engine/llm-assessment/600589.SH/20260424",
+            "验证指标记录.SH-20260424-28d",
+            "滚动验证记录.SH-20260424-28d"
+          ],
+          "decision_note": "这份人工研究应作为风险控制和仓位决策的辅助输入，而不是单独交易依据。它支持当前“偏谨慎；中等置信”的建议：在验证状态未完成、价格与事件信号仍冲突前，更适合降仓、控制敞口或等待反向确认。",
+          "disagreements": [
+            "正向事件证据来自限制性股票激励计划回购注销部分限制性股票的法律意见书，但该正向证据与潜在亏损公告风险并存。",
+            "价格基线因子、新闻事件因子与 LLM 评估因子之间存在冲突，因此当前信号不是单向看多或单向看空。",
+            "人工研究状态为 completed / manual，但历史验证仍待重建，人工结论不能替代量化验证结果。"
+          ],
+          "executor_kind": "builtin_gpt",
+          "generated_at": "2026-04-26T13:28:45.713806Z",
+          "model_label": "openai:gpt-5.5",
+          "question": "你对这只股票后续的看法",
+          "raw_answer": "事实：当前建议为“偏谨慎；中等置信”，并明确当前更适合降仓或等待反向确认。观察窗口为 观察窗口以滚动验证结论为准，目标 horizon 为 20日超额收益。证据中存在正向事件，即“大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书”；同时也存在主要风险，即“关于未弥补亏损达到实收股本总额三分之一的公告”仍是潜在反向事件。另一个事实是，正负事件冲突度为 33%，价格与事件信号存在冲突，LLM 因子会被自动削权。历史验证状态仍为 口径校准中，验证样本量、RankIC 均值、正超额占比未提供。\n\n推断：这些证据整体支持维持当前偏谨慎看法，而不是上调为积极。原因是正向事件虽然存在，但尚不足以覆盖潜在反向事件和价格-事件冲突；在验证指标缺失且历史验证待重建的情况下，信号强度不宜被放大。后续更合理的处理是继续观察，而不是把新闻事件单独作为增强买入判断的依据。\n\n失效条件：如果后续价格基线因子、新闻事件因子和 LLM 评估因子不再冲突，并且 口径校准中 的历史验证完成后给出可支持的样本量、RankIC 均值和正超额占比，则当前“偏谨慎”的判断可能失效。若潜在反向事件被新的证据削弱，同时 20日超额收益 的验证结果改善，也会削弱当前降仓或等待确认的结论。相反，如果未弥补亏损相关风险进一步强化，或价格信号继续与事件信号冲突，则当前谨慎判断仍然有效。\n\n继续观察的更新时间点：以 20260424 这版证据为基准，应重点观察 T+14 个交易日、T+20 个交易日、T+28 个交易日和 T+56 个交易日。T+14 用于检查短期反向确认是否出现；T+20 对应目标 horizon 20日超额收益；T+28 对应当前 28d 验证 artifact 和 manifest；T+56 对应观察窗口上沿。同时，一旦 口径校准中 完成，也需要立即更新判断。",
+          "request_id": 4,
+          "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "requested_at": "2026-04-26T13:28:01.587845",
+          "review_verdict": "supports_current_recommendation",
+          "risks": [
+            "关于未弥补亏损达到实收股本总额三分之一的公告仍是潜在反向事件。",
+            "正负事件冲突度为 33%，新闻因子不宜单独抬高建议强度。",
+            "价格与事件信号存在冲突，LLM 因子会被自动削权。",
+            "历史验证状态为 口径校准中，验证样本量、RankIC 均值、正超额占比均未提供。"
+          ],
+          "source_packet": [
+            "recommendation_key:reco-600589.SH-20260424-balanced",
+            "direction:reduce",
+            "confidence_label:中等",
+            "target_horizon:14-56 trade days",
+            "primary_model_result_key:result-600589.SH-20260424-28d",
+            "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+            "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+          ],
+          "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+          "status": "stale",
+          "status_note": "Manual review artifact generated.",
+          "summary": "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
+          "trigger_mode": "manual"
+        },
+        "model_api_key_id": null,
+        "question": "如果我只关注未来两周，哪些证据最值得盯？",
+        "recommendation_key": "reco-600589.SH-20260424-balanced",
+        "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426120539082288",
+        "requested_at": "2026-04-26T12:05:39.082288",
+        "requested_by": "open-access",
+        "selected_key": {
+          "base_url": "codex-cli://local",
+          "id": null,
+          "model_name": "gpt-5.5",
+          "name": "builtin-gpt",
+          "provider_name": "openai"
+        },
+        "source_packet": [
+          "recommendation_key:reco-600589.SH-20260424-balanced",
+          "direction:reduce",
+          "confidence_label:中等",
+          "target_horizon:14-56 trade days",
+          "primary_model_result_key:result-600589.SH-20260424-28d",
+          "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+          "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+        ],
+        "source_packet_hash": "ade2e8e609f7f393ace61a380a861da18b3256be859d45d122c98ed5c6399bde",
+        "stale_reason": "recommendation context changed: reco-600589.SH-20260424-balanced -> reco-600589.SH-20260427-phase2",
+        "started_at": "2026-04-26T12:05:40.028414",
+        "status": "stale",
+        "status_note": "Manual review artifact generated.",
+        "superseded_by_request_id": null,
+        "symbol": "600589.SH",
+        "trigger_source": "manual_research_ui",
+        "validation_artifact_id": "validation-metrics:result-600589.SH-20260424-28d",
+        "validation_manifest_id": "rolling-validation:result-600589.SH-20260424-28d"
+      },
+      {
+        "artifact_id": null,
+        "attempted_keys": [],
+        "completed_at": null,
+        "executor_kind": "builtin_gpt",
+        "failed_at": null,
+        "failover_used": false,
+        "failure_reason": null,
+        "id": 1,
+        "manual_llm_review": {
+          "artifact_id": "manual-review:manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "citations": [
+            "pipeline://signal-engine/model-result/600589.SH/20260424/28d",
+            "pipeline://signal-engine/price-baseline/600589.SH/20260424",
+            "pipeline://signal-engine/news-event/600589.SH/20260424",
+            "pipeline://signal-engine/llm-assessment/600589.SH/20260424",
+            "验证指标记录.SH-20260424-28d",
+            "滚动验证记录.SH-20260424-28d"
+          ],
+          "decision_note": "这份人工研究应作为风险控制和仓位决策的辅助输入，而不是单独交易依据。它支持当前“偏谨慎；中等置信”的建议：在验证状态未完成、价格与事件信号仍冲突前，更适合降仓、控制敞口或等待反向确认。",
+          "disagreements": [
+            "正向事件证据来自限制性股票激励计划回购注销部分限制性股票的法律意见书，但该正向证据与潜在亏损公告风险并存。",
+            "价格基线因子、新闻事件因子与 LLM 评估因子之间存在冲突，因此当前信号不是单向看多或单向看空。",
+            "人工研究状态为 completed / manual，但历史验证仍待重建，人工结论不能替代量化验证结果。"
+          ],
+          "executor_kind": "builtin_gpt",
+          "generated_at": "2026-04-26T13:28:45.713806Z",
+          "model_label": "openai:gpt-5.5",
+          "question": "你对这只股票后续的看法",
+          "raw_answer": "事实：当前建议为“偏谨慎；中等置信”，并明确当前更适合降仓或等待反向确认。观察窗口为 观察窗口以滚动验证结论为准，目标 horizon 为 20日超额收益。证据中存在正向事件，即“大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书”；同时也存在主要风险，即“关于未弥补亏损达到实收股本总额三分之一的公告”仍是潜在反向事件。另一个事实是，正负事件冲突度为 33%，价格与事件信号存在冲突，LLM 因子会被自动削权。历史验证状态仍为 口径校准中，验证样本量、RankIC 均值、正超额占比未提供。\n\n推断：这些证据整体支持维持当前偏谨慎看法，而不是上调为积极。原因是正向事件虽然存在，但尚不足以覆盖潜在反向事件和价格-事件冲突；在验证指标缺失且历史验证待重建的情况下，信号强度不宜被放大。后续更合理的处理是继续观察，而不是把新闻事件单独作为增强买入判断的依据。\n\n失效条件：如果后续价格基线因子、新闻事件因子和 LLM 评估因子不再冲突，并且 口径校准中 的历史验证完成后给出可支持的样本量、RankIC 均值和正超额占比，则当前“偏谨慎”的判断可能失效。若潜在反向事件被新的证据削弱，同时 20日超额收益 的验证结果改善，也会削弱当前降仓或等待确认的结论。相反，如果未弥补亏损相关风险进一步强化，或价格信号继续与事件信号冲突，则当前谨慎判断仍然有效。\n\n继续观察的更新时间点：以 20260424 这版证据为基准，应重点观察 T+14 个交易日、T+20 个交易日、T+28 个交易日和 T+56 个交易日。T+14 用于检查短期反向确认是否出现；T+20 对应目标 horizon 20日超额收益；T+28 对应当前 28d 验证 artifact 和 manifest；T+56 对应观察窗口上沿。同时，一旦 口径校准中 完成，也需要立即更新判断。",
+          "request_id": 4,
+          "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426132801587845",
+          "requested_at": "2026-04-26T13:28:01.587845",
+          "review_verdict": "supports_current_recommendation",
+          "risks": [
+            "关于未弥补亏损达到实收股本总额三分之一的公告仍是潜在反向事件。",
+            "正负事件冲突度为 33%，新闻因子不宜单独抬高建议强度。",
+            "价格与事件信号存在冲突，LLM 因子会被自动削权。",
+            "历史验证状态为 口径校准中，验证样本量、RankIC 均值、正超额占比均未提供。"
+          ],
+          "source_packet": [
+            "recommendation_key:reco-600589.SH-20260424-balanced",
+            "direction:reduce",
+            "confidence_label:中等",
+            "target_horizon:14-56 trade days",
+            "primary_model_result_key:result-600589.SH-20260424-28d",
+            "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+            "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+          ],
+          "stale_reason": null,
+          "status": "queued",
+          "status_note": "Manual review artifact generated.",
+          "summary": "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
+          "trigger_mode": "manual"
+        },
+        "model_api_key_id": null,
+        "question": "对之后的情况做出一个预测",
+        "recommendation_key": "reco-600589.SH-20260424-balanced",
+        "request_key": "manual-research:reco-600589.SH-20260424-balanced:20260426112722321389",
+        "requested_at": "2026-04-26T11:27:22.321389",
+        "requested_by": "open-access",
+        "selected_key": null,
+        "source_packet": [
+          "recommendation_key:reco-600589.SH-20260424-balanced",
+          "direction:reduce",
+          "confidence_label:中等",
+          "target_horizon:14-56 trade days",
+          "primary_model_result_key:result-600589.SH-20260424-28d",
+          "validation_artifact_id:validation-metrics:result-600589.SH-20260424-28d",
+          "validation_manifest_id:rolling-validation:result-600589.SH-20260424-28d"
+        ],
+        "source_packet_hash": "ade2e8e609f7f393ace61a380a861da18b3256be859d45d122c98ed5c6399bde",
+        "stale_reason": null,
+        "started_at": null,
+        "status": "queued",
+        "status_note": "builtin_gpt executor is not configured on the server yet; request remains queued.",
+        "superseded_by_request_id": null,
+        "symbol": "600589.SH",
+        "trigger_source": "manual_research_ui",
+        "validation_artifact_id": "validation-metrics:result-600589.SH-20260424-28d",
+        "validation_manifest_id": "rolling-validation:result-600589.SH-20260424-28d"
+      }
+    ]
+  },
+  "market_data_timeframe": "5min",
+  "overview": {
+    "auto_portfolio_count": 4,
+    "beta_readiness": "closed_beta_ready",
+    "generated_at": "2026-04-27T20:46:29.769107+08:00",
+    "launch_readiness": {
+      "blocking_gate_count": 0,
+      "note": "当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。",
+      "recommended_next_gate": "组合回测产物绑定",
+      "rule_pass_rate": 1.0,
+      "status": "closed_beta_ready",
+      "synthetic_fields_present": true,
+      "warning_gate_count": 3
+    },
+    "manual_portfolio_count": 4,
+    "recommendation_replay_hit_rate": null,
+    "replay_validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1090；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 6 个组合回测记录、6 个记录清单绑定，其中 2 个仍在持续补样本。",
+    "replay_validation_status": "pending_rebuild",
+    "research_validation": {
+      "artifact_sample_count": 1090,
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_status": "pending_rebuild",
+      "manifest_bound_count": 4,
+      "metrics_artifact_count": 4,
+      "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1090；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 6 个组合回测记录、6 个记录清单绑定，其中 2 个仍在持续补样本。",
+      "phase5_holding_policy_study": {
+        "approval_state": "research_candidate_only",
+        "artifact_available": true,
+        "artifact_id": "phase5-holding-policy-study:auto_model:2026-04-27:3portfolios",
+        "failing_gate_ids": [],
+        "gate_status": "draft_gate_insufficient_evidence",
+        "governance_action": "collect_more_evidence_before_promotion_review",
+        "governance_status": "maintain_non_promotion_collect_more_evidence",
+        "included_portfolio_count": 3,
+        "mean_annualized_excess_return_after_baseline_cost": 0.0024,
+        "mean_turnover": 0.0,
+        "note": "simulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（mean_rebalance_interval_days_floor），baseline 继续保持 research_candidate。",
+        "redesign_focus_areas": [
+          "portfolio_construction"
+        ],
+        "redesign_primary_experiment_ids": [
+          "construction_max_position_count_sweep_v1"
+        ],
+        "redesign_status": "redesign_signals_present",
+        "redesign_triggered_signal_ids": [
+          "mean_invested_ratio_floor",
+          "mean_active_position_count_floor"
+        ]
+      },
+      "phase5_horizon_selection": {
+        "approval_state": "consensus_front_runner",
+        "artifact_available": true,
+        "artifact_id": "phase5-horizon-study:latest:active_watchlist:2026-04-27:3symbols",
+        "candidate_frontier": [
+          40
+        ],
+        "included_as_of_date_count": 1,
+        "included_record_count": 3,
+        "lagging_horizons": [
+          10
+        ],
+        "note": "40d 在当前 scope 内对所有纳入记录都保持 leader，可继续评估是否满足主 horizon 审批条件。"
+      },
+      "portfolio_backtest_artifact_backed_projection_count": 6,
+      "portfolio_backtest_bound_count": 6,
+      "portfolio_backtest_manifest_count": 6,
+      "portfolio_backtest_migration_placeholder_count": 8,
+      "portfolio_backtest_pending_rebuild_count": 2,
+      "portfolio_backtest_verified_count": 0,
+      "recommendation_contract_status": "pending_rebuild",
+      "replay_artifact_backed_projection_count": 0,
+      "replay_artifact_bound_count": 0,
+      "replay_artifact_manifest_count": 0,
+      "replay_artifact_nonverified_count": 4,
+      "replay_migration_placeholder_count": 4,
+      "replay_sample_count": 4,
+      "replay_validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "replay_validation_status": "pending_rebuild",
+      "status": "pending_rebuild",
+      "synthetic_replay_count": 0,
+      "verified_replay_count": 0
+    },
+    "rule_pass_rate": 1.0,
+    "run_health": {
+      "data_latency_seconds": 34289,
+      "intraday_source_status": "ready",
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "note": "已同步 4 只标的的 5 分钟行情，新增或更新 84 根 K 线。",
+      "refresh_cooldown_minutes": 1,
+      "status": "warn"
+    }
+  },
+  "performance_thresholds": [
+    {
+      "metric": "候选页构建延迟",
+      "note": "目标是 watchlist 小样本内测下的单次构建耗时。",
+      "observed": 14.6,
+      "status": "pass",
+      "target": 180.0,
+      "unit": "ms"
+    },
+    {
+      "metric": "单票解释页构建延迟",
+      "note": "包含行情、新闻、证据 trace 和研究追问包拼装。",
+      "observed": 10.8,
+      "status": "pass",
+      "target": 250.0,
+      "unit": "ms"
+    },
+    {
+      "metric": "模拟交易运营面板构建延迟",
+      "note": "包含组合收益、归因、回撤、复盘和准入治理聚合。",
+      "observed": 249.3,
+      "status": "pass",
+      "target": 320.0,
+      "unit": "ms"
+    },
+    {
+      "metric": "候选页 payload 体积",
+      "note": "控制台首屏避免过重。",
+      "observed": 8.1,
+      "status": "pass",
+      "target": 80.0,
+      "unit": "kb"
+    },
+    {
+      "metric": "单票页 payload 体积",
+      "note": "证据卡片较多时仍要保持可接受的响应大小。",
+      "observed": 40.5,
+      "status": "pass",
+      "target": 180.0,
+      "unit": "kb"
+    },
+    {
+      "metric": "运营面板 payload 体积",
+      "note": "组合分析页在小范围内测内仍以单次加载为主。",
+      "observed": 145.0,
+      "status": "pass",
+      "target": 220.0,
+      "unit": "kb"
+    }
+  ],
+  "portfolios": [
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-model",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260424065717-3e059c-model",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 20%",
+          "模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "等权组合研究策略",
+        "note": "模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "source": "paper_track_contract",
+        "status": "research_candidate",
+        "summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "auto_model",
+      "mode_label": "模型自动持仓",
+      "name": "模型自动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-model",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260424065717-3e059c-model",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "自动组合单票权重上限 20%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "模型自动持仓",
+      "strategy_status": "research_candidate",
+      "strategy_summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-model",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-model",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260427083615-2409f0-model",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 20%",
+          "模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "等权组合研究策略",
+        "note": "模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "source": "paper_track_contract",
+        "status": "research_candidate",
+        "summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "auto_model",
+      "mode_label": "模型自动持仓",
+      "name": "模型自动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-model",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260427083615-2409f0-model",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "自动组合单票权重上限 20%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "模型自动持仓",
+      "strategy_status": "research_candidate",
+      "strategy_summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-model",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-model",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260427115855-fd6666-model",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 20%",
+          "模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "等权组合研究策略",
+        "note": "模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "source": "paper_track_contract",
+        "status": "research_candidate",
+        "summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "auto_model",
+      "mode_label": "模型自动持仓",
+      "name": "模型自动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-model",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260427115855-fd6666-model",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "自动组合单票权重上限 20%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "模型自动持仓",
+      "strategy_status": "research_candidate",
+      "strategy_summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-model",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": null,
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "migration-benchmark:CSI300",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": null,
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "active_watchlist_equal_weight_proxy",
+        "source_classification": "migration_placeholder",
+        "status": "pending_rebuild"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "pending_rebuild",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 20%",
+          "模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "等权组合研究策略",
+        "note": "模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "source": "paper_track_contract",
+        "status": "research_candidate",
+        "summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "auto_model",
+      "mode_label": "模型自动持仓",
+      "name": "模型自动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": null,
+        "annualized_return": null,
+        "artifact_id": null,
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": null,
+        "cost_definition": "migration_fixture_commission_and_tax_placeholder",
+        "cost_source": "migration_placeholder",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": null,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": null,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": null,
+        "win_rate_definition": null
+      },
+      "portfolio_key": "sim-20260427122709-8da19b-model",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "自动组合单票权重上限 20%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "模型自动持仓",
+      "strategy_status": "research_candidate",
+      "strategy_summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": null,
+      "validation_manifest_id": null,
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-manual",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260424065717-3e059c-manual",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 35%",
+          "手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "迁移期纸面组合治理",
+        "note": "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
+        "policy_type": "paper_track_governance_policy_v1",
+        "source": "paper_track_contract",
+        "status": "pending_rebuild",
+        "summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "manual",
+      "mode_label": "手动模拟",
+      "name": "用户手动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-manual",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260424065717-3e059c-manual",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "手动仓上限 35%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "手动模拟",
+      "strategy_status": "pending_rebuild",
+      "strategy_summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260424065717-3e059c-manual",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-manual",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260427083615-2409f0-manual",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 35%",
+          "手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "迁移期纸面组合治理",
+        "note": "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
+        "policy_type": "paper_track_governance_policy_v1",
+        "source": "paper_track_contract",
+        "status": "pending_rebuild",
+        "summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "manual",
+      "mode_label": "手动模拟",
+      "name": "用户手动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-manual",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260427083615-2409f0-manual",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "手动仓上限 35%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "手动模拟",
+      "strategy_status": "pending_rebuild",
+      "strategy_summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260427083615-2409f0-manual",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-manual",
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "portfolio-backtest:sim-20260427115855-fd6666-manual",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "portfolio_backtest_artifact",
+        "source_classification": "artifact_backed",
+        "status": "research_candidate"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 35%",
+          "手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "迁移期纸面组合治理",
+        "note": "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
+        "policy_type": "paper_track_governance_policy_v1",
+        "source": "paper_track_contract",
+        "status": "pending_rebuild",
+        "summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "manual",
+      "mode_label": "手动模拟",
+      "name": "用户手动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": 0.0024,
+        "annualized_return": 0.0,
+        "artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-manual",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+        "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+        "cost_source": "artifact_backed",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": 0.24,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": 0.992736,
+        "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+      },
+      "portfolio_key": "sim-20260427115855-fd6666-manual",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "手动仓上限 35%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "手动模拟",
+      "strategy_status": "pending_rebuild",
+      "strategy_summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260427115855-fd6666-manual",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "research_candidate"
+    },
+    {
+      "active_position_count": 0,
+      "alerts": [
+        "组合阶段性跑输基准超过 2%，建议先复盘执行与建议命中情况。"
+      ],
+      "attribution": [
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "所有成交双边佣金汇总。",
+          "label": "交易佣金"
+        },
+        {
+          "amount": -0.0,
+          "contribution_pct": -0.0,
+          "detail": "卖出侧单边印花税成本。",
+          "label": "印花税"
+        }
+      ],
+      "available_cash": 200000.0,
+      "benchmark_context": {
+        "artifact_id": null,
+        "as_of_time": "2026-04-27T03:15:00",
+        "available_time": "2026-04-27T03:15:00",
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_id": "migration-benchmark:CSI300",
+        "benchmark_label": "CSI300",
+        "benchmark_symbol": "CSI300",
+        "benchmark_type": "market_index",
+        "manifest_id": null,
+        "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "source": "active_watchlist_equal_weight_proxy",
+        "source_classification": "migration_placeholder",
+        "status": "pending_rebuild"
+      },
+      "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "benchmark_return": 3.267,
+      "benchmark_status": "pending_rebuild",
+      "benchmark_symbol": "CSI300",
+      "current_drawdown": 0.0,
+      "excess_return": -3.267,
+      "execution_policy": {
+        "constraints": [
+          "单票权重上限 35%",
+          "手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。",
+          "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+        ],
+        "label": "迁移期纸面组合治理",
+        "note": "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
+        "policy_type": "paper_track_governance_policy_v1",
+        "source": "paper_track_contract",
+        "status": "pending_rebuild",
+        "summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。"
+      },
+      "fee_total": 0.0,
+      "holdings": [
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 207.47,
+          "market_value": 0.0,
+          "name": "思源电气",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 208.18,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002028.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 26.67,
+          "market_value": 0.0,
+          "name": "华明装备",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 26.76,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "002270.SZ",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 36.53,
+          "market_value": 0.0,
+          "name": "中天科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 36.53,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600522.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        },
+        {
+          "avg_cost": 0.0,
+          "holding_pnl_pct": null,
+          "last_price": 10.07,
+          "market_value": 0.0,
+          "name": "大位科技",
+          "pnl_contribution": 0.0,
+          "portfolio_weight": 0.0,
+          "prev_close": 10.06,
+          "quantity": 0,
+          "realized_pnl": 0.0,
+          "symbol": "600589.SH",
+          "today_pnl_amount": 0.0,
+          "today_pnl_pct": 0.0,
+          "total_pnl": 0.0,
+          "unrealized_pnl": 0.0
+        }
+      ],
+      "invested_ratio": 0.0,
+      "last_market_data_at": "2026-04-27T03:15:00",
+      "market_data_timeframe": "5min",
+      "market_value": 0.0,
+      "max_drawdown": 0.0,
+      "mode": "manual",
+      "mode_label": "手动模拟",
+      "name": "用户手动轨道",
+      "nav_history": [
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T01:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:15:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:20:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:25:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:30:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:35:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:40:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:45:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:50:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T02:55:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:00:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:05:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:10:00",
+          "trade_date": "2026-04-27"
+        },
+        {
+          "benchmark_nav": 853409.39,
+          "drawdown": 0.0,
+          "exposure": 0.0,
+          "nav": 200000.0,
+          "observed_at": "2026-04-27T03:15:00",
+          "trade_date": "2026-04-27"
+        }
+      ],
+      "net_asset_value": 200000.0,
+      "order_count": 0,
+      "performance": {
+        "annualized_excess_return": null,
+        "annualized_return": null,
+        "artifact_id": null,
+        "benchmark_definition": "active_watchlist_equal_weight_proxy",
+        "benchmark_return": 3.267,
+        "capacity_note": null,
+        "cost_definition": "migration_fixture_commission_and_tax_placeholder",
+        "cost_source": "migration_placeholder",
+        "current_drawdown": 0.0,
+        "excess_return": -3.267,
+        "fee_total": 0.0,
+        "max_drawdown": 0.0,
+        "order_count": 0,
+        "realized_pnl": 0.0,
+        "sharpe_like_ratio": null,
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "turnover": null,
+        "unrealized_pnl": 0.0,
+        "validation_mode": "migration_placeholder",
+        "win_rate": null,
+        "win_rate_definition": null
+      },
+      "portfolio_key": "sim-20260427122709-8da19b-manual",
+      "realized_pnl": 0.0,
+      "recent_orders": [],
+      "recommendation_hit_rate": null,
+      "rule_pass_rate": 1.0,
+      "rules": [
+        {
+          "code": "cash_guard",
+          "detail": "组合现金未跌破 0。",
+          "status": "pass",
+          "title": "资金不穿仓"
+        },
+        {
+          "code": "weight_limit",
+          "detail": "手动仓上限 35%。",
+          "status": "pass",
+          "title": "单票权重上限"
+        },
+        {
+          "code": "drawdown_guard",
+          "detail": "当前最大回撤 0.0%。",
+          "status": "pass",
+          "title": "回撤监控"
+        }
+      ],
+      "starting_cash": 200000.0,
+      "status": "running",
+      "strategy_label": "手动模拟",
+      "strategy_status": "pending_rebuild",
+      "strategy_summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。",
+      "tax_total": 0.0,
+      "total_return": 0.0,
+      "unrealized_pnl": 0.0,
+      "validation_artifact_id": null,
+      "validation_manifest_id": null,
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    }
+  ],
+  "recommendation_replay": [
+    {
+      "artifact_id": "replay-alignment:reco-600589.SH-20260424-balanced",
+      "artifact_type": "replay_alignment",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "benchmark_return": -0.0116,
+      "benchmark_source": "migration_placeholder",
+      "direction": "reduce",
+      "entry_time": "2026-04-24T15:00:00",
+      "excess_return": -0.0137,
+      "exit_time": "2026-04-27T15:00:00",
+      "followed_by_portfolios": [],
+      "generated_at": "2026-04-24T23:21:25.510436",
+      "hit_definition": "迁移期以最新可得收盘相对观察池等权 proxy 的方向一致性做研究候选判定，正式定义待重建。",
+      "hit_status": "hit",
+      "label_definition": "migration_directional_replay_pending",
+      "manifest_id": "rolling-validation:result-600589.SH-20260424-28d",
+      "max_adverse_excursion": -0.0253,
+      "max_favorable_excursion": 0.0,
+      "recommendation_id": 4,
+      "recommendation_key": "reco-600589.SH-20260424-balanced",
+      "review_window_days": null,
+      "review_window_definition": "migration_latest_available_close_vs_watchlist_equal_weight_proxy",
+      "source": "migration_inline_projection",
+      "source_classification": "migration_placeholder",
+      "stock_name": "大位科技",
+      "stock_return": -0.0253,
+      "summary": "偏谨慎建议后，标的表现弱于基准或出现绝对回撤。",
+      "symbol": "600589.SH",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    },
+    {
+      "artifact_id": "replay-alignment:reco-600522.SH-20260424-balanced",
+      "artifact_type": "replay_alignment",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "benchmark_return": -0.0116,
+      "benchmark_source": "migration_placeholder",
+      "direction": "buy",
+      "entry_time": "2026-04-24T15:00:00",
+      "excess_return": 0.089,
+      "exit_time": "2026-04-27T15:00:00",
+      "followed_by_portfolios": [],
+      "generated_at": "2026-04-24T17:08:16.412720",
+      "hit_definition": "迁移期以最新可得收盘相对观察池等权 proxy 的方向一致性做研究候选判定，正式定义待重建。",
+      "hit_status": "hit",
+      "label_definition": "migration_directional_replay_pending",
+      "manifest_id": "rolling-validation:result-600522.SH-20260424-28d",
+      "max_adverse_excursion": -0.0018,
+      "max_favorable_excursion": 0.0774,
+      "recommendation_id": 3,
+      "recommendation_key": "reco-600522.SH-20260424-balanced",
+      "review_window_days": null,
+      "review_window_definition": "migration_latest_available_close_vs_watchlist_equal_weight_proxy",
+      "source": "migration_inline_projection",
+      "source_classification": "migration_placeholder",
+      "stock_name": "中天科技",
+      "stock_return": 0.0774,
+      "summary": "方向偏多后，标的至少没有显著跑输基准。",
+      "symbol": "600522.SH",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    },
+    {
+      "artifact_id": "replay-alignment:reco-002270.SZ-20260424-balanced",
+      "artifact_type": "replay_alignment",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "benchmark_return": -0.0116,
+      "benchmark_source": "migration_placeholder",
+      "direction": "watch",
+      "entry_time": "2026-04-24T15:00:00",
+      "excess_return": -0.021,
+      "exit_time": "2026-04-27T15:00:00",
+      "followed_by_portfolios": [],
+      "generated_at": "2026-04-24T17:08:06.866390",
+      "hit_definition": "迁移期以最新可得收盘相对观察池等权 proxy 的方向一致性做研究候选判定，正式定义待重建。",
+      "hit_status": "miss",
+      "label_definition": "migration_directional_replay_pending",
+      "manifest_id": "rolling-validation:result-002270.SZ-20260424-28d",
+      "max_adverse_excursion": -0.0326,
+      "max_favorable_excursion": 0.0007,
+      "recommendation_id": 2,
+      "recommendation_key": "reco-002270.SZ-20260424-balanced",
+      "review_window_days": null,
+      "review_window_definition": "migration_latest_available_close_vs_watchlist_equal_weight_proxy",
+      "source": "migration_inline_projection",
+      "source_classification": "migration_placeholder",
+      "stock_name": "华明装备",
+      "stock_return": -0.0326,
+      "summary": "继续观察阶段，标的没有走出显著超额波动。 当前复盘看，提示力度仍不够。",
+      "symbol": "002270.SZ",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    },
+    {
+      "artifact_id": "replay-alignment:reco-002028.SZ-20260424-balanced",
+      "artifact_type": "replay_alignment",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "benchmark_return": -0.0116,
+      "benchmark_source": "migration_placeholder",
+      "direction": "buy",
+      "entry_time": "2026-04-24T15:00:00",
+      "excess_return": -0.0543,
+      "exit_time": "2026-04-27T15:00:00",
+      "followed_by_portfolios": [],
+      "generated_at": "2026-04-24T17:07:56.374691",
+      "hit_definition": "迁移期以最新可得收盘相对观察池等权 proxy 的方向一致性做研究候选判定，正式定义待重建。",
+      "hit_status": "miss",
+      "label_definition": "migration_directional_replay_pending",
+      "manifest_id": "rolling-validation:result-002028.SZ-20260424-28d",
+      "max_adverse_excursion": -0.066,
+      "max_favorable_excursion": 0.0,
+      "recommendation_id": 1,
+      "recommendation_key": "reco-002028.SZ-20260424-balanced",
+      "review_window_days": null,
+      "review_window_definition": "migration_latest_available_close_vs_watchlist_equal_weight_proxy",
+      "source": "migration_inline_projection",
+      "source_classification": "migration_placeholder",
+      "stock_name": "思源电气",
+      "stock_return": -0.066,
+      "summary": "方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。",
+      "symbol": "002028.SZ",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+      "validation_status": "pending_rebuild"
+    }
+  ],
+  "refresh_policy": {
+    "cache_ttl_seconds": 5,
+    "manual_refresh_cooldown_minutes": 1,
+    "market_timezone": "Asia/Shanghai",
+    "schedules": [
+      {
+        "cadence_minutes": 1440,
+        "market_delay_minutes": 0,
+        "scope": "盘前轻刷新",
+        "stale_after_minutes": 1440,
+        "trigger": "工作日 08:10 刷新主数据、披露计划和财报补录，不在盘中反复重刷低频分析。"
+      },
+      {
+        "cadence_minutes": 5,
+        "market_delay_minutes": 0,
+        "scope": "运营复盘 5 分钟行情",
+        "stale_after_minutes": 5,
+        "trigger": "交易时段仅同步关注池、模拟池与持仓标的的 5 分钟行情；5 分钟内优先复用本地缓存，过期后再增量拉公开分钟源。"
+      },
+      {
+        "cadence_minutes": 30,
+        "market_delay_minutes": 0,
+        "scope": "盘中自动换仓决策",
+        "stale_after_minutes": 35,
+        "trigger": "模型轨道按固定时钟触发定时决策，不因每个 5 分钟行情跳动立即换仓。"
+      },
+      {
+        "cadence_minutes": 1440,
+        "market_delay_minutes": 80,
+        "scope": "盘后主刷新",
+        "stale_after_minutes": 2880,
+        "trigger": "工作日 16:20 统一刷新 daily、daily_basic、财务指标与主 recommendation；这是低频分析的主刷新时点。"
+      },
+      {
+        "cadence_minutes": 1440,
+        "market_delay_minutes": 260,
+        "scope": "晚间补充刷新",
+        "stale_after_minutes": 2880,
+        "trigger": "工作日 19:20 补录资金流、股东增减持和当晚新增财务事件，不在白天抢数据窗口。"
+      },
+      {
+        "cadence_minutes": 1440,
+        "market_delay_minutes": 375,
+        "scope": "夜间校准刷新",
+        "stale_after_minutes": 2880,
+        "trigger": "工作日 21:15 补全龙虎榜、大宗交易、质押等夜间数据，并做日终归档。"
+      }
+    ]
+  },
+  "simulation_workspace": {
+    "comparison_metrics": [
+      {
+        "difference": 0.0,
+        "label": "收益率",
+        "leader": "tie",
+        "manual_value": 0.0,
+        "model_value": 0.0,
+        "unit": "pct"
+      },
+      {
+        "difference": 0.0,
+        "label": "超额收益",
+        "leader": "tie",
+        "manual_value": 0.0,
+        "model_value": 0.0,
+        "unit": "pct"
+      },
+      {
+        "difference": 0.0,
+        "label": "仓位",
+        "leader": "tie",
+        "manual_value": 0.0,
+        "model_value": 0.0,
+        "unit": "pct"
+      },
+      {
+        "difference": 0.0,
+        "label": "最大回撤",
+        "leader": "tie",
+        "manual_value": 0.0,
+        "model_value": 0.0,
+        "unit": "pct"
+      },
+      {
+        "difference": 0.0,
+        "label": "持仓数",
+        "leader": "tie",
+        "manual_value": 0.0,
+        "model_value": 0.0,
+        "unit": "count"
+      }
+    ],
+    "configuration": {
+      "auto_execute_model": true,
+      "auto_execute_model_requested": true,
+      "auto_execute_note": "当前仅 Web 模拟盘支持自动执行。开启后，系统会按等权组合研究策略自动生成目标仓位并记录模拟成交；不会触发任何真实下单或真实交易路由。",
+      "auto_execute_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "editable_fields": [
+        "initial_cash",
+        "watch_symbols",
+        "focus_symbol",
+        "step_interval_seconds"
+      ],
+      "focus_symbol": "600589.SH",
+      "initial_cash": 200000.0,
+      "market_data_interval_seconds": 300,
+      "step_interval_seconds": 300,
+      "watch_symbols": [
+        "600589.SH",
+        "600522.SH",
+        "002270.SZ",
+        "002028.SZ"
+      ]
+    },
+    "controls": {
+      "can_end": true,
+      "can_pause": true,
+      "can_restart": true,
+      "can_resume": false,
+      "can_start": false,
+      "can_step": true,
+      "end_requires_confirmation": true
+    },
+    "decision_differences": [],
+    "kline": {
+      "last_updated": "2026-04-27T03:15:00",
+      "points": [
+        {
+          "close_price": 10.01,
+          "high_price": 10.19,
+          "low_price": 9.92,
+          "observed_at": "2026-04-27T01:35:00",
+          "open_price": 10.15,
+          "volume": 143901.0
+        },
+        {
+          "close_price": 9.99,
+          "high_price": 10.11,
+          "low_price": 9.99,
+          "observed_at": "2026-04-27T01:40:00",
+          "open_price": 10.02,
+          "volume": 73035.0
+        },
+        {
+          "close_price": 10.02,
+          "high_price": 10.04,
+          "low_price": 9.95,
+          "observed_at": "2026-04-27T01:45:00",
+          "open_price": 9.98,
+          "volume": 54014.0
+        },
+        {
+          "close_price": 10.08,
+          "high_price": 10.08,
+          "low_price": 9.99,
+          "observed_at": "2026-04-27T01:50:00",
+          "open_price": 10.03,
+          "volume": 26362.0
+        },
+        {
+          "close_price": 10.07,
+          "high_price": 10.08,
+          "low_price": 10.04,
+          "observed_at": "2026-04-27T01:55:00",
+          "open_price": 10.07,
+          "volume": 22177.0
+        },
+        {
+          "close_price": 10.09,
+          "high_price": 10.14,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:00:00",
+          "open_price": 10.08,
+          "volume": 21919.0
+        },
+        {
+          "close_price": 10.07,
+          "high_price": 10.11,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:05:00",
+          "open_price": 10.09,
+          "volume": 14244.0
+        },
+        {
+          "close_price": 10.05,
+          "high_price": 10.08,
+          "low_price": 10.02,
+          "observed_at": "2026-04-27T02:10:00",
+          "open_price": 10.08,
+          "volume": 19526.0
+        },
+        {
+          "close_price": 10.07,
+          "high_price": 10.08,
+          "low_price": 10.03,
+          "observed_at": "2026-04-27T02:15:00",
+          "open_price": 10.05,
+          "volume": 12366.0
+        },
+        {
+          "close_price": 10.06,
+          "high_price": 10.09,
+          "low_price": 10.06,
+          "observed_at": "2026-04-27T02:20:00",
+          "open_price": 10.07,
+          "volume": 9473.0
+        },
+        {
+          "close_price": 10.08,
+          "high_price": 10.12,
+          "low_price": 10.05,
+          "observed_at": "2026-04-27T02:25:00",
+          "open_price": 10.06,
+          "volume": 14214.0
+        },
+        {
+          "close_price": 10.07,
+          "high_price": 10.11,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:30:00",
+          "open_price": 10.09,
+          "volume": 11440.0
+        },
+        {
+          "close_price": 10.06,
+          "high_price": 10.09,
+          "low_price": 10.05,
+          "observed_at": "2026-04-27T02:35:00",
+          "open_price": 10.08,
+          "volume": 11505.0
+        },
+        {
+          "close_price": 10.09,
+          "high_price": 10.1,
+          "low_price": 10.05,
+          "observed_at": "2026-04-27T02:40:00",
+          "open_price": 10.05,
+          "volume": 11907.0
+        },
+        {
+          "close_price": 10.08,
+          "high_price": 10.11,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:45:00",
+          "open_price": 10.09,
+          "volume": 16021.0
+        },
+        {
+          "close_price": 10.08,
+          "high_price": 10.1,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:50:00",
+          "open_price": 10.09,
+          "volume": 8410.0
+        },
+        {
+          "close_price": 10.08,
+          "high_price": 10.1,
+          "low_price": 10.07,
+          "observed_at": "2026-04-27T02:55:00",
+          "open_price": 10.09,
+          "volume": 6005.0
+        },
+        {
+          "close_price": 10.06,
+          "high_price": 10.08,
+          "low_price": 10.06,
+          "observed_at": "2026-04-27T03:00:00",
+          "open_price": 10.08,
+          "volume": 11247.0
+        },
+        {
+          "close_price": 10.04,
+          "high_price": 10.06,
+          "low_price": 10.04,
+          "observed_at": "2026-04-27T03:05:00",
+          "open_price": 10.05,
+          "volume": 10813.0
+        },
+        {
+          "close_price": 10.06,
+          "high_price": 10.08,
+          "low_price": 10.04,
+          "observed_at": "2026-04-27T03:10:00",
+          "open_price": 10.04,
+          "volume": 6307.0
+        },
+        {
+          "close_price": 10.07,
+          "high_price": 10.09,
+          "low_price": 10.05,
+          "observed_at": "2026-04-27T03:15:00",
+          "open_price": 10.06,
+          "volume": 9238.0
+        }
+      ],
+      "stock_name": "大位科技",
+      "symbol": "600589.SH"
+    },
+    "manual_track": {
+      "label": "用户轨道",
+      "latest_reason": null,
+      "portfolio": {
+        "active_position_count": 0,
+        "alerts": [],
+        "attribution": [
+          {
+            "amount": -0.0,
+            "contribution_pct": -0.0,
+            "detail": "所有成交双边佣金汇总。",
+            "label": "交易佣金"
+          },
+          {
+            "amount": -0.0,
+            "contribution_pct": -0.0,
+            "detail": "卖出侧单边印花税成本。",
+            "label": "印花税"
+          }
+        ],
+        "available_cash": 200000.0,
+        "benchmark_context": {
+          "artifact_id": null,
+          "as_of_time": "2026-04-27T03:15:00",
+          "available_time": "2026-04-27T03:15:00",
+          "benchmark_definition": "active_watchlist_equal_weight_proxy",
+          "benchmark_id": "migration-benchmark:CSI300",
+          "benchmark_label": "CSI300",
+          "benchmark_symbol": "CSI300",
+          "benchmark_type": "market_index",
+          "manifest_id": null,
+          "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+          "source": "active_watchlist_equal_weight_proxy",
+          "source_classification": "migration_placeholder",
+          "status": "pending_rebuild"
+        },
+        "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "benchmark_return": 0.0,
+        "benchmark_status": "pending_rebuild",
+        "benchmark_symbol": "CSI300",
+        "current_drawdown": 0.0,
+        "excess_return": 0.0,
+        "execution_policy": {
+          "constraints": [
+            "单票权重上限 35%",
+            "手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。",
+            "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+          ],
+          "label": "迁移期纸面组合治理",
+          "note": "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
+          "policy_type": "paper_track_governance_policy_v1",
+          "source": "paper_track_contract",
+          "status": "pending_rebuild",
+          "summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。"
+        },
+        "fee_total": 0.0,
+        "holdings": [
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 207.47,
+            "market_value": 0.0,
+            "name": "思源电气",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 208.18,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "002028.SZ",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 26.67,
+            "market_value": 0.0,
+            "name": "华明装备",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 26.76,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "002270.SZ",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 36.53,
+            "market_value": 0.0,
+            "name": "中天科技",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 36.53,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "600522.SH",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 10.07,
+            "market_value": 0.0,
+            "name": "大位科技",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 10.06,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "600589.SH",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          }
+        ],
+        "invested_ratio": 0.0,
+        "last_market_data_at": "2026-04-27T03:15:00",
+        "market_data_timeframe": "5min",
+        "market_value": 0.0,
+        "max_drawdown": 0.0,
+        "mode": "manual",
+        "mode_label": "手动模拟",
+        "name": "用户手动轨道",
+        "nav_history": [
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:35:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:40:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:45:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:50:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:55:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:00:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:05:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:10:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:15:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:20:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:25:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:30:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:35:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:40:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:45:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:50:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:55:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:00:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:05:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:10:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:15:00",
+            "trade_date": "2026-04-27"
+          }
+        ],
+        "net_asset_value": 200000.0,
+        "order_count": 0,
+        "performance": {
+          "annualized_excess_return": null,
+          "annualized_return": null,
+          "artifact_id": null,
+          "benchmark_definition": "active_watchlist_equal_weight_proxy",
+          "benchmark_return": 0.0,
+          "capacity_note": null,
+          "cost_definition": "migration_fixture_commission_and_tax_placeholder",
+          "cost_source": "migration_placeholder",
+          "current_drawdown": 0.0,
+          "excess_return": 0.0,
+          "fee_total": 0.0,
+          "max_drawdown": 0.0,
+          "order_count": 0,
+          "realized_pnl": 0.0,
+          "sharpe_like_ratio": null,
+          "tax_total": 0.0,
+          "total_return": 0.0,
+          "turnover": null,
+          "unrealized_pnl": 0.0,
+          "validation_mode": "migration_placeholder",
+          "win_rate": null,
+          "win_rate_definition": null
+        },
+        "portfolio_key": "sim-20260427122709-8da19b-manual",
+        "realized_pnl": 0.0,
+        "recent_orders": [],
+        "recommendation_hit_rate": null,
+        "rule_pass_rate": 1.0,
+        "rules": [
+          {
+            "code": "cash_guard",
+            "detail": "组合现金未跌破 0。",
+            "status": "pass",
+            "title": "资金不穿仓"
+          },
+          {
+            "code": "weight_limit",
+            "detail": "手动仓上限 35%。",
+            "status": "pass",
+            "title": "单票权重上限"
+          },
+          {
+            "code": "drawdown_guard",
+            "detail": "当前最大回撤 0.0%。",
+            "status": "pass",
+            "title": "回撤监控"
+          }
+        ],
+        "starting_cash": 200000.0,
+        "status": "running",
+        "strategy_label": "手动模拟",
+        "strategy_status": "pending_rebuild",
+        "strategy_summary": "研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。",
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_artifact_id": null,
+        "validation_manifest_id": null,
+        "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "validation_status": "pending_rebuild"
+      },
+      "risk_exposure": {
+        "active_position_count": 0,
+        "cash_ratio": 1.0,
+        "drawdown": 0.0,
+        "invested_ratio": 0.0,
+        "max_position_weight": 0.0
+      },
+      "role": "manual"
+    },
+    "model_advices": [
+      {
+        "action": "buy",
+        "action_definition": "delta_to_constrained_target_weight_portfolio",
+        "confidence_label": "中高",
+        "current_weight": 0.0,
+        "direction": "buy",
+        "direction_label": "偏积极",
+        "generated_at": "2026-04-27T20:26:48.293786",
+        "policy_note": "模型轨道已切换到等权组合研究策略：只在模拟盘内运行，以当前自选池建议为输入，按最多 5 只、单票上限 20%、100 股整手和允许留现金的规则生成目标仓位。",
+        "policy_status": "research_candidate",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "quantity": 1000,
+        "quantity_definition": "board_lot_delta_to_target_weight",
+        "rank": 1,
+        "reason": "20 日收益提升至 32.3%，中枢趋势仍偏多。",
+        "reference_price": 36.53,
+        "risk_flags": [
+          "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+          "20 日波动率升至 18.9%，回撤容忍度要收紧。",
+          "近 10 日与 20 日动量同时跌回 0 以下时降级。"
+        ],
+        "score": 468,
+        "stock_name": "中天科技",
+        "symbol": "600522.SH",
+        "target_weight": 0.2,
+        "trade_delta_weight": 0.2
+      },
+      {
+        "action": "buy",
+        "action_definition": "delta_to_constrained_target_weight_portfolio",
+        "confidence_label": "中等",
+        "current_weight": 0.0,
+        "direction": "watch",
+        "direction_label": "继续观察",
+        "generated_at": "2026-04-27T20:26:10.187389",
+        "policy_note": "模型轨道已切换到等权组合研究策略：只在模拟盘内运行，以当前自选池建议为输入，按最多 5 只、单票上限 20%、100 股整手和允许留现金的规则生成目标仓位。",
+        "policy_status": "research_candidate",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "quantity": 100,
+        "quantity_definition": "board_lot_delta_to_target_weight",
+        "rank": 2,
+        "reason": "近 10 个交易日上涨占比 60%，短期确认仍在。",
+        "reference_price": 207.47,
+        "risk_flags": [
+          "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+          "20 日波动率升至 12.8%，回撤容忍度要收紧。",
+          "价格已明显跌离近 20 日中枢，趋势延续概率下降。"
+        ],
+        "score": 356,
+        "stock_name": "思源电气",
+        "symbol": "002028.SZ",
+        "target_weight": 0.2,
+        "trade_delta_weight": 0.2
+      },
+      {
+        "action": "hold",
+        "action_definition": "delta_to_constrained_target_weight_portfolio",
+        "confidence_label": "中等",
+        "current_weight": 0.0,
+        "direction": "reduce",
+        "direction_label": "偏谨慎",
+        "generated_at": "2026-04-27T20:27:06.960357",
+        "policy_note": "模型轨道已切换到等权组合研究策略：只在模拟盘内运行，以当前自选池建议为输入，按最多 5 只、单票上限 20%、100 股整手和允许留现金的规则生成目标仓位。",
+        "policy_status": "research_candidate",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "quantity": null,
+        "quantity_definition": "board_lot_delta_to_target_weight",
+        "rank": null,
+        "reason": "大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书 提供正向事件证据。",
+        "reference_price": 10.07,
+        "risk_flags": [
+          "关于未弥补亏损达到实收股本总额三分之一的公告 仍是潜在反向事件。",
+          "正负事件冲突度 33%，新闻因子不能单独抬高建议强度。",
+          "20 日波动率升至 16.1%，回撤容忍度要收紧。"
+        ],
+        "score": 261,
+        "stock_name": "大位科技",
+        "symbol": "600589.SH",
+        "target_weight": 0.0,
+        "trade_delta_weight": 0.0
+      },
+      {
+        "action": "hold",
+        "action_definition": "delta_to_constrained_target_weight_portfolio",
+        "confidence_label": "中等",
+        "current_weight": 0.0,
+        "direction": "reduce",
+        "direction_label": "偏谨慎",
+        "generated_at": "2026-04-27T20:26:29.438528",
+        "policy_note": "模型轨道已切换到等权组合研究策略：只在模拟盘内运行，以当前自选池建议为输入，按最多 5 只、单票上限 20%、100 股整手和允许留现金的规则生成目标仓位。",
+        "policy_status": "research_candidate",
+        "policy_type": "phase5_simulation_topk_equal_weight_v1",
+        "quantity": null,
+        "quantity_definition": "board_lot_delta_to_target_weight",
+        "rank": null,
+        "reason": "近 5 日量能相对 20 日均值抬升 0.93σ。",
+        "reference_price": 26.67,
+        "risk_flags": [
+          "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+          "20 日波动率升至 11.6%，回撤容忍度要收紧。",
+          "价格已明显跌离近 20 日中枢，趋势延续概率下降。"
+        ],
+        "score": 259,
+        "stock_name": "华明装备",
+        "symbol": "002270.SZ",
+        "target_weight": 0.0,
+        "trade_delta_weight": 0.0
+      }
+    ],
+    "model_track": {
+      "label": "模型轨道",
+      "latest_reason": null,
+      "portfolio": {
+        "active_position_count": 0,
+        "alerts": [],
+        "attribution": [
+          {
+            "amount": -0.0,
+            "contribution_pct": -0.0,
+            "detail": "所有成交双边佣金汇总。",
+            "label": "交易佣金"
+          },
+          {
+            "amount": -0.0,
+            "contribution_pct": -0.0,
+            "detail": "卖出侧单边印花税成本。",
+            "label": "印花税"
+          }
+        ],
+        "available_cash": 200000.0,
+        "benchmark_context": {
+          "artifact_id": null,
+          "as_of_time": "2026-04-27T03:15:00",
+          "available_time": "2026-04-27T03:15:00",
+          "benchmark_definition": "active_watchlist_equal_weight_proxy",
+          "benchmark_id": "migration-benchmark:CSI300",
+          "benchmark_label": "CSI300",
+          "benchmark_symbol": "CSI300",
+          "benchmark_type": "market_index",
+          "manifest_id": null,
+          "note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+          "source": "active_watchlist_equal_weight_proxy",
+          "source_classification": "migration_placeholder",
+          "status": "pending_rebuild"
+        },
+        "benchmark_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "benchmark_return": 0.0,
+        "benchmark_status": "pending_rebuild",
+        "benchmark_symbol": "CSI300",
+        "current_drawdown": 0.0,
+        "excess_return": 0.0,
+        "execution_policy": {
+          "constraints": [
+            "单票权重上限 20%",
+            "模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。",
+            "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。"
+          ],
+          "label": "等权组合研究策略",
+          "note": "模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。",
+          "policy_type": "phase5_simulation_topk_equal_weight_v1",
+          "source": "paper_track_contract",
+          "status": "research_candidate",
+          "summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。"
+        },
+        "fee_total": 0.0,
+        "holdings": [
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 207.47,
+            "market_value": 0.0,
+            "name": "思源电气",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 208.18,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "002028.SZ",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 26.67,
+            "market_value": 0.0,
+            "name": "华明装备",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 26.76,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "002270.SZ",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 36.53,
+            "market_value": 0.0,
+            "name": "中天科技",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 36.53,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "600522.SH",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          },
+          {
+            "avg_cost": 0.0,
+            "holding_pnl_pct": null,
+            "last_price": 10.07,
+            "market_value": 0.0,
+            "name": "大位科技",
+            "pnl_contribution": 0.0,
+            "portfolio_weight": 0.0,
+            "prev_close": 10.06,
+            "quantity": 0,
+            "realized_pnl": 0.0,
+            "symbol": "600589.SH",
+            "today_pnl_amount": 0.0,
+            "today_pnl_pct": 0.0,
+            "total_pnl": 0.0,
+            "unrealized_pnl": 0.0
+          }
+        ],
+        "invested_ratio": 0.0,
+        "last_market_data_at": "2026-04-27T03:15:00",
+        "market_data_timeframe": "5min",
+        "market_value": 0.0,
+        "max_drawdown": 0.0,
+        "mode": "auto_model",
+        "mode_label": "模型自动持仓",
+        "name": "模型自动轨道",
+        "nav_history": [
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:35:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:40:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:45:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:50:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T01:55:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:00:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:05:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:10:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:15:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:20:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:25:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:30:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:35:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:40:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:45:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:50:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T02:55:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:00:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:05:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:10:00",
+            "trade_date": "2026-04-27"
+          },
+          {
+            "benchmark_nav": 200000.0,
+            "drawdown": 0.0,
+            "exposure": 0.0,
+            "nav": 200000.0,
+            "observed_at": "2026-04-27T03:15:00",
+            "trade_date": "2026-04-27"
+          }
+        ],
+        "net_asset_value": 200000.0,
+        "order_count": 0,
+        "performance": {
+          "annualized_excess_return": null,
+          "annualized_return": null,
+          "artifact_id": null,
+          "benchmark_definition": "active_watchlist_equal_weight_proxy",
+          "benchmark_return": 0.0,
+          "capacity_note": null,
+          "cost_definition": "migration_fixture_commission_and_tax_placeholder",
+          "cost_source": "migration_placeholder",
+          "current_drawdown": 0.0,
+          "excess_return": 0.0,
+          "fee_total": 0.0,
+          "max_drawdown": 0.0,
+          "order_count": 0,
+          "realized_pnl": 0.0,
+          "sharpe_like_ratio": null,
+          "tax_total": 0.0,
+          "total_return": 0.0,
+          "turnover": null,
+          "unrealized_pnl": 0.0,
+          "validation_mode": "migration_placeholder",
+          "win_rate": null,
+          "win_rate_definition": null
+        },
+        "portfolio_key": "sim-20260427122709-8da19b-model",
+        "realized_pnl": 0.0,
+        "recent_orders": [],
+        "recommendation_hit_rate": null,
+        "rule_pass_rate": 1.0,
+        "rules": [
+          {
+            "code": "cash_guard",
+            "detail": "组合现金未跌破 0。",
+            "status": "pass",
+            "title": "资金不穿仓"
+          },
+          {
+            "code": "weight_limit",
+            "detail": "自动组合单票权重上限 20%。",
+            "status": "pass",
+            "title": "单票权重上限"
+          },
+          {
+            "code": "drawdown_guard",
+            "detail": "当前最大回撤 0.0%。",
+            "status": "pass",
+            "title": "回撤监控"
+          }
+        ],
+        "starting_cash": 200000.0,
+        "status": "running",
+        "strategy_label": "模型自动持仓",
+        "strategy_status": "research_candidate",
+        "strategy_summary": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+        "tax_total": 0.0,
+        "total_return": 0.0,
+        "unrealized_pnl": 0.0,
+        "validation_artifact_id": null,
+        "validation_manifest_id": null,
+        "validation_note": "当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。",
+        "validation_status": "pending_rebuild"
+      },
+      "risk_exposure": {
+        "active_position_count": 0,
+        "cash_ratio": 1.0,
+        "drawdown": 0.0,
+        "invested_ratio": 0.0,
+        "max_position_weight": 0.0
+      },
+      "role": "model"
+    },
+    "session": {
+      "auto_execute_model": true,
+      "auto_execute_model_requested": true,
+      "auto_execute_note": "当前仅 Web 模拟盘支持自动执行。开启后，系统会按等权组合研究策略自动生成目标仓位并记录模拟成交；不会触发任何真实下单或真实交易路由。",
+      "auto_execute_status": "research_candidate",
+      "benchmark_symbol": "CSI300",
+      "current_step": 0,
+      "data_latency_seconds": 34289,
+      "ended_at": null,
+      "fill_rule_label": "最新价即时成交",
+      "focus_symbol": "600589.SH",
+      "initial_cash": 200000.0,
+      "intraday_source_status": {
+        "data_latency_seconds": 34289,
+        "decision_interval_seconds": 1800,
+        "fallback_used": true,
+        "last_success_at": "2026-04-27T03:17:27.611073+00:00",
+        "latest_market_data_at": "2026-04-27T03:15:00+00:00",
+        "market_data_interval_seconds": 300,
+        "message": "已同步 4 只标的的 5 分钟行情，新增或更新 84 根 K 线。",
+        "provider_label": "AKShare 分钟兜底",
+        "provider_name": "akshare",
+        "source_kind": "akshare_hist_min_em",
+        "stale": true,
+        "status": "ready",
+        "symbol_count": 4,
+        "timeframe": "5min"
+      },
+      "last_data_time": "2026-04-27T03:15:00",
+      "last_market_data_at": "2026-04-27T03:15:00Z",
+      "last_resumed_at": "2026-04-27T12:27:09.247605",
+      "market_data_interval_seconds": 300,
+      "market_data_timeframe": "5min",
+      "name": "双轨同步模拟",
+      "paused_at": null,
+      "restart_count": 3,
+      "resumable": true,
+      "session_key": "sim-20260427122709-8da19b",
+      "started_at": "2026-04-27T12:27:09.247605",
+      "status": "running",
+      "status_label": "运行中",
+      "step_interval_seconds": 300,
+      "step_trigger_label": "30 分钟定时决策",
+      "watch_symbols": [
+        "600589.SH",
+        "600522.SH",
+        "002270.SZ",
+        "002028.SZ"
+      ]
+    },
+    "timeline": [
+      {
+        "detail": "双轨同步模拟已建档，等待启动。",
+        "event_key": "sim-20260427122709-8da19b-session_created-4a194aec74",
+        "event_type": "session_created",
+        "happened_at": "2026-04-27T12:27:09.241434",
+        "lineage": {
+          "license_tag": "internal-derived",
+          "lineage_hash": "a8d61f0745d58c9efaa5b509426a7fafda9d8dcdd47ae1a980b8e9c0680c0848",
+          "redistribution_scope": "none",
+          "source_uri": "simulation://event/sim-20260427122709-8da19b/session_created/0",
+          "usage_scope": "internal_research"
+        },
+        "payload": {
+          "focus_symbol": "600589.SH",
+          "watch_symbols": [
+            "600589.SH",
+            "600522.SH",
+            "002270.SZ",
+            "002028.SZ"
+          ]
+        },
+        "reason_tags": [],
+        "severity": "info",
+        "step_index": 0,
+        "symbol": null,
+        "title": "模拟进程已创建",
+        "track": "shared",
+        "track_label": "共享时间线"
+      },
+      {
+        "detail": "双轨已按同一初始资金和股票池重新对齐。",
+        "event_key": "sim-20260427122709-8da19b-session_started-1dd3b695d1",
+        "event_type": "session_started",
+        "happened_at": "2026-04-27T12:27:09.247605",
+        "lineage": {
+          "license_tag": "internal-derived",
+          "lineage_hash": "22fa1968894ecfd691f0fb573a559b00bac7a51d230c85ab29093d92411e0dcd",
+          "redistribution_scope": "none",
+          "source_uri": "simulation://event/sim-20260427122709-8da19b/session_started/0",
+          "usage_scope": "internal_research"
+        },
+        "payload": {
+          "restart_count": 3
+        },
+        "reason_tags": [],
+        "severity": "info",
+        "step_index": 0,
+        "symbol": null,
+        "title": "新模拟已重启",
+        "track": "shared",
+        "track_label": "共享时间线"
+      }
+    ]
+  }
+}

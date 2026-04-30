@@ -1,0 +1,6172 @@
+{
+  "annualized_excess_return": 0.0131,
+  "annualized_return": 0.0154,
+  "artifact_id": "portfolio-backtest:sim-20260427134347-d43368-model",
+  "artifact_type": "portfolio_backtest",
+  "benchmark": {
+    "definition": "active_watchlist_equal_weight_proxy"
+  },
+  "benchmark_definition": "active_watchlist_equal_weight_proxy",
+  "capacity_note": "paper-trade track only; auto execution approval remains limited to simulation track and does not extend to real trading.",
+  "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+  "cost_model": {
+    "price_limit": true,
+    "round_trip_cost_bps": 35.0,
+    "suspension_blocking": true,
+    "t_plus_one": true
+  },
+  "drawdown_series_ref": "phase2-drawdown:sim-20260427134347-d43368-model",
+  "drawdown_stats": {
+    "current_drawdown": 0.0,
+    "max_drawdown": -0.0001
+  },
+  "equity_curve": [
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-12T15:00:00",
+      "trade_date": "2023-04-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-13T15:00:00",
+      "trade_date": "2023-04-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-14T15:00:00",
+      "trade_date": "2023-04-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-17T15:00:00",
+      "trade_date": "2023-04-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-18T15:00:00",
+      "trade_date": "2023-04-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-19T15:00:00",
+      "trade_date": "2023-04-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-20T15:00:00",
+      "trade_date": "2023-04-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-21T15:00:00",
+      "trade_date": "2023-04-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-24T15:00:00",
+      "trade_date": "2023-04-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-25T15:00:00",
+      "trade_date": "2023-04-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-26T15:00:00",
+      "trade_date": "2023-04-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-27T15:00:00",
+      "trade_date": "2023-04-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-04-28T15:00:00",
+      "trade_date": "2023-04-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-04T15:00:00",
+      "trade_date": "2023-05-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-05T15:00:00",
+      "trade_date": "2023-05-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-08T15:00:00",
+      "trade_date": "2023-05-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-09T15:00:00",
+      "trade_date": "2023-05-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-10T15:00:00",
+      "trade_date": "2023-05-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-11T15:00:00",
+      "trade_date": "2023-05-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-12T15:00:00",
+      "trade_date": "2023-05-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-15T15:00:00",
+      "trade_date": "2023-05-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-16T15:00:00",
+      "trade_date": "2023-05-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-17T15:00:00",
+      "trade_date": "2023-05-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-18T15:00:00",
+      "trade_date": "2023-05-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-19T15:00:00",
+      "trade_date": "2023-05-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-22T15:00:00",
+      "trade_date": "2023-05-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-23T15:00:00",
+      "trade_date": "2023-05-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-24T15:00:00",
+      "trade_date": "2023-05-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-25T15:00:00",
+      "trade_date": "2023-05-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-26T15:00:00",
+      "trade_date": "2023-05-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-29T15:00:00",
+      "trade_date": "2023-05-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-30T15:00:00",
+      "trade_date": "2023-05-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-05-31T15:00:00",
+      "trade_date": "2023-05-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-01T15:00:00",
+      "trade_date": "2023-06-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-02T15:00:00",
+      "trade_date": "2023-06-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-05T15:00:00",
+      "trade_date": "2023-06-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-06T15:00:00",
+      "trade_date": "2023-06-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-07T15:00:00",
+      "trade_date": "2023-06-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-08T15:00:00",
+      "trade_date": "2023-06-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-09T15:00:00",
+      "trade_date": "2023-06-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-12T15:00:00",
+      "trade_date": "2023-06-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-13T15:00:00",
+      "trade_date": "2023-06-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-14T15:00:00",
+      "trade_date": "2023-06-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-15T15:00:00",
+      "trade_date": "2023-06-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-16T15:00:00",
+      "trade_date": "2023-06-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-19T15:00:00",
+      "trade_date": "2023-06-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-20T15:00:00",
+      "trade_date": "2023-06-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-21T15:00:00",
+      "trade_date": "2023-06-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-26T15:00:00",
+      "trade_date": "2023-06-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-27T15:00:00",
+      "trade_date": "2023-06-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-28T15:00:00",
+      "trade_date": "2023-06-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-29T15:00:00",
+      "trade_date": "2023-06-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-06-30T15:00:00",
+      "trade_date": "2023-06-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-03T15:00:00",
+      "trade_date": "2023-07-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-04T15:00:00",
+      "trade_date": "2023-07-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-05T15:00:00",
+      "trade_date": "2023-07-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-06T15:00:00",
+      "trade_date": "2023-07-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-07T15:00:00",
+      "trade_date": "2023-07-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-10T15:00:00",
+      "trade_date": "2023-07-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-11T15:00:00",
+      "trade_date": "2023-07-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-12T15:00:00",
+      "trade_date": "2023-07-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-13T15:00:00",
+      "trade_date": "2023-07-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-14T15:00:00",
+      "trade_date": "2023-07-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-17T15:00:00",
+      "trade_date": "2023-07-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-18T15:00:00",
+      "trade_date": "2023-07-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-19T15:00:00",
+      "trade_date": "2023-07-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-20T15:00:00",
+      "trade_date": "2023-07-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-21T15:00:00",
+      "trade_date": "2023-07-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-24T15:00:00",
+      "trade_date": "2023-07-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-25T15:00:00",
+      "trade_date": "2023-07-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-26T15:00:00",
+      "trade_date": "2023-07-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-27T15:00:00",
+      "trade_date": "2023-07-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-28T15:00:00",
+      "trade_date": "2023-07-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-07-31T15:00:00",
+      "trade_date": "2023-07-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-01T15:00:00",
+      "trade_date": "2023-08-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-02T15:00:00",
+      "trade_date": "2023-08-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-03T15:00:00",
+      "trade_date": "2023-08-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-04T15:00:00",
+      "trade_date": "2023-08-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-07T15:00:00",
+      "trade_date": "2023-08-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-08T15:00:00",
+      "trade_date": "2023-08-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-09T15:00:00",
+      "trade_date": "2023-08-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-10T15:00:00",
+      "trade_date": "2023-08-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-11T15:00:00",
+      "trade_date": "2023-08-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-14T15:00:00",
+      "trade_date": "2023-08-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-15T15:00:00",
+      "trade_date": "2023-08-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-16T15:00:00",
+      "trade_date": "2023-08-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-17T15:00:00",
+      "trade_date": "2023-08-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-18T15:00:00",
+      "trade_date": "2023-08-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-21T15:00:00",
+      "trade_date": "2023-08-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-22T15:00:00",
+      "trade_date": "2023-08-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-23T15:00:00",
+      "trade_date": "2023-08-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-24T15:00:00",
+      "trade_date": "2023-08-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-25T15:00:00",
+      "trade_date": "2023-08-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-28T15:00:00",
+      "trade_date": "2023-08-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-29T15:00:00",
+      "trade_date": "2023-08-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-30T15:00:00",
+      "trade_date": "2023-08-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-08-31T15:00:00",
+      "trade_date": "2023-08-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-01T15:00:00",
+      "trade_date": "2023-09-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-04T15:00:00",
+      "trade_date": "2023-09-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-05T15:00:00",
+      "trade_date": "2023-09-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-06T15:00:00",
+      "trade_date": "2023-09-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-07T15:00:00",
+      "trade_date": "2023-09-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-08T15:00:00",
+      "trade_date": "2023-09-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-11T15:00:00",
+      "trade_date": "2023-09-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-12T15:00:00",
+      "trade_date": "2023-09-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-13T15:00:00",
+      "trade_date": "2023-09-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-14T15:00:00",
+      "trade_date": "2023-09-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-15T15:00:00",
+      "trade_date": "2023-09-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-18T15:00:00",
+      "trade_date": "2023-09-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-19T15:00:00",
+      "trade_date": "2023-09-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-20T15:00:00",
+      "trade_date": "2023-09-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-21T15:00:00",
+      "trade_date": "2023-09-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-22T15:00:00",
+      "trade_date": "2023-09-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-25T15:00:00",
+      "trade_date": "2023-09-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-26T15:00:00",
+      "trade_date": "2023-09-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-27T15:00:00",
+      "trade_date": "2023-09-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-09-28T15:00:00",
+      "trade_date": "2023-09-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-09T15:00:00",
+      "trade_date": "2023-10-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-10T15:00:00",
+      "trade_date": "2023-10-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-11T15:00:00",
+      "trade_date": "2023-10-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-12T15:00:00",
+      "trade_date": "2023-10-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-13T15:00:00",
+      "trade_date": "2023-10-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-16T15:00:00",
+      "trade_date": "2023-10-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-17T15:00:00",
+      "trade_date": "2023-10-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-18T15:00:00",
+      "trade_date": "2023-10-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-19T15:00:00",
+      "trade_date": "2023-10-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-20T15:00:00",
+      "trade_date": "2023-10-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-23T15:00:00",
+      "trade_date": "2023-10-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-24T15:00:00",
+      "trade_date": "2023-10-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-25T15:00:00",
+      "trade_date": "2023-10-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-26T15:00:00",
+      "trade_date": "2023-10-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-27T15:00:00",
+      "trade_date": "2023-10-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-30T15:00:00",
+      "trade_date": "2023-10-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-10-31T15:00:00",
+      "trade_date": "2023-10-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-01T15:00:00",
+      "trade_date": "2023-11-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-02T15:00:00",
+      "trade_date": "2023-11-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-03T15:00:00",
+      "trade_date": "2023-11-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-06T15:00:00",
+      "trade_date": "2023-11-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-07T15:00:00",
+      "trade_date": "2023-11-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-08T15:00:00",
+      "trade_date": "2023-11-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-09T15:00:00",
+      "trade_date": "2023-11-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-10T15:00:00",
+      "trade_date": "2023-11-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-13T15:00:00",
+      "trade_date": "2023-11-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-14T15:00:00",
+      "trade_date": "2023-11-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-15T15:00:00",
+      "trade_date": "2023-11-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-16T15:00:00",
+      "trade_date": "2023-11-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-17T15:00:00",
+      "trade_date": "2023-11-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-20T15:00:00",
+      "trade_date": "2023-11-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-21T15:00:00",
+      "trade_date": "2023-11-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-22T15:00:00",
+      "trade_date": "2023-11-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-23T15:00:00",
+      "trade_date": "2023-11-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-24T15:00:00",
+      "trade_date": "2023-11-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-27T15:00:00",
+      "trade_date": "2023-11-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-28T15:00:00",
+      "trade_date": "2023-11-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-29T15:00:00",
+      "trade_date": "2023-11-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-11-30T15:00:00",
+      "trade_date": "2023-11-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-01T15:00:00",
+      "trade_date": "2023-12-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-04T15:00:00",
+      "trade_date": "2023-12-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-05T15:00:00",
+      "trade_date": "2023-12-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-06T15:00:00",
+      "trade_date": "2023-12-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-07T15:00:00",
+      "trade_date": "2023-12-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-08T15:00:00",
+      "trade_date": "2023-12-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-11T15:00:00",
+      "trade_date": "2023-12-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-12T15:00:00",
+      "trade_date": "2023-12-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-13T15:00:00",
+      "trade_date": "2023-12-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-14T15:00:00",
+      "trade_date": "2023-12-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-15T15:00:00",
+      "trade_date": "2023-12-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-18T15:00:00",
+      "trade_date": "2023-12-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-19T15:00:00",
+      "trade_date": "2023-12-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-20T15:00:00",
+      "trade_date": "2023-12-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-21T15:00:00",
+      "trade_date": "2023-12-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-22T15:00:00",
+      "trade_date": "2023-12-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-25T15:00:00",
+      "trade_date": "2023-12-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-26T15:00:00",
+      "trade_date": "2023-12-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-27T15:00:00",
+      "trade_date": "2023-12-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-28T15:00:00",
+      "trade_date": "2023-12-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2023-12-29T15:00:00",
+      "trade_date": "2023-12-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-02T15:00:00",
+      "trade_date": "2024-01-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-03T15:00:00",
+      "trade_date": "2024-01-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-04T15:00:00",
+      "trade_date": "2024-01-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-05T15:00:00",
+      "trade_date": "2024-01-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-08T15:00:00",
+      "trade_date": "2024-01-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-09T15:00:00",
+      "trade_date": "2024-01-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-10T15:00:00",
+      "trade_date": "2024-01-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-11T15:00:00",
+      "trade_date": "2024-01-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-12T15:00:00",
+      "trade_date": "2024-01-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-15T15:00:00",
+      "trade_date": "2024-01-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-16T15:00:00",
+      "trade_date": "2024-01-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-17T15:00:00",
+      "trade_date": "2024-01-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-18T15:00:00",
+      "trade_date": "2024-01-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-19T15:00:00",
+      "trade_date": "2024-01-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-22T15:00:00",
+      "trade_date": "2024-01-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-23T15:00:00",
+      "trade_date": "2024-01-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-24T15:00:00",
+      "trade_date": "2024-01-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-25T15:00:00",
+      "trade_date": "2024-01-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-26T15:00:00",
+      "trade_date": "2024-01-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-29T15:00:00",
+      "trade_date": "2024-01-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-30T15:00:00",
+      "trade_date": "2024-01-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-01-31T15:00:00",
+      "trade_date": "2024-01-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-01T15:00:00",
+      "trade_date": "2024-02-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-02T15:00:00",
+      "trade_date": "2024-02-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-05T15:00:00",
+      "trade_date": "2024-02-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-06T15:00:00",
+      "trade_date": "2024-02-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-07T15:00:00",
+      "trade_date": "2024-02-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-08T15:00:00",
+      "trade_date": "2024-02-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-19T15:00:00",
+      "trade_date": "2024-02-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-20T15:00:00",
+      "trade_date": "2024-02-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-21T15:00:00",
+      "trade_date": "2024-02-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-22T15:00:00",
+      "trade_date": "2024-02-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-23T15:00:00",
+      "trade_date": "2024-02-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-26T15:00:00",
+      "trade_date": "2024-02-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-27T15:00:00",
+      "trade_date": "2024-02-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-28T15:00:00",
+      "trade_date": "2024-02-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-02-29T15:00:00",
+      "trade_date": "2024-02-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-01T15:00:00",
+      "trade_date": "2024-03-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-04T15:00:00",
+      "trade_date": "2024-03-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-05T15:00:00",
+      "trade_date": "2024-03-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-06T15:00:00",
+      "trade_date": "2024-03-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-07T15:00:00",
+      "trade_date": "2024-03-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-08T15:00:00",
+      "trade_date": "2024-03-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-11T15:00:00",
+      "trade_date": "2024-03-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-12T15:00:00",
+      "trade_date": "2024-03-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-13T15:00:00",
+      "trade_date": "2024-03-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-14T15:00:00",
+      "trade_date": "2024-03-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-15T15:00:00",
+      "trade_date": "2024-03-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-18T15:00:00",
+      "trade_date": "2024-03-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-19T15:00:00",
+      "trade_date": "2024-03-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-20T15:00:00",
+      "trade_date": "2024-03-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-21T15:00:00",
+      "trade_date": "2024-03-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-22T15:00:00",
+      "trade_date": "2024-03-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-25T15:00:00",
+      "trade_date": "2024-03-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-26T15:00:00",
+      "trade_date": "2024-03-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-27T15:00:00",
+      "trade_date": "2024-03-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-28T15:00:00",
+      "trade_date": "2024-03-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-03-29T15:00:00",
+      "trade_date": "2024-03-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-01T15:00:00",
+      "trade_date": "2024-04-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-02T15:00:00",
+      "trade_date": "2024-04-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-03T15:00:00",
+      "trade_date": "2024-04-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-08T15:00:00",
+      "trade_date": "2024-04-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-09T15:00:00",
+      "trade_date": "2024-04-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-10T15:00:00",
+      "trade_date": "2024-04-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-11T15:00:00",
+      "trade_date": "2024-04-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-12T15:00:00",
+      "trade_date": "2024-04-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-15T15:00:00",
+      "trade_date": "2024-04-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-16T15:00:00",
+      "trade_date": "2024-04-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-17T15:00:00",
+      "trade_date": "2024-04-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-18T15:00:00",
+      "trade_date": "2024-04-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-19T15:00:00",
+      "trade_date": "2024-04-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-22T15:00:00",
+      "trade_date": "2024-04-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-23T15:00:00",
+      "trade_date": "2024-04-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-24T15:00:00",
+      "trade_date": "2024-04-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-25T15:00:00",
+      "trade_date": "2024-04-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-26T15:00:00",
+      "trade_date": "2024-04-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-29T15:00:00",
+      "trade_date": "2024-04-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-04-30T15:00:00",
+      "trade_date": "2024-04-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-06T15:00:00",
+      "trade_date": "2024-05-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-07T15:00:00",
+      "trade_date": "2024-05-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-08T15:00:00",
+      "trade_date": "2024-05-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-09T15:00:00",
+      "trade_date": "2024-05-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-10T15:00:00",
+      "trade_date": "2024-05-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-13T15:00:00",
+      "trade_date": "2024-05-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-14T15:00:00",
+      "trade_date": "2024-05-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-15T15:00:00",
+      "trade_date": "2024-05-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-16T15:00:00",
+      "trade_date": "2024-05-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-17T15:00:00",
+      "trade_date": "2024-05-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-20T15:00:00",
+      "trade_date": "2024-05-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-21T15:00:00",
+      "trade_date": "2024-05-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-22T15:00:00",
+      "trade_date": "2024-05-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-23T15:00:00",
+      "trade_date": "2024-05-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-24T15:00:00",
+      "trade_date": "2024-05-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-27T15:00:00",
+      "trade_date": "2024-05-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-28T15:00:00",
+      "trade_date": "2024-05-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-29T15:00:00",
+      "trade_date": "2024-05-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-30T15:00:00",
+      "trade_date": "2024-05-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-05-31T15:00:00",
+      "trade_date": "2024-05-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-03T15:00:00",
+      "trade_date": "2024-06-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-04T15:00:00",
+      "trade_date": "2024-06-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-05T15:00:00",
+      "trade_date": "2024-06-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-06T15:00:00",
+      "trade_date": "2024-06-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-07T15:00:00",
+      "trade_date": "2024-06-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-11T15:00:00",
+      "trade_date": "2024-06-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-12T15:00:00",
+      "trade_date": "2024-06-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-13T15:00:00",
+      "trade_date": "2024-06-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-14T15:00:00",
+      "trade_date": "2024-06-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-17T15:00:00",
+      "trade_date": "2024-06-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-18T15:00:00",
+      "trade_date": "2024-06-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-19T15:00:00",
+      "trade_date": "2024-06-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-20T15:00:00",
+      "trade_date": "2024-06-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-21T15:00:00",
+      "trade_date": "2024-06-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-24T15:00:00",
+      "trade_date": "2024-06-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-25T15:00:00",
+      "trade_date": "2024-06-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-26T15:00:00",
+      "trade_date": "2024-06-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-27T15:00:00",
+      "trade_date": "2024-06-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-06-28T15:00:00",
+      "trade_date": "2024-06-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-01T15:00:00",
+      "trade_date": "2024-07-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-02T15:00:00",
+      "trade_date": "2024-07-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-03T15:00:00",
+      "trade_date": "2024-07-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-04T15:00:00",
+      "trade_date": "2024-07-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-05T15:00:00",
+      "trade_date": "2024-07-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-08T15:00:00",
+      "trade_date": "2024-07-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-09T15:00:00",
+      "trade_date": "2024-07-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-10T15:00:00",
+      "trade_date": "2024-07-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-11T15:00:00",
+      "trade_date": "2024-07-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-12T15:00:00",
+      "trade_date": "2024-07-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-15T15:00:00",
+      "trade_date": "2024-07-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-16T15:00:00",
+      "trade_date": "2024-07-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-17T15:00:00",
+      "trade_date": "2024-07-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-18T15:00:00",
+      "trade_date": "2024-07-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-19T15:00:00",
+      "trade_date": "2024-07-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-22T15:00:00",
+      "trade_date": "2024-07-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-23T15:00:00",
+      "trade_date": "2024-07-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-24T15:00:00",
+      "trade_date": "2024-07-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-25T15:00:00",
+      "trade_date": "2024-07-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-26T15:00:00",
+      "trade_date": "2024-07-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-29T15:00:00",
+      "trade_date": "2024-07-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-30T15:00:00",
+      "trade_date": "2024-07-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-07-31T15:00:00",
+      "trade_date": "2024-07-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-01T15:00:00",
+      "trade_date": "2024-08-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-02T15:00:00",
+      "trade_date": "2024-08-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-05T15:00:00",
+      "trade_date": "2024-08-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-06T15:00:00",
+      "trade_date": "2024-08-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-07T15:00:00",
+      "trade_date": "2024-08-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-08T15:00:00",
+      "trade_date": "2024-08-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-09T15:00:00",
+      "trade_date": "2024-08-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-12T15:00:00",
+      "trade_date": "2024-08-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-13T15:00:00",
+      "trade_date": "2024-08-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-14T15:00:00",
+      "trade_date": "2024-08-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-15T15:00:00",
+      "trade_date": "2024-08-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-16T15:00:00",
+      "trade_date": "2024-08-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-19T15:00:00",
+      "trade_date": "2024-08-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-20T15:00:00",
+      "trade_date": "2024-08-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-21T15:00:00",
+      "trade_date": "2024-08-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-22T15:00:00",
+      "trade_date": "2024-08-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-23T15:00:00",
+      "trade_date": "2024-08-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-26T15:00:00",
+      "trade_date": "2024-08-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-27T15:00:00",
+      "trade_date": "2024-08-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-28T15:00:00",
+      "trade_date": "2024-08-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-29T15:00:00",
+      "trade_date": "2024-08-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-08-30T15:00:00",
+      "trade_date": "2024-08-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-02T15:00:00",
+      "trade_date": "2024-09-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-03T15:00:00",
+      "trade_date": "2024-09-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-04T15:00:00",
+      "trade_date": "2024-09-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-05T15:00:00",
+      "trade_date": "2024-09-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-06T15:00:00",
+      "trade_date": "2024-09-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-09T15:00:00",
+      "trade_date": "2024-09-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-10T15:00:00",
+      "trade_date": "2024-09-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-11T15:00:00",
+      "trade_date": "2024-09-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-12T15:00:00",
+      "trade_date": "2024-09-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-13T15:00:00",
+      "trade_date": "2024-09-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-18T15:00:00",
+      "trade_date": "2024-09-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-19T15:00:00",
+      "trade_date": "2024-09-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-20T15:00:00",
+      "trade_date": "2024-09-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-23T15:00:00",
+      "trade_date": "2024-09-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-24T15:00:00",
+      "trade_date": "2024-09-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-25T15:00:00",
+      "trade_date": "2024-09-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-26T15:00:00",
+      "trade_date": "2024-09-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-27T15:00:00",
+      "trade_date": "2024-09-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-09-30T15:00:00",
+      "trade_date": "2024-09-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-08T15:00:00",
+      "trade_date": "2024-10-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-09T15:00:00",
+      "trade_date": "2024-10-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-10T15:00:00",
+      "trade_date": "2024-10-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-11T15:00:00",
+      "trade_date": "2024-10-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-14T15:00:00",
+      "trade_date": "2024-10-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-15T15:00:00",
+      "trade_date": "2024-10-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-16T15:00:00",
+      "trade_date": "2024-10-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-17T15:00:00",
+      "trade_date": "2024-10-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-18T15:00:00",
+      "trade_date": "2024-10-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-21T15:00:00",
+      "trade_date": "2024-10-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-22T15:00:00",
+      "trade_date": "2024-10-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-23T15:00:00",
+      "trade_date": "2024-10-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-24T15:00:00",
+      "trade_date": "2024-10-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-25T15:00:00",
+      "trade_date": "2024-10-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-28T15:00:00",
+      "trade_date": "2024-10-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-29T15:00:00",
+      "trade_date": "2024-10-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-30T15:00:00",
+      "trade_date": "2024-10-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-10-31T15:00:00",
+      "trade_date": "2024-10-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-01T15:00:00",
+      "trade_date": "2024-11-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-04T15:00:00",
+      "trade_date": "2024-11-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-05T15:00:00",
+      "trade_date": "2024-11-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-06T15:00:00",
+      "trade_date": "2024-11-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-07T15:00:00",
+      "trade_date": "2024-11-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-08T15:00:00",
+      "trade_date": "2024-11-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-11T15:00:00",
+      "trade_date": "2024-11-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-12T15:00:00",
+      "trade_date": "2024-11-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-13T15:00:00",
+      "trade_date": "2024-11-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-14T15:00:00",
+      "trade_date": "2024-11-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-15T15:00:00",
+      "trade_date": "2024-11-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-18T15:00:00",
+      "trade_date": "2024-11-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-19T15:00:00",
+      "trade_date": "2024-11-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-20T15:00:00",
+      "trade_date": "2024-11-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-21T15:00:00",
+      "trade_date": "2024-11-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-22T15:00:00",
+      "trade_date": "2024-11-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-25T15:00:00",
+      "trade_date": "2024-11-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-26T15:00:00",
+      "trade_date": "2024-11-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-27T15:00:00",
+      "trade_date": "2024-11-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-28T15:00:00",
+      "trade_date": "2024-11-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-11-29T15:00:00",
+      "trade_date": "2024-11-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-02T15:00:00",
+      "trade_date": "2024-12-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-03T15:00:00",
+      "trade_date": "2024-12-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-04T15:00:00",
+      "trade_date": "2024-12-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-05T15:00:00",
+      "trade_date": "2024-12-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-06T15:00:00",
+      "trade_date": "2024-12-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-09T15:00:00",
+      "trade_date": "2024-12-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-10T15:00:00",
+      "trade_date": "2024-12-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-11T15:00:00",
+      "trade_date": "2024-12-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-12T15:00:00",
+      "trade_date": "2024-12-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-13T15:00:00",
+      "trade_date": "2024-12-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-16T15:00:00",
+      "trade_date": "2024-12-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-17T15:00:00",
+      "trade_date": "2024-12-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-18T15:00:00",
+      "trade_date": "2024-12-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-19T15:00:00",
+      "trade_date": "2024-12-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-20T15:00:00",
+      "trade_date": "2024-12-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-23T15:00:00",
+      "trade_date": "2024-12-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-24T15:00:00",
+      "trade_date": "2024-12-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-25T15:00:00",
+      "trade_date": "2024-12-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-26T15:00:00",
+      "trade_date": "2024-12-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-27T15:00:00",
+      "trade_date": "2024-12-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-30T15:00:00",
+      "trade_date": "2024-12-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2024-12-31T15:00:00",
+      "trade_date": "2024-12-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-02T15:00:00",
+      "trade_date": "2025-01-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-03T15:00:00",
+      "trade_date": "2025-01-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-06T15:00:00",
+      "trade_date": "2025-01-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-07T15:00:00",
+      "trade_date": "2025-01-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-08T15:00:00",
+      "trade_date": "2025-01-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-09T15:00:00",
+      "trade_date": "2025-01-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-10T15:00:00",
+      "trade_date": "2025-01-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-13T15:00:00",
+      "trade_date": "2025-01-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-14T15:00:00",
+      "trade_date": "2025-01-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-15T15:00:00",
+      "trade_date": "2025-01-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-16T15:00:00",
+      "trade_date": "2025-01-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-17T15:00:00",
+      "trade_date": "2025-01-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-20T15:00:00",
+      "trade_date": "2025-01-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-21T15:00:00",
+      "trade_date": "2025-01-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-22T15:00:00",
+      "trade_date": "2025-01-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-23T15:00:00",
+      "trade_date": "2025-01-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-24T15:00:00",
+      "trade_date": "2025-01-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-01-27T15:00:00",
+      "trade_date": "2025-01-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-05T15:00:00",
+      "trade_date": "2025-02-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-06T15:00:00",
+      "trade_date": "2025-02-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-07T15:00:00",
+      "trade_date": "2025-02-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-10T15:00:00",
+      "trade_date": "2025-02-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-11T15:00:00",
+      "trade_date": "2025-02-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-12T15:00:00",
+      "trade_date": "2025-02-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-13T15:00:00",
+      "trade_date": "2025-02-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-14T15:00:00",
+      "trade_date": "2025-02-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-17T15:00:00",
+      "trade_date": "2025-02-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-18T15:00:00",
+      "trade_date": "2025-02-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-19T15:00:00",
+      "trade_date": "2025-02-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-20T15:00:00",
+      "trade_date": "2025-02-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-21T15:00:00",
+      "trade_date": "2025-02-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-24T15:00:00",
+      "trade_date": "2025-02-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-25T15:00:00",
+      "trade_date": "2025-02-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-26T15:00:00",
+      "trade_date": "2025-02-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-27T15:00:00",
+      "trade_date": "2025-02-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-02-28T15:00:00",
+      "trade_date": "2025-02-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-03T15:00:00",
+      "trade_date": "2025-03-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-04T15:00:00",
+      "trade_date": "2025-03-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-05T15:00:00",
+      "trade_date": "2025-03-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-06T15:00:00",
+      "trade_date": "2025-03-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-07T15:00:00",
+      "trade_date": "2025-03-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-10T15:00:00",
+      "trade_date": "2025-03-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-11T15:00:00",
+      "trade_date": "2025-03-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-12T15:00:00",
+      "trade_date": "2025-03-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-13T15:00:00",
+      "trade_date": "2025-03-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-14T15:00:00",
+      "trade_date": "2025-03-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-17T15:00:00",
+      "trade_date": "2025-03-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-18T15:00:00",
+      "trade_date": "2025-03-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-19T15:00:00",
+      "trade_date": "2025-03-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-20T15:00:00",
+      "trade_date": "2025-03-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-21T15:00:00",
+      "trade_date": "2025-03-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-24T15:00:00",
+      "trade_date": "2025-03-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-25T15:00:00",
+      "trade_date": "2025-03-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-26T15:00:00",
+      "trade_date": "2025-03-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-27T15:00:00",
+      "trade_date": "2025-03-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-28T15:00:00",
+      "trade_date": "2025-03-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-03-31T15:00:00",
+      "trade_date": "2025-03-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-01T15:00:00",
+      "trade_date": "2025-04-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-02T15:00:00",
+      "trade_date": "2025-04-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-03T15:00:00",
+      "trade_date": "2025-04-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-07T15:00:00",
+      "trade_date": "2025-04-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-08T15:00:00",
+      "trade_date": "2025-04-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-09T15:00:00",
+      "trade_date": "2025-04-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-10T15:00:00",
+      "trade_date": "2025-04-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-11T15:00:00",
+      "trade_date": "2025-04-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-14T15:00:00",
+      "trade_date": "2025-04-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-15T15:00:00",
+      "trade_date": "2025-04-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-16T15:00:00",
+      "trade_date": "2025-04-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-17T15:00:00",
+      "trade_date": "2025-04-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-18T15:00:00",
+      "trade_date": "2025-04-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-21T15:00:00",
+      "trade_date": "2025-04-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-22T15:00:00",
+      "trade_date": "2025-04-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-23T15:00:00",
+      "trade_date": "2025-04-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-24T15:00:00",
+      "trade_date": "2025-04-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-25T15:00:00",
+      "trade_date": "2025-04-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-28T15:00:00",
+      "trade_date": "2025-04-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-29T15:00:00",
+      "trade_date": "2025-04-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-04-30T15:00:00",
+      "trade_date": "2025-04-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-06T15:00:00",
+      "trade_date": "2025-05-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-07T15:00:00",
+      "trade_date": "2025-05-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-08T15:00:00",
+      "trade_date": "2025-05-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-09T15:00:00",
+      "trade_date": "2025-05-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-12T15:00:00",
+      "trade_date": "2025-05-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-13T15:00:00",
+      "trade_date": "2025-05-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-14T15:00:00",
+      "trade_date": "2025-05-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-15T15:00:00",
+      "trade_date": "2025-05-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-16T15:00:00",
+      "trade_date": "2025-05-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-19T15:00:00",
+      "trade_date": "2025-05-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-20T15:00:00",
+      "trade_date": "2025-05-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-21T15:00:00",
+      "trade_date": "2025-05-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-22T15:00:00",
+      "trade_date": "2025-05-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-23T15:00:00",
+      "trade_date": "2025-05-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-26T15:00:00",
+      "trade_date": "2025-05-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-27T15:00:00",
+      "trade_date": "2025-05-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-28T15:00:00",
+      "trade_date": "2025-05-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-29T15:00:00",
+      "trade_date": "2025-05-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-05-30T15:00:00",
+      "trade_date": "2025-05-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-03T15:00:00",
+      "trade_date": "2025-06-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-04T15:00:00",
+      "trade_date": "2025-06-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-05T15:00:00",
+      "trade_date": "2025-06-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-06T15:00:00",
+      "trade_date": "2025-06-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-09T15:00:00",
+      "trade_date": "2025-06-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-10T15:00:00",
+      "trade_date": "2025-06-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-11T15:00:00",
+      "trade_date": "2025-06-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-12T15:00:00",
+      "trade_date": "2025-06-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-13T15:00:00",
+      "trade_date": "2025-06-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-16T15:00:00",
+      "trade_date": "2025-06-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-17T15:00:00",
+      "trade_date": "2025-06-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-18T15:00:00",
+      "trade_date": "2025-06-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-19T15:00:00",
+      "trade_date": "2025-06-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-20T15:00:00",
+      "trade_date": "2025-06-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-23T15:00:00",
+      "trade_date": "2025-06-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-24T15:00:00",
+      "trade_date": "2025-06-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-25T15:00:00",
+      "trade_date": "2025-06-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-26T15:00:00",
+      "trade_date": "2025-06-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-27T15:00:00",
+      "trade_date": "2025-06-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-06-30T15:00:00",
+      "trade_date": "2025-06-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-01T15:00:00",
+      "trade_date": "2025-07-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-02T15:00:00",
+      "trade_date": "2025-07-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-03T15:00:00",
+      "trade_date": "2025-07-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-04T15:00:00",
+      "trade_date": "2025-07-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-07T15:00:00",
+      "trade_date": "2025-07-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-08T15:00:00",
+      "trade_date": "2025-07-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-09T15:00:00",
+      "trade_date": "2025-07-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-10T15:00:00",
+      "trade_date": "2025-07-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-11T15:00:00",
+      "trade_date": "2025-07-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-14T15:00:00",
+      "trade_date": "2025-07-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-15T15:00:00",
+      "trade_date": "2025-07-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-16T15:00:00",
+      "trade_date": "2025-07-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-17T15:00:00",
+      "trade_date": "2025-07-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-18T15:00:00",
+      "trade_date": "2025-07-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-21T15:00:00",
+      "trade_date": "2025-07-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-22T15:00:00",
+      "trade_date": "2025-07-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-23T15:00:00",
+      "trade_date": "2025-07-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-24T15:00:00",
+      "trade_date": "2025-07-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-25T15:00:00",
+      "trade_date": "2025-07-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-28T15:00:00",
+      "trade_date": "2025-07-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-29T15:00:00",
+      "trade_date": "2025-07-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-30T15:00:00",
+      "trade_date": "2025-07-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-07-31T15:00:00",
+      "trade_date": "2025-07-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-01T15:00:00",
+      "trade_date": "2025-08-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-04T15:00:00",
+      "trade_date": "2025-08-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-05T15:00:00",
+      "trade_date": "2025-08-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-06T15:00:00",
+      "trade_date": "2025-08-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-07T15:00:00",
+      "trade_date": "2025-08-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-08T15:00:00",
+      "trade_date": "2025-08-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-11T15:00:00",
+      "trade_date": "2025-08-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-12T15:00:00",
+      "trade_date": "2025-08-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-13T15:00:00",
+      "trade_date": "2025-08-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-14T15:00:00",
+      "trade_date": "2025-08-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-15T15:00:00",
+      "trade_date": "2025-08-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-18T15:00:00",
+      "trade_date": "2025-08-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-19T15:00:00",
+      "trade_date": "2025-08-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-20T15:00:00",
+      "trade_date": "2025-08-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-21T15:00:00",
+      "trade_date": "2025-08-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-22T15:00:00",
+      "trade_date": "2025-08-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-25T15:00:00",
+      "trade_date": "2025-08-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-26T15:00:00",
+      "trade_date": "2025-08-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-27T15:00:00",
+      "trade_date": "2025-08-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-28T15:00:00",
+      "trade_date": "2025-08-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-08-29T15:00:00",
+      "trade_date": "2025-08-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-01T15:00:00",
+      "trade_date": "2025-09-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-02T15:00:00",
+      "trade_date": "2025-09-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-03T15:00:00",
+      "trade_date": "2025-09-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-04T15:00:00",
+      "trade_date": "2025-09-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-05T15:00:00",
+      "trade_date": "2025-09-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-08T15:00:00",
+      "trade_date": "2025-09-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-09T15:00:00",
+      "trade_date": "2025-09-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-10T15:00:00",
+      "trade_date": "2025-09-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-11T15:00:00",
+      "trade_date": "2025-09-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-12T15:00:00",
+      "trade_date": "2025-09-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-15T15:00:00",
+      "trade_date": "2025-09-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-16T15:00:00",
+      "trade_date": "2025-09-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-17T15:00:00",
+      "trade_date": "2025-09-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-18T15:00:00",
+      "trade_date": "2025-09-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-19T15:00:00",
+      "trade_date": "2025-09-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-22T15:00:00",
+      "trade_date": "2025-09-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-23T15:00:00",
+      "trade_date": "2025-09-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-24T15:00:00",
+      "trade_date": "2025-09-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-25T15:00:00",
+      "trade_date": "2025-09-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-26T15:00:00",
+      "trade_date": "2025-09-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-29T15:00:00",
+      "trade_date": "2025-09-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-09-30T15:00:00",
+      "trade_date": "2025-09-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-09T15:00:00",
+      "trade_date": "2025-10-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-10T15:00:00",
+      "trade_date": "2025-10-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-13T15:00:00",
+      "trade_date": "2025-10-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-14T15:00:00",
+      "trade_date": "2025-10-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-15T15:00:00",
+      "trade_date": "2025-10-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-16T15:00:00",
+      "trade_date": "2025-10-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-17T15:00:00",
+      "trade_date": "2025-10-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-20T15:00:00",
+      "trade_date": "2025-10-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-21T15:00:00",
+      "trade_date": "2025-10-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-22T15:00:00",
+      "trade_date": "2025-10-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-23T15:00:00",
+      "trade_date": "2025-10-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-24T15:00:00",
+      "trade_date": "2025-10-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-27T15:00:00",
+      "trade_date": "2025-10-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-28T15:00:00",
+      "trade_date": "2025-10-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-29T15:00:00",
+      "trade_date": "2025-10-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-30T15:00:00",
+      "trade_date": "2025-10-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-10-31T15:00:00",
+      "trade_date": "2025-10-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-03T15:00:00",
+      "trade_date": "2025-11-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-04T15:00:00",
+      "trade_date": "2025-11-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-05T15:00:00",
+      "trade_date": "2025-11-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-06T15:00:00",
+      "trade_date": "2025-11-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-07T15:00:00",
+      "trade_date": "2025-11-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-10T15:00:00",
+      "trade_date": "2025-11-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-11T15:00:00",
+      "trade_date": "2025-11-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-12T15:00:00",
+      "trade_date": "2025-11-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-13T15:00:00",
+      "trade_date": "2025-11-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-14T15:00:00",
+      "trade_date": "2025-11-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-17T15:00:00",
+      "trade_date": "2025-11-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-18T15:00:00",
+      "trade_date": "2025-11-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-19T15:00:00",
+      "trade_date": "2025-11-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-20T15:00:00",
+      "trade_date": "2025-11-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-21T15:00:00",
+      "trade_date": "2025-11-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-24T15:00:00",
+      "trade_date": "2025-11-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-25T15:00:00",
+      "trade_date": "2025-11-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-26T15:00:00",
+      "trade_date": "2025-11-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-27T15:00:00",
+      "trade_date": "2025-11-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-11-28T15:00:00",
+      "trade_date": "2025-11-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-01T15:00:00",
+      "trade_date": "2025-12-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-02T15:00:00",
+      "trade_date": "2025-12-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-03T15:00:00",
+      "trade_date": "2025-12-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-04T15:00:00",
+      "trade_date": "2025-12-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-05T15:00:00",
+      "trade_date": "2025-12-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-08T15:00:00",
+      "trade_date": "2025-12-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-09T15:00:00",
+      "trade_date": "2025-12-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-10T15:00:00",
+      "trade_date": "2025-12-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-11T15:00:00",
+      "trade_date": "2025-12-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-12T15:00:00",
+      "trade_date": "2025-12-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-15T15:00:00",
+      "trade_date": "2025-12-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-16T15:00:00",
+      "trade_date": "2025-12-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-17T15:00:00",
+      "trade_date": "2025-12-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-18T15:00:00",
+      "trade_date": "2025-12-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-19T15:00:00",
+      "trade_date": "2025-12-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-22T15:00:00",
+      "trade_date": "2025-12-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-23T15:00:00",
+      "trade_date": "2025-12-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-24T15:00:00",
+      "trade_date": "2025-12-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-25T15:00:00",
+      "trade_date": "2025-12-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-26T15:00:00",
+      "trade_date": "2025-12-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-29T15:00:00",
+      "trade_date": "2025-12-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-30T15:00:00",
+      "trade_date": "2025-12-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2025-12-31T15:00:00",
+      "trade_date": "2025-12-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-05T15:00:00",
+      "trade_date": "2026-01-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-06T15:00:00",
+      "trade_date": "2026-01-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-07T15:00:00",
+      "trade_date": "2026-01-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-08T15:00:00",
+      "trade_date": "2026-01-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-09T15:00:00",
+      "trade_date": "2026-01-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-12T15:00:00",
+      "trade_date": "2026-01-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-13T15:00:00",
+      "trade_date": "2026-01-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-14T15:00:00",
+      "trade_date": "2026-01-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-15T15:00:00",
+      "trade_date": "2026-01-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-16T15:00:00",
+      "trade_date": "2026-01-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-19T15:00:00",
+      "trade_date": "2026-01-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-20T15:00:00",
+      "trade_date": "2026-01-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-21T15:00:00",
+      "trade_date": "2026-01-21"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-22T15:00:00",
+      "trade_date": "2026-01-22"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-23T15:00:00",
+      "trade_date": "2026-01-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-26T15:00:00",
+      "trade_date": "2026-01-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-27T15:00:00",
+      "trade_date": "2026-01-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-28T15:00:00",
+      "trade_date": "2026-01-28"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-29T15:00:00",
+      "trade_date": "2026-01-29"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-01-30T15:00:00",
+      "trade_date": "2026-01-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-02T15:00:00",
+      "trade_date": "2026-02-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-03T15:00:00",
+      "trade_date": "2026-02-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-04T15:00:00",
+      "trade_date": "2026-02-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-05T15:00:00",
+      "trade_date": "2026-02-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-06T15:00:00",
+      "trade_date": "2026-02-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-09T15:00:00",
+      "trade_date": "2026-02-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-10T15:00:00",
+      "trade_date": "2026-02-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-11T15:00:00",
+      "trade_date": "2026-02-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-12T15:00:00",
+      "trade_date": "2026-02-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-13T15:00:00",
+      "trade_date": "2026-02-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-24T15:00:00",
+      "trade_date": "2026-02-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-25T15:00:00",
+      "trade_date": "2026-02-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-26T15:00:00",
+      "trade_date": "2026-02-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-02-27T15:00:00",
+      "trade_date": "2026-02-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-02T15:00:00",
+      "trade_date": "2026-03-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-03T15:00:00",
+      "trade_date": "2026-03-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-04T15:00:00",
+      "trade_date": "2026-03-04"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-05T15:00:00",
+      "trade_date": "2026-03-05"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-06T07:00:00",
+      "trade_date": "2026-03-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-06T15:00:00",
+      "trade_date": "2026-03-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-09T07:00:00",
+      "trade_date": "2026-03-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-09T15:00:00",
+      "trade_date": "2026-03-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-10T07:00:00",
+      "trade_date": "2026-03-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-10T15:00:00",
+      "trade_date": "2026-03-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-11T07:00:00",
+      "trade_date": "2026-03-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-11T15:00:00",
+      "trade_date": "2026-03-11"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-12T07:00:00",
+      "trade_date": "2026-03-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-12T15:00:00",
+      "trade_date": "2026-03-12"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-13T07:00:00",
+      "trade_date": "2026-03-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-13T15:00:00",
+      "trade_date": "2026-03-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-16T07:00:00",
+      "trade_date": "2026-03-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-16T15:00:00",
+      "trade_date": "2026-03-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-17T07:00:00",
+      "trade_date": "2026-03-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-17T15:00:00",
+      "trade_date": "2026-03-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-18T07:00:00",
+      "trade_date": "2026-03-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-18T15:00:00",
+      "trade_date": "2026-03-18"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-19T07:00:00",
+      "trade_date": "2026-03-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-19T15:00:00",
+      "trade_date": "2026-03-19"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-20T07:00:00",
+      "trade_date": "2026-03-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-20T15:00:00",
+      "trade_date": "2026-03-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-23T07:00:00",
+      "trade_date": "2026-03-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-23T15:00:00",
+      "trade_date": "2026-03-23"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-24T07:00:00",
+      "trade_date": "2026-03-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-24T15:00:00",
+      "trade_date": "2026-03-24"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-25T07:00:00",
+      "trade_date": "2026-03-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-25T15:00:00",
+      "trade_date": "2026-03-25"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-26T07:00:00",
+      "trade_date": "2026-03-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-26T15:00:00",
+      "trade_date": "2026-03-26"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-27T07:00:00",
+      "trade_date": "2026-03-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-27T15:00:00",
+      "trade_date": "2026-03-27"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-30T07:00:00",
+      "trade_date": "2026-03-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-30T15:00:00",
+      "trade_date": "2026-03-30"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-31T07:00:00",
+      "trade_date": "2026-03-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-03-31T15:00:00",
+      "trade_date": "2026-03-31"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-01T07:00:00",
+      "trade_date": "2026-04-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-01T15:00:00",
+      "trade_date": "2026-04-01"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-02T07:00:00",
+      "trade_date": "2026-04-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-02T15:00:00",
+      "trade_date": "2026-04-02"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-03T07:00:00",
+      "trade_date": "2026-04-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-03T15:00:00",
+      "trade_date": "2026-04-03"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-06T07:00:00",
+      "trade_date": "2026-04-06"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-07T07:00:00",
+      "trade_date": "2026-04-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-07T15:00:00",
+      "trade_date": "2026-04-07"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-08T07:00:00",
+      "trade_date": "2026-04-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-08T15:00:00",
+      "trade_date": "2026-04-08"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-09T07:00:00",
+      "trade_date": "2026-04-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-09T15:00:00",
+      "trade_date": "2026-04-09"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-10T07:00:00",
+      "trade_date": "2026-04-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-10T15:00:00",
+      "trade_date": "2026-04-10"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-13T07:00:00",
+      "trade_date": "2026-04-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-13T15:00:00",
+      "trade_date": "2026-04-13"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-14T07:00:00",
+      "trade_date": "2026-04-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-14T15:00:00",
+      "trade_date": "2026-04-14"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-15T15:00:00",
+      "trade_date": "2026-04-15"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-16T15:00:00",
+      "trade_date": "2026-04-16"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-17T15:00:00",
+      "trade_date": "2026-04-17"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-20T15:00:00",
+      "trade_date": "2026-04-20"
+    },
+    {
+      "benchmark_nav": 200000.0,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-21T15:00:00",
+      "trade_date": "2026-04-21"
+    },
+    {
+      "benchmark_nav": 206402.75,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-22T15:00:00",
+      "trade_date": "2026-04-22"
+    },
+    {
+      "benchmark_nav": 205163.24,
+      "drawdown": 0.0,
+      "exposure": 0.0,
+      "nav": 200000.0,
+      "observed_at": "2026-04-23T15:00:00",
+      "trade_date": "2026-04-23"
+    },
+    {
+      "benchmark_nav": 201867.71,
+      "drawdown": -0.0001,
+      "exposure": 0.1993,
+      "nav": 199988.04,
+      "observed_at": "2026-04-24T15:00:00",
+      "trade_date": "2026-04-24"
+    },
+    {
+      "benchmark_nav": 200442.08,
+      "drawdown": 0.0,
+      "exposure": 0.2114,
+      "nav": 203072.04,
+      "observed_at": "2026-04-27T15:00:00",
+      "trade_date": "2026-04-27"
+    }
+  ],
+  "execution_assumptions": "daily_close_marking + paper_fills + T+1 + price_limit_checks",
+  "exposure_summary": {
+    "active_position_count": 1,
+    "invested_ratio": 0.2114
+  },
+  "manifest_id": "rolling-validation:phase2-portfolio-backtests",
+  "max_drawdown": -0.0001,
+  "nav_series_ref": "phase2-nav:sim-20260427134347-d43368-model",
+  "position_constraints": {
+    "max_single_weight": 0.2
+  },
+  "position_limit_definition": "manual=35% / auto=20%",
+  "rebalance_rule": "paper_orders_as_executed",
+  "risk_stats": {
+    "active_position_count": 1,
+    "rule_pass_rate": 1.0
+  },
+  "sharpe_like_ratio": 1.31,
+  "status": "research_candidate",
+  "status_note": "组合回测已切到真实 daily 价格与 proxy benchmark；模型轨道的 simulation baseline 已升级为 constrained TopK，但仍处于 research candidate。",
+  "strategy_definition": "模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。",
+  "stress_period_summary": [
+    {
+      "excess_return": 0.0131,
+      "max_drawdown": -0.0001,
+      "period": "phase2_fixture_window"
+    }
+  ],
+  "trade_log_ref": "phase2-trades:sim-20260427134347-d43368-model",
+  "turnover": 0.083333,
+  "turnover_stats": {
+    "turnover": 0.083333
+  },
+  "win_rate": 0.996073,
+  "win_rate_definition": "positive_excess_nav_point_ratio_against_phase2_proxy"
+}

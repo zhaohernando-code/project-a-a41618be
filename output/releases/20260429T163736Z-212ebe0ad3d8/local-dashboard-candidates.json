@@ -1,0 +1,865 @@
+{
+  "generated_at": "2026-04-30T00:37:59.480935+08:00",
+  "items": [
+    {
+      "applicable_period": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）",
+      "as_of_data_time": "2026-04-29T15:00:00",
+      "change_badge": "维持",
+      "change_summary": "新闻事件分数从 0.20 转弱到 0.12。",
+      "claim_gate": {
+        "blocking_reasons": [
+          "历史验证状态当前为 research_candidate，尚未进入 verified。"
+        ],
+        "coverage_ratio": 1.0,
+        "headline": "历史验证仍在补齐，当前结论只适合继续观察",
+        "note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+        "public_direction": "watch",
+        "sample_count": 148,
+        "status": "observe_only"
+      },
+      "confidence_label": "中等",
+      "confidence_score": 0.6416,
+      "direction": "buy",
+      "direction_label": "可建仓",
+      "display_direction": "watch",
+      "display_direction_label": "继续观察",
+      "evidence_status": "sufficient",
+      "generated_at": "2026-04-29T21:16:46.201463",
+      "last_close": 34.28,
+      "name": "中天科技",
+      "price_chart": [
+        {
+          "close_price": 28.33,
+          "high_price": 29.42,
+          "low_price": 27.88,
+          "observed_at": "2026-04-14T07:00:00",
+          "open_price": 28.8,
+          "volume": 1721968.0
+        },
+        {
+          "close_price": 28.33,
+          "high_price": 29.42,
+          "low_price": 27.88,
+          "observed_at": "2026-04-14T15:00:00",
+          "open_price": 28.8,
+          "volume": 172196796.0
+        },
+        {
+          "close_price": 27.8,
+          "high_price": 29.14,
+          "low_price": 27.68,
+          "observed_at": "2026-04-15T07:00:00",
+          "open_price": 28.26,
+          "volume": 1562966.0
+        },
+        {
+          "close_price": 27.8,
+          "high_price": 29.14,
+          "low_price": 27.68,
+          "observed_at": "2026-04-15T15:00:00",
+          "open_price": 28.26,
+          "volume": 156296595.0
+        },
+        {
+          "close_price": 28.0,
+          "high_price": 28.33,
+          "low_price": 27.42,
+          "observed_at": "2026-04-16T07:00:00",
+          "open_price": 27.81,
+          "volume": 1288208.0
+        },
+        {
+          "close_price": 28.0,
+          "high_price": 28.33,
+          "low_price": 27.42,
+          "observed_at": "2026-04-16T15:00:00",
+          "open_price": 27.81,
+          "volume": 128820809.0
+        },
+        {
+          "close_price": 28.14,
+          "high_price": 28.5,
+          "low_price": 27.62,
+          "observed_at": "2026-04-17T07:00:00",
+          "open_price": 28.01,
+          "volume": 1605282.0
+        },
+        {
+          "close_price": 28.14,
+          "high_price": 28.5,
+          "low_price": 27.62,
+          "observed_at": "2026-04-17T15:00:00",
+          "open_price": 28.01,
+          "volume": 160528176.0
+        },
+        {
+          "close_price": 30.95,
+          "high_price": 30.95,
+          "low_price": 28.83,
+          "observed_at": "2026-04-20T07:00:00",
+          "open_price": 28.9,
+          "volume": 2247838.0
+        },
+        {
+          "close_price": 30.95,
+          "high_price": 30.95,
+          "low_price": 28.83,
+          "observed_at": "2026-04-20T15:00:00",
+          "open_price": 28.9,
+          "volume": 224783834.0
+        },
+        {
+          "close_price": 32.44,
+          "high_price": 32.88,
+          "low_price": 30.78,
+          "observed_at": "2026-04-21T07:00:00",
+          "open_price": 31.0,
+          "volume": 3957275.0
+        },
+        {
+          "close_price": 32.44,
+          "high_price": 32.88,
+          "low_price": 30.78,
+          "observed_at": "2026-04-21T15:00:00",
+          "open_price": 31.0,
+          "volume": 395727458.0
+        },
+        {
+          "close_price": 34.82,
+          "high_price": 34.84,
+          "low_price": 32.5,
+          "observed_at": "2026-04-22T07:00:00",
+          "open_price": 32.54,
+          "volume": 3003972.0
+        },
+        {
+          "close_price": 34.82,
+          "high_price": 34.84,
+          "low_price": 32.5,
+          "observed_at": "2026-04-22T15:00:00",
+          "open_price": 32.54,
+          "volume": 300397247.0
+        },
+        {
+          "close_price": 34.07,
+          "high_price": 35.04,
+          "low_price": 33.2,
+          "observed_at": "2026-04-23T07:00:00",
+          "open_price": 34.0,
+          "volume": 2857762.0
+        },
+        {
+          "close_price": 34.07,
+          "high_price": 35.04,
+          "low_price": 33.2,
+          "observed_at": "2026-04-23T15:00:00",
+          "open_price": 34.0,
+          "volume": 285776244.0
+        },
+        {
+          "close_price": 33.15,
+          "high_price": 34.5,
+          "low_price": 32.58,
+          "observed_at": "2026-04-24T07:00:00",
+          "open_price": 34.0,
+          "volume": 2046143.0
+        },
+        {
+          "close_price": 33.21,
+          "high_price": 34.5,
+          "low_price": 32.58,
+          "observed_at": "2026-04-24T15:00:00",
+          "open_price": 34.0,
+          "volume": 209921085.0
+        },
+        {
+          "close_price": 35.78,
+          "high_price": 36.53,
+          "low_price": 34.23,
+          "observed_at": "2026-04-27T15:00:00",
+          "open_price": 34.29,
+          "volume": 339355803.0
+        },
+        {
+          "close_price": 35.0,
+          "high_price": 36.46,
+          "low_price": 34.0,
+          "observed_at": "2026-04-28T15:00:00",
+          "open_price": 35.78,
+          "volume": 264772903.0
+        },
+        {
+          "close_price": 34.28,
+          "high_price": 34.49,
+          "low_price": 33.33,
+          "observed_at": "2026-04-29T15:00:00",
+          "open_price": 34.2,
+          "volume": 178421740.0
+        }
+      ],
+      "price_return_20d": 0.21,
+      "primary_risk": "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+      "rank": 1,
+      "sector": "通信设备",
+      "source_classification": "artifact_backed",
+      "summary": "中天科技 当前主要依据价格趋势与事件证据形成偏正判断，融合分数 0.37，按 Phase 2 的 10/20/40 交易日前瞻超额收益窗口继续跟踪。",
+      "symbol": "600522.SH",
+      "target_horizon_label": "forward_excess_return_20d",
+      "validation_artifact_id": "validation-metrics:reco-600522.SH-20260429-phase2:20d",
+      "validation_manifest_id": "rolling-validation:reco-600522.SH-20260429-phase2",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+      "validation_positive_excess_rate": 0.763514,
+      "validation_rank_ic_mean": -0.145648,
+      "validation_sample_count": 148,
+      "validation_status": "research_candidate",
+      "why_now": "20 日收益提升至 13.9%，中枢趋势仍偏多。",
+      "window_definition": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）"
+    },
+    {
+      "applicable_period": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）",
+      "as_of_data_time": "2026-04-29T15:00:00",
+      "change_badge": "维持",
+      "change_summary": "新闻事件分数从 0.54 转弱到 0.48。",
+      "claim_gate": {
+        "blocking_reasons": [
+          "历史验证状态当前为 research_candidate，尚未进入 verified。"
+        ],
+        "coverage_ratio": 1.0,
+        "headline": "历史验证仍在补齐，当前结论只适合继续观察",
+        "note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+        "public_direction": "reduce",
+        "sample_count": 654,
+        "status": "observe_only"
+      },
+      "confidence_label": "中等",
+      "confidence_score": 0.65,
+      "direction": "reduce",
+      "direction_label": "减仓",
+      "display_direction": "reduce",
+      "display_direction_label": "减仓",
+      "evidence_status": "sufficient",
+      "generated_at": "2026-04-29T21:18:08.487911",
+      "last_close": 9.73,
+      "name": "大位科技",
+      "price_chart": [
+        {
+          "close_price": 10.68,
+          "high_price": 11.18,
+          "low_price": 10.64,
+          "observed_at": "2026-03-31T15:00:00",
+          "open_price": 10.86,
+          "volume": 130467511.0
+        },
+        {
+          "close_price": 10.96,
+          "high_price": 11.2,
+          "low_price": 10.83,
+          "observed_at": "2026-04-01T15:00:00",
+          "open_price": 10.98,
+          "volume": 158208344.0
+        },
+        {
+          "close_price": 10.24,
+          "high_price": 10.88,
+          "low_price": 10.13,
+          "observed_at": "2026-04-02T15:00:00",
+          "open_price": 10.83,
+          "volume": 143377846.0
+        },
+        {
+          "close_price": 10.01,
+          "high_price": 10.45,
+          "low_price": 9.94,
+          "observed_at": "2026-04-03T15:00:00",
+          "open_price": 10.41,
+          "volume": 94137585.0
+        },
+        {
+          "close_price": 9.88,
+          "high_price": 10.08,
+          "low_price": 9.8,
+          "observed_at": "2026-04-07T15:00:00",
+          "open_price": 10.02,
+          "volume": 72826387.0
+        },
+        {
+          "close_price": 10.87,
+          "high_price": 10.87,
+          "low_price": 10.2,
+          "observed_at": "2026-04-08T15:00:00",
+          "open_price": 10.2,
+          "volume": 87700576.0
+        },
+        {
+          "close_price": 11.04,
+          "high_price": 11.1,
+          "low_price": 10.7,
+          "observed_at": "2026-04-09T15:00:00",
+          "open_price": 10.87,
+          "volume": 233099491.0
+        },
+        {
+          "close_price": 10.96,
+          "high_price": 11.36,
+          "low_price": 10.93,
+          "observed_at": "2026-04-10T15:00:00",
+          "open_price": 11.33,
+          "volume": 167755774.0
+        },
+        {
+          "close_price": 11.2,
+          "high_price": 11.27,
+          "low_price": 10.8,
+          "observed_at": "2026-04-13T15:00:00",
+          "open_price": 10.91,
+          "volume": 164292851.0
+        },
+        {
+          "close_price": 11.4,
+          "high_price": 11.96,
+          "low_price": 11.28,
+          "observed_at": "2026-04-14T15:00:00",
+          "open_price": 11.59,
+          "volume": 222941576.0
+        },
+        {
+          "close_price": 11.14,
+          "high_price": 11.51,
+          "low_price": 11.04,
+          "observed_at": "2026-04-15T15:00:00",
+          "open_price": 11.4,
+          "volume": 154084096.0
+        },
+        {
+          "close_price": 11.48,
+          "high_price": 11.6,
+          "low_price": 11.13,
+          "observed_at": "2026-04-16T15:00:00",
+          "open_price": 11.14,
+          "volume": 216349191.0
+        },
+        {
+          "close_price": 11.2,
+          "high_price": 11.41,
+          "low_price": 11.1,
+          "observed_at": "2026-04-17T15:00:00",
+          "open_price": 11.3,
+          "volume": 146730101.0
+        },
+        {
+          "close_price": 11.13,
+          "high_price": 11.26,
+          "low_price": 11.01,
+          "observed_at": "2026-04-20T15:00:00",
+          "open_price": 11.1,
+          "volume": 118127069.0
+        },
+        {
+          "close_price": 10.45,
+          "high_price": 11.05,
+          "low_price": 10.28,
+          "observed_at": "2026-04-21T15:00:00",
+          "open_price": 11.03,
+          "volume": 166005292.0
+        },
+        {
+          "close_price": 10.63,
+          "high_price": 10.65,
+          "low_price": 10.08,
+          "observed_at": "2026-04-22T15:00:00",
+          "open_price": 10.28,
+          "volume": 167506612.0
+        },
+        {
+          "close_price": 10.76,
+          "high_price": 11.4,
+          "low_price": 10.4,
+          "observed_at": "2026-04-23T15:00:00",
+          "open_price": 10.45,
+          "volume": 184943036.0
+        },
+        {
+          "close_price": 10.28,
+          "high_price": 10.6,
+          "low_price": 10.11,
+          "observed_at": "2026-04-24T15:00:00",
+          "open_price": 10.49,
+          "volume": 137699128.0
+        },
+        {
+          "close_price": 10.02,
+          "high_price": 10.19,
+          "low_price": 9.92,
+          "observed_at": "2026-04-27T15:00:00",
+          "open_price": 10.15,
+          "volume": 84311539.0
+        },
+        {
+          "close_price": 9.67,
+          "high_price": 10.11,
+          "low_price": 9.61,
+          "observed_at": "2026-04-28T15:00:00",
+          "open_price": 10.11,
+          "volume": 106304512.0
+        },
+        {
+          "close_price": 9.73,
+          "high_price": 9.89,
+          "low_price": 9.5,
+          "observed_at": "2026-04-29T15:00:00",
+          "open_price": 9.5,
+          "volume": 77368103.0
+        }
+      ],
+      "price_return_20d": -0.089,
+      "primary_risk": "关于未弥补亏损达到实收股本总额三分之一的公告 仍是潜在反向事件。",
+      "rank": 2,
+      "sector": "IT服务Ⅱ",
+      "source_classification": "artifact_backed",
+      "summary": "大位科技 当前证据仍有分歧，融合分数 -0.55，先以观察或风险提示为主。",
+      "symbol": "600589.SH",
+      "target_horizon_label": "forward_excess_return_20d",
+      "validation_artifact_id": "validation-metrics:reco-600589.SH-20260429-phase2:20d",
+      "validation_manifest_id": "rolling-validation:reco-600589.SH-20260429-phase2",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+      "validation_positive_excess_rate": 0.480122,
+      "validation_rank_ic_mean": -0.063014,
+      "validation_sample_count": 654,
+      "validation_status": "research_candidate",
+      "why_now": "大位数据科技（广东）集团股份有限公司2025年限制性股票激励计划回购注销部分限制性股票的法律意见书 提供正向事件证据。",
+      "window_definition": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）"
+    },
+    {
+      "applicable_period": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）",
+      "as_of_data_time": "2026-04-29T15:00:00",
+      "change_badge": "维持",
+      "change_summary": "最新行情和事件更新后，建议仍维持原判断，但强弱细节已有刷新。",
+      "claim_gate": {
+        "blocking_reasons": [
+          "历史验证状态当前为 research_candidate，尚未进入 verified。"
+        ],
+        "coverage_ratio": 1.0,
+        "headline": "历史验证仍在补齐，当前结论只适合继续观察",
+        "note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+        "public_direction": "reduce",
+        "sample_count": 148,
+        "status": "observe_only"
+      },
+      "confidence_label": "中等",
+      "confidence_score": 0.6411,
+      "direction": "reduce",
+      "direction_label": "减仓",
+      "display_direction": "reduce",
+      "display_direction_label": "减仓",
+      "evidence_status": "sufficient",
+      "generated_at": "2026-04-29T21:19:17.986051",
+      "last_close": 25.5,
+      "name": "华明装备",
+      "price_chart": [
+        {
+          "close_price": 26.75,
+          "high_price": 27.85,
+          "low_price": 26.55,
+          "observed_at": "2026-04-14T07:00:00",
+          "open_price": 27.77,
+          "volume": 209425.0
+        },
+        {
+          "close_price": 26.75,
+          "high_price": 27.85,
+          "low_price": 26.55,
+          "observed_at": "2026-04-14T15:00:00",
+          "open_price": 27.77,
+          "volume": 20942485.0
+        },
+        {
+          "close_price": 27.72,
+          "high_price": 28.13,
+          "low_price": 26.95,
+          "observed_at": "2026-04-15T07:00:00",
+          "open_price": 26.95,
+          "volume": 210884.0
+        },
+        {
+          "close_price": 27.72,
+          "high_price": 28.13,
+          "low_price": 26.95,
+          "observed_at": "2026-04-15T15:00:00",
+          "open_price": 26.95,
+          "volume": 21088369.0
+        },
+        {
+          "close_price": 27.66,
+          "high_price": 27.95,
+          "low_price": 27.03,
+          "observed_at": "2026-04-16T07:00:00",
+          "open_price": 27.86,
+          "volume": 138205.0
+        },
+        {
+          "close_price": 27.66,
+          "high_price": 27.95,
+          "low_price": 27.03,
+          "observed_at": "2026-04-16T15:00:00",
+          "open_price": 27.86,
+          "volume": 13820500.0
+        },
+        {
+          "close_price": 27.58,
+          "high_price": 27.7,
+          "low_price": 27.11,
+          "observed_at": "2026-04-17T07:00:00",
+          "open_price": 27.57,
+          "volume": 104865.0
+        },
+        {
+          "close_price": 27.58,
+          "high_price": 27.7,
+          "low_price": 27.11,
+          "observed_at": "2026-04-17T15:00:00",
+          "open_price": 27.57,
+          "volume": 10486481.0
+        },
+        {
+          "close_price": 27.75,
+          "high_price": 27.88,
+          "low_price": 27.16,
+          "observed_at": "2026-04-20T07:00:00",
+          "open_price": 27.52,
+          "volume": 121687.0
+        },
+        {
+          "close_price": 27.75,
+          "high_price": 27.88,
+          "low_price": 27.16,
+          "observed_at": "2026-04-20T15:00:00",
+          "open_price": 27.52,
+          "volume": 12168719.0
+        },
+        {
+          "close_price": 27.14,
+          "high_price": 27.85,
+          "low_price": 26.8,
+          "observed_at": "2026-04-21T07:00:00",
+          "open_price": 27.79,
+          "volume": 189866.0
+        },
+        {
+          "close_price": 27.14,
+          "high_price": 27.85,
+          "low_price": 26.8,
+          "observed_at": "2026-04-21T15:00:00",
+          "open_price": 27.79,
+          "volume": 18986603.0
+        },
+        {
+          "close_price": 28.21,
+          "high_price": 28.74,
+          "low_price": 26.95,
+          "observed_at": "2026-04-22T07:00:00",
+          "open_price": 26.95,
+          "volume": 208686.0
+        },
+        {
+          "close_price": 28.21,
+          "high_price": 28.74,
+          "low_price": 26.95,
+          "observed_at": "2026-04-22T15:00:00",
+          "open_price": 26.95,
+          "volume": 20868574.0
+        },
+        {
+          "close_price": 28.0,
+          "high_price": 29.26,
+          "low_price": 27.46,
+          "observed_at": "2026-04-23T07:00:00",
+          "open_price": 28.45,
+          "volume": 167704.0
+        },
+        {
+          "close_price": 28.0,
+          "high_price": 29.26,
+          "low_price": 27.46,
+          "observed_at": "2026-04-23T15:00:00",
+          "open_price": 28.45,
+          "volume": 16770417.0
+        },
+        {
+          "close_price": 27.61,
+          "high_price": 28.36,
+          "low_price": 27.37,
+          "observed_at": "2026-04-24T07:00:00",
+          "open_price": 27.8,
+          "volume": 115272.0
+        },
+        {
+          "close_price": 27.59,
+          "high_price": 28.36,
+          "low_price": 27.37,
+          "observed_at": "2026-04-24T15:00:00",
+          "open_price": 27.8,
+          "volume": 11836622.0
+        },
+        {
+          "close_price": 26.69,
+          "high_price": 26.92,
+          "low_price": 25.17,
+          "observed_at": "2026-04-27T15:00:00",
+          "open_price": 26.5,
+          "volume": 35597378.0
+        },
+        {
+          "close_price": 25.55,
+          "high_price": 26.76,
+          "low_price": 25.35,
+          "observed_at": "2026-04-28T15:00:00",
+          "open_price": 26.55,
+          "volume": 26276319.0
+        },
+        {
+          "close_price": 25.5,
+          "high_price": 25.68,
+          "low_price": 24.63,
+          "observed_at": "2026-04-29T15:00:00",
+          "open_price": 25.48,
+          "volume": 23526611.0
+        }
+      ],
+      "price_return_20d": -0.0467,
+      "primary_risk": "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+      "rank": 3,
+      "sector": "C 制造业",
+      "source_classification": "artifact_backed",
+      "summary": "华明装备 当前证据仍有分歧，融合分数 -0.48，先以观察或风险提示为主。",
+      "symbol": "002270.SZ",
+      "target_horizon_label": "forward_excess_return_20d",
+      "validation_artifact_id": "validation-metrics:reco-002270.SZ-20260429-phase2:20d",
+      "validation_manifest_id": "rolling-validation:reco-002270.SZ-20260429-phase2",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+      "validation_positive_excess_rate": 0.648649,
+      "validation_rank_ic_mean": -0.056686,
+      "validation_sample_count": 148,
+      "validation_status": "research_candidate",
+      "why_now": "近 5 日量能相对 20 日均值抬升 0.94σ。",
+      "window_definition": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）"
+    },
+    {
+      "applicable_period": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）",
+      "as_of_data_time": "2026-04-29T15:00:00",
+      "change_badge": "维持",
+      "change_summary": "新闻事件分数从 0.53 转弱到 0.40。",
+      "claim_gate": {
+        "blocking_reasons": [
+          "历史验证状态当前为 research_candidate，尚未进入 verified。"
+        ],
+        "coverage_ratio": 1.0,
+        "headline": "历史验证仍在补齐，当前结论只适合继续观察",
+        "note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+        "public_direction": "reduce",
+        "sample_count": 148,
+        "status": "observe_only"
+      },
+      "confidence_label": "中等",
+      "confidence_score": 0.5809,
+      "direction": "reduce",
+      "direction_label": "减仓",
+      "display_direction": "reduce",
+      "display_direction_label": "减仓",
+      "evidence_status": "sufficient",
+      "generated_at": "2026-04-29T21:20:34.226000",
+      "last_close": 196.86,
+      "name": "思源电气",
+      "price_chart": [
+        {
+          "close_price": 206.01,
+          "high_price": 207.64,
+          "low_price": 200.95,
+          "observed_at": "2026-04-14T07:00:00",
+          "open_price": 203.0,
+          "volume": 106900.0
+        },
+        {
+          "close_price": 206.01,
+          "high_price": 207.64,
+          "low_price": 200.95,
+          "observed_at": "2026-04-14T15:00:00",
+          "open_price": 203.0,
+          "volume": 10689968.0
+        },
+        {
+          "close_price": 209.58,
+          "high_price": 216.67,
+          "low_price": 206.49,
+          "observed_at": "2026-04-15T07:00:00",
+          "open_price": 207.64,
+          "volume": 116144.0
+        },
+        {
+          "close_price": 209.58,
+          "high_price": 216.67,
+          "low_price": 206.49,
+          "observed_at": "2026-04-15T15:00:00",
+          "open_price": 207.64,
+          "volume": 11614410.0
+        },
+        {
+          "close_price": 215.88,
+          "high_price": 216.88,
+          "low_price": 207.65,
+          "observed_at": "2026-04-16T07:00:00",
+          "open_price": 209.58,
+          "volume": 105640.0
+        },
+        {
+          "close_price": 215.88,
+          "high_price": 216.88,
+          "low_price": 207.65,
+          "observed_at": "2026-04-16T15:00:00",
+          "open_price": 209.58,
+          "volume": 10563995.0
+        },
+        {
+          "close_price": 213.8,
+          "high_price": 218.87,
+          "low_price": 212.11,
+          "observed_at": "2026-04-17T07:00:00",
+          "open_price": 215.97,
+          "volume": 102773.0
+        },
+        {
+          "close_price": 213.8,
+          "high_price": 218.87,
+          "low_price": 212.11,
+          "observed_at": "2026-04-17T15:00:00",
+          "open_price": 215.97,
+          "volume": 10277276.0
+        },
+        {
+          "close_price": 217.82,
+          "high_price": 218.0,
+          "low_price": 200.0,
+          "observed_at": "2026-04-20T07:00:00",
+          "open_price": 210.0,
+          "volume": 174468.0
+        },
+        {
+          "close_price": 217.82,
+          "high_price": 218.0,
+          "low_price": 200.0,
+          "observed_at": "2026-04-20T15:00:00",
+          "open_price": 210.0,
+          "volume": 17446843.0
+        },
+        {
+          "close_price": 216.24,
+          "high_price": 217.88,
+          "low_price": 211.7,
+          "observed_at": "2026-04-21T07:00:00",
+          "open_price": 217.0,
+          "volume": 96542.0
+        },
+        {
+          "close_price": 216.24,
+          "high_price": 217.88,
+          "low_price": 211.7,
+          "observed_at": "2026-04-21T15:00:00",
+          "open_price": 217.0,
+          "volume": 9654235.0
+        },
+        {
+          "close_price": 221.56,
+          "high_price": 222.24,
+          "low_price": 212.2,
+          "observed_at": "2026-04-22T07:00:00",
+          "open_price": 215.01,
+          "volume": 133742.0
+        },
+        {
+          "close_price": 221.56,
+          "high_price": 222.24,
+          "low_price": 212.2,
+          "observed_at": "2026-04-22T15:00:00",
+          "open_price": 215.01,
+          "volume": 13374225.0
+        },
+        {
+          "close_price": 223.99,
+          "high_price": 232.28,
+          "low_price": 217.09,
+          "observed_at": "2026-04-23T07:00:00",
+          "open_price": 227.0,
+          "volume": 134807.0
+        },
+        {
+          "close_price": 223.99,
+          "high_price": 232.28,
+          "low_price": 217.09,
+          "observed_at": "2026-04-23T15:00:00",
+          "open_price": 227.0,
+          "volume": 13480671.0
+        },
+        {
+          "close_price": 222.08,
+          "high_price": 226.6,
+          "low_price": 219.01,
+          "observed_at": "2026-04-24T07:00:00",
+          "open_price": 222.95,
+          "volume": 88520.0
+        },
+        {
+          "close_price": 222.13,
+          "high_price": 226.6,
+          "low_price": 219.01,
+          "observed_at": "2026-04-24T15:00:00",
+          "open_price": 222.95,
+          "volume": 9015684.0
+        },
+        {
+          "close_price": 207.48,
+          "high_price": 215.47,
+          "low_price": 205.0,
+          "observed_at": "2026-04-27T15:00:00",
+          "open_price": 213.88,
+          "volume": 25539111.0
+        },
+        {
+          "close_price": 195.25,
+          "high_price": 207.4,
+          "low_price": 194.1,
+          "observed_at": "2026-04-28T15:00:00",
+          "open_price": 207.23,
+          "volume": 20811098.0
+        },
+        {
+          "close_price": 196.86,
+          "high_price": 197.77,
+          "low_price": 193.47,
+          "observed_at": "2026-04-29T15:00:00",
+          "open_price": 195.0,
+          "volume": 9869722.0
+        }
+      ],
+      "price_return_20d": -0.0444,
+      "primary_risk": "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+      "rank": 4,
+      "sector": "电力设备",
+      "source_classification": "artifact_backed",
+      "summary": "思源电气 当前证据仍有分歧，融合分数 -0.30，先以观察或风险提示为主。",
+      "symbol": "002028.SZ",
+      "target_horizon_label": "forward_excess_return_20d",
+      "validation_artifact_id": "validation-metrics:reco-002028.SZ-20260429-phase2:20d",
+      "validation_manifest_id": "rolling-validation:reco-002028.SZ-20260429-phase2",
+      "validation_mode": "migration_placeholder",
+      "validation_note": "已有滚动验证产物，当前仍处于观察阶段，尚未完成正式验证。",
+      "validation_positive_excess_rate": 0.621622,
+      "validation_rank_ic_mean": -0.197478,
+      "validation_sample_count": 148,
+      "validation_status": "research_candidate",
+      "why_now": "关于举行2025年年度报告网上说明会的通知 提供正向事件证据。",
+      "window_definition": "10/20/40 交易日前瞻超额收益排序（walk-forward / research candidate）"
+    }
+  ]
+}

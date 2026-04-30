@@ -1,0 +1,135 @@
+.mobile-settings-group {
+  padding: 7px 0;
+  overflow: hidden;
+}
+
+.mobile-settings-group h4.ant-typography {
+  padding: 13px 16px 8px;
+}
+
+.mobile-settings-row {
+  align-items: center;
+  min-height: 70px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(30, 55, 86, 0.06);
+}
+
+button.mobile-settings-row,
+.mobile-settings-option {
+  width: 100%;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.mobile-settings-row-action {
+  cursor: pointer;
+}
+
+.mobile-settings-row-action:active,
+.mobile-settings-option:active {
+  background: rgba(45, 101, 191, 0.07);
+}
+
+.mobile-settings-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-settings-copy em {
+  display: block;
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.mobile-settings-trailing {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #8a98aa;
+}
+
+.mobile-settings-row .ant-tag {
+  margin-inline-end: 0;
+  border-radius: var(--mobile-radius-pill);
+  font-weight: 800;
+}
+
+.mobile-settings-panel {
+  margin-top: 10px;
+}
+
+.mobile-settings-option {
+  display: flex;
+  align-items: center;
+  min-height: 74px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(30, 55, 86, 0.06);
+}
+
+.mobile-settings-option.active {
+  background: rgba(45, 101, 191, 0.08);
+}
+
+.mobile-settings-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+
+.mobile-settings-option .ant-tag {
+  margin-inline-end: 0;
+  border-radius: var(--mobile-radius-pill);
+  font-weight: 800;
+}
+
+.mobile-settings-check {
+  color: var(--mobile-color-action);
+  font-size: 18px;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  right: auto;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 2000;
+  display: grid;
+  width: calc(100% - 24px);
+  max-width: 456px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 auto;
+  padding: 8px;
+  border: 1px solid var(--mobile-color-border);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 48px rgba(20, 42, 68, 0.16);
+  backdrop-filter: blur(22px);
+  transform: translateX(-50%);
+}
+
+.mobile-bottom-nav button {
+  display: grid;
+  min-height: 54px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--mobile-radius-control);
+  background: transparent;
+  color: var(--mobile-color-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mobile-bottom-nav button.active {
+  background: var(--mobile-color-action);
+  color: var(--mobile-color-on-action);
+}
+
+.mobile-bottom-nav .anticon {
+  font-size: 20px;
+}

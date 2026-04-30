@@ -1,0 +1,380 @@
+{
+  "artifact_id": "rolling-validation:reco-002270.SZ-20260424-phase2",
+  "artifact_type": "rolling_validation",
+  "availability_rule": "decision_time_only_uses_available_features_and_disclosures",
+  "benchmark_context": {
+    "accepted_primary_benchmark_definitions": [
+      "active_watchlist_equal_weight_proxy",
+      "active_watchlist_equal_weight_proxy + primary_sector_equal_weight_proxy"
+    ],
+    "contract_version": "phase5-validation-policy-contract-v1",
+    "defaulted_symbol_count": 0,
+    "defaulted_symbols": [],
+    "first_active_day": "2026-04-21",
+    "last_active_day": "2026-04-27",
+    "market_proxy": true,
+    "market_reference_benchmark": "CSI300",
+    "max_constituent_count": 3,
+    "min_constituent_count": 2,
+    "primary_research_benchmark": "active_watchlist_equal_weight_proxy",
+    "primary_research_benchmark_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "proxy_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "proxy_symbol_count": 3,
+    "research_validation_scope": "full_symbol_history",
+    "sector_code": "电气设备",
+    "sector_proxy": false,
+    "watchlist_tracking_scope": "join_date_forward_only"
+  },
+  "benchmark_definition": "active_watchlist_equal_weight_proxy",
+  "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+  "cost_model": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+  "created_at": "2026-04-27T21:44:11.414470+08:00",
+  "data_snapshot_id": "phase2-snapshot:002270.SZ:20260424",
+  "data_snapshot_ids": [
+    "feature-002270.SZ-20260323-phase2-market-snapshot-v1",
+    "feature-002270.SZ-20260323-phase2-event-snapshot-v1",
+    "feature-002270.SZ-20260323-phase2-fundamental-snapshot-v1",
+    "feature-002270.SZ-20260323-phase2-benchmark-snapshot-v1",
+    "feature-002270.SZ-20260323-phase2-feature-snapshot-v1"
+  ],
+  "experiment_id": "experiment:reco-002270.SZ-20260424-phase2:phase2",
+  "experiment_version": "phase2-rule-baseline-v1",
+  "feature_set_version": "phase2-research-v1",
+  "feature_version": "phase2-research-v1",
+  "generated_at": "2026-04-27T01:30:28.626226",
+  "label_definition": "forward_excess_return_ranking_10d_20d_40d",
+  "leakage_checks": [
+    {
+      "name": "available_time_leq_decision_time",
+      "status": "pass"
+    },
+    {
+      "name": "no_random_split",
+      "status": "pass"
+    },
+    {
+      "name": "manual_llm_excluded_from_training",
+      "status": "pass"
+    },
+    {
+      "name": "watchlist_tracking_not_backfilled_before_join_date",
+      "status": "pass"
+    },
+    {
+      "name": "phase5_walk_forward_split_coverage",
+      "note": "当前样本已覆盖 Phase 5 480/120/60 walk-forward 基线。",
+      "status": "pass"
+    }
+  ],
+  "model_version": "phase2-rule-baseline-v1",
+  "policy_version": "phase2-walk-forward-research-candidate-v1",
+  "rebalance_definition": "walk_forward_train_480d_validation_120d_test_60d_daily_decision",
+  "research_contract": {
+    "accepted_primary_benchmark_definitions": [
+      "active_watchlist_equal_weight_proxy",
+      "active_watchlist_equal_weight_proxy + primary_sector_equal_weight_proxy"
+    ],
+    "candidate_label_horizons": [
+      10,
+      20,
+      40
+    ],
+    "contract_version": "phase5-validation-policy-contract-v1",
+    "llm_analysis_scope": "manual_triggered_structured_context_analysis_only",
+    "market_reference_benchmark": "CSI300",
+    "primary_horizon_status": "pending_phase5_selection",
+    "primary_research_benchmark": "active_watchlist_equal_weight_proxy",
+    "primary_research_benchmark_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "required_history": {
+      "market_history_lookback_days": 1110,
+      "required_bar_count": 740,
+      "required_observation_count": 660
+    },
+    "research_validation_scope": "full_symbol_history",
+    "rolling_split_baseline": {
+      "test_days": 60,
+      "train_days": 480,
+      "validation_days": 120
+    },
+    "rolling_split_rule": "walk_forward_train_480d_validation_120d_test_60d_daily_decision",
+    "simulation_execution_scope": "simulation_only_auto_execution_no_real_order_routing",
+    "simulation_policy_constraints": {
+      "board_lot": 100,
+      "cash_allowed": true,
+      "max_position_count": 5,
+      "max_single_weight": 0.2
+    },
+    "simulation_policy_type": "phase5_simulation_topk_equal_weight_v1",
+    "watchlist_tracking_scope": "join_date_forward_only"
+  },
+  "rolling_windows": [
+    {
+      "available_observation_count": 684,
+      "coverage_status": "full_baseline",
+      "evaluation_observation_count": 84,
+      "first_evaluation_as_of": "2025-12-02T15:00:00",
+      "first_observation_at": "2023-06-12T15:00:00",
+      "last_evaluation_as_of": "2026-03-23T15:00:00",
+      "last_observation_at": "2026-03-23T15:00:00",
+      "required_observation_count": 660,
+      "test_days": 60,
+      "train_days": 480,
+      "validation_days": 120,
+      "window_count": 25
+    }
+  ],
+  "split_plan": [
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-001",
+      "test_end": "2026-03-05T15:00:00",
+      "test_start": "2025-12-02T15:00:00",
+      "train_end": "2025-06-06T15:00:00",
+      "train_start": "2023-06-12T15:00:00",
+      "validation_end": "2025-12-01T15:00:00",
+      "validation_start": "2025-06-09T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-002",
+      "test_end": "2026-03-06T07:00:00",
+      "test_start": "2025-12-03T15:00:00",
+      "train_end": "2025-06-09T15:00:00",
+      "train_start": "2023-06-13T15:00:00",
+      "validation_end": "2025-12-02T15:00:00",
+      "validation_start": "2025-06-10T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-003",
+      "test_end": "2026-03-06T15:00:00",
+      "test_start": "2025-12-04T15:00:00",
+      "train_end": "2025-06-10T15:00:00",
+      "train_start": "2023-06-14T15:00:00",
+      "validation_end": "2025-12-03T15:00:00",
+      "validation_start": "2025-06-11T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-004",
+      "test_end": "2026-03-09T07:00:00",
+      "test_start": "2025-12-05T15:00:00",
+      "train_end": "2025-06-11T15:00:00",
+      "train_start": "2023-06-15T15:00:00",
+      "validation_end": "2025-12-04T15:00:00",
+      "validation_start": "2025-06-12T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-005",
+      "test_end": "2026-03-09T15:00:00",
+      "test_start": "2025-12-08T15:00:00",
+      "train_end": "2025-06-12T15:00:00",
+      "train_start": "2023-06-16T15:00:00",
+      "validation_end": "2025-12-05T15:00:00",
+      "validation_start": "2025-06-13T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-006",
+      "test_end": "2026-03-10T07:00:00",
+      "test_start": "2025-12-09T15:00:00",
+      "train_end": "2025-06-13T15:00:00",
+      "train_start": "2023-06-19T15:00:00",
+      "validation_end": "2025-12-08T15:00:00",
+      "validation_start": "2025-06-16T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-007",
+      "test_end": "2026-03-10T15:00:00",
+      "test_start": "2025-12-10T15:00:00",
+      "train_end": "2025-06-16T15:00:00",
+      "train_start": "2023-06-20T15:00:00",
+      "validation_end": "2025-12-09T15:00:00",
+      "validation_start": "2025-06-17T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-008",
+      "test_end": "2026-03-11T07:00:00",
+      "test_start": "2025-12-11T15:00:00",
+      "train_end": "2025-06-17T15:00:00",
+      "train_start": "2023-06-21T15:00:00",
+      "validation_end": "2025-12-10T15:00:00",
+      "validation_start": "2025-06-18T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-009",
+      "test_end": "2026-03-11T15:00:00",
+      "test_start": "2025-12-12T15:00:00",
+      "train_end": "2025-06-18T15:00:00",
+      "train_start": "2023-06-26T15:00:00",
+      "validation_end": "2025-12-11T15:00:00",
+      "validation_start": "2025-06-19T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-010",
+      "test_end": "2026-03-12T07:00:00",
+      "test_start": "2025-12-15T15:00:00",
+      "train_end": "2025-06-19T15:00:00",
+      "train_start": "2023-06-27T15:00:00",
+      "validation_end": "2025-12-12T15:00:00",
+      "validation_start": "2025-06-20T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-011",
+      "test_end": "2026-03-12T15:00:00",
+      "test_start": "2025-12-16T15:00:00",
+      "train_end": "2025-06-20T15:00:00",
+      "train_start": "2023-06-28T15:00:00",
+      "validation_end": "2025-12-15T15:00:00",
+      "validation_start": "2025-06-23T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-012",
+      "test_end": "2026-03-13T07:00:00",
+      "test_start": "2025-12-17T15:00:00",
+      "train_end": "2025-06-23T15:00:00",
+      "train_start": "2023-06-29T15:00:00",
+      "validation_end": "2025-12-16T15:00:00",
+      "validation_start": "2025-06-24T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-013",
+      "test_end": "2026-03-13T15:00:00",
+      "test_start": "2025-12-18T15:00:00",
+      "train_end": "2025-06-24T15:00:00",
+      "train_start": "2023-06-30T15:00:00",
+      "validation_end": "2025-12-17T15:00:00",
+      "validation_start": "2025-06-25T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-014",
+      "test_end": "2026-03-16T07:00:00",
+      "test_start": "2025-12-19T15:00:00",
+      "train_end": "2025-06-25T15:00:00",
+      "train_start": "2023-07-03T15:00:00",
+      "validation_end": "2025-12-18T15:00:00",
+      "validation_start": "2025-06-26T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-015",
+      "test_end": "2026-03-16T15:00:00",
+      "test_start": "2025-12-22T15:00:00",
+      "train_end": "2025-06-26T15:00:00",
+      "train_start": "2023-07-04T15:00:00",
+      "validation_end": "2025-12-19T15:00:00",
+      "validation_start": "2025-06-27T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-016",
+      "test_end": "2026-03-17T07:00:00",
+      "test_start": "2025-12-23T15:00:00",
+      "train_end": "2025-06-27T15:00:00",
+      "train_start": "2023-07-05T15:00:00",
+      "validation_end": "2025-12-22T15:00:00",
+      "validation_start": "2025-06-30T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-017",
+      "test_end": "2026-03-17T15:00:00",
+      "test_start": "2025-12-24T15:00:00",
+      "train_end": "2025-06-30T15:00:00",
+      "train_start": "2023-07-06T15:00:00",
+      "validation_end": "2025-12-23T15:00:00",
+      "validation_start": "2025-07-01T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-018",
+      "test_end": "2026-03-18T07:00:00",
+      "test_start": "2025-12-25T15:00:00",
+      "train_end": "2025-07-01T15:00:00",
+      "train_start": "2023-07-07T15:00:00",
+      "validation_end": "2025-12-24T15:00:00",
+      "validation_start": "2025-07-02T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-019",
+      "test_end": "2026-03-18T15:00:00",
+      "test_start": "2025-12-26T15:00:00",
+      "train_end": "2025-07-02T15:00:00",
+      "train_start": "2023-07-10T15:00:00",
+      "validation_end": "2025-12-25T15:00:00",
+      "validation_start": "2025-07-03T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-020",
+      "test_end": "2026-03-19T07:00:00",
+      "test_start": "2025-12-29T15:00:00",
+      "train_end": "2025-07-03T15:00:00",
+      "train_start": "2023-07-11T15:00:00",
+      "validation_end": "2025-12-26T15:00:00",
+      "validation_start": "2025-07-04T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-021",
+      "test_end": "2026-03-19T15:00:00",
+      "test_start": "2025-12-30T15:00:00",
+      "train_end": "2025-07-04T15:00:00",
+      "train_start": "2023-07-12T15:00:00",
+      "validation_end": "2025-12-29T15:00:00",
+      "validation_start": "2025-07-07T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-022",
+      "test_end": "2026-03-20T07:00:00",
+      "test_start": "2025-12-31T15:00:00",
+      "train_end": "2025-07-07T15:00:00",
+      "train_start": "2023-07-13T15:00:00",
+      "validation_end": "2025-12-30T15:00:00",
+      "validation_start": "2025-07-08T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-023",
+      "test_end": "2026-03-20T15:00:00",
+      "test_start": "2026-01-05T15:00:00",
+      "train_end": "2025-07-08T15:00:00",
+      "train_start": "2023-07-14T15:00:00",
+      "validation_end": "2025-12-31T15:00:00",
+      "validation_start": "2025-07-09T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-024",
+      "test_end": "2026-03-23T07:00:00",
+      "test_start": "2026-01-06T15:00:00",
+      "train_end": "2025-07-09T15:00:00",
+      "train_start": "2023-07-17T15:00:00",
+      "validation_end": "2026-01-05T15:00:00",
+      "validation_start": "2025-07-10T15:00:00"
+    },
+    {
+      "market_regime_tag": "phase5_active_watchlist_research_candidate",
+      "slice_label": "002270.SZ-phase5-wf-025",
+      "test_end": "2026-03-23T15:00:00",
+      "test_start": "2026-01-07T15:00:00",
+      "train_end": "2025-07-10T15:00:00",
+      "train_start": "2023-07-18T15:00:00",
+      "validation_end": "2026-01-06T15:00:00",
+      "validation_start": "2025-07-11T15:00:00"
+    }
+  ],
+  "universe_definition": "active_watchlist_full_history_research_universe",
+  "universe_rule": "phase5_research_validation_uses_full_symbol_history_with_point_in_time_availability;watchlist_tracking_metrics_remain_join_date_forward_only"
+}

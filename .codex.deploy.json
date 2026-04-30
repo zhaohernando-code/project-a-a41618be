@@ -1,0 +1,25 @@
+{
+  "mode": "local_runtime_service",
+  "runtimeTargetPath": "$HOME/codex/runtime/projects/${PROJECT_ID}",
+  "preservePaths": [
+    "data",
+    ".venv-mac",
+    ".venv",
+    "venv",
+    "node_modules",
+    "frontend/node_modules"
+  ],
+  "postSyncCommands": [
+    "if [ -f frontend/package-lock.json ] && [ ! -d frontend/node_modules ]; then npm ci --prefix frontend; fi",
+    "PYTHONPATH=src python3 -m ashare_evidence.cli refresh-runtime-data"
+  ],
+  "restartLaunchAgents": [
+    "com.codex.${PROJECT_ID}.backend",
+    "com.codex.${PROJECT_ID}.frontend"
+  ],
+  "healthChecks": [
+    "http://127.0.0.1:${API_LOCAL_PORT}/health",
+    "http://127.0.0.1:${FRONTEND_LOCAL_PORT}/"
+  ],
+  "healthCheckTimeoutMs": 30000
+}

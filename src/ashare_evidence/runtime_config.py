@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime
+import os
+from pathlib import Path
+import shutil
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ashare_evidence.db import utcnow
+from ashare_evidence.intraday_market import get_intraday_market_status
 from ashare_evidence.models import AppSetting, ModelApiKey, ProviderCredential
 from ashare_evidence.stock_master import akshare_runtime_ready
 
@@ -14,6 +18,14 @@ DATA_SOURCE_DOCS = {
     "akshare": "https://akshare.akfamily.xyz/data/stock/stock.html",
     "tushare": "https://tushare.pro/document/2?doc_id=27",
 }
+
+DEFAULT_BUILTIN_LLM_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_BUILTIN_LLM_MODEL = "gpt-5.5"
+DEFAULT_BUILTIN_LLM_TRANSPORT = "codex_cli"
+DEFAULT_BUILTIN_CODEX_BASE_URL = "codex-cli://local"
+DEFAULT_BUILTIN_CODEX_CANDIDATES = (
+    "/Applications/Codex.app/Contents/Resources/codex",
+)
 
 PROVIDER_DISPLAY_NAMES = {
     "akshare": "AKShare",
@@ -109,8 +121,8 @@ DEFAULT_SETTINGS: dict[str, dict[str, Any]] = {
                     "freshness_note": "A 股实时行情可直接抓取公开站点封装结果；部分历史/复权字段需注意口径差异。",
                     "docs_url": DATA_SOURCE_DOCS["akshare"],
                     "notes": [
-                        "AKShare 实时行情文档展示 `stock_zh_a_spot_em` 和分钟线 `stock_zh_a_hist_min_em`。",
-                        "AKShare 文档特别提示 `stock_zh_a_hist` 后复权历史上可能出现负值，需要领域层显式标记复权口径。",
+                        "当前真实分析链已接入 `stock_zh_a_daily`（新浪日线）、`stock_zh_a_disclosure_report_cninfo`（巨潮公告）和东财财报/研报元数据适配。",
+                        "AKShare 实时分钟 `stock_zh_a_hist_min_em` 继续保留为盘中链路兜底适配，但运行时是否可用要以当下网络与站点状态为准。",
                     ],
                 },
                 {
@@ -119,8 +131,8 @@ DEFAULT_SETTINGS: dict[str, dict[str, Any]] = {
                     "freshness_note": "日线 `daily` 为交易日 15:00-16:00 入库；财务指标 `fina_indicator` 随财报实时更新。",
                     "docs_url": DATA_SOURCE_DOCS["tushare"],
                     "notes": [
-                        "Tushare `daily` 文档说明是未复权行情；复权需使用 `pro_bar`。",
-                        "Tushare `daily_basic` 与 `fina_indicator` 适合作为结构化财务与换手率补充。",
+                        "当前优先用 `daily + daily_basic` 生成低频真实分析，并用 `rt_min_daily` 支撑 5 分钟盘中链路。",
+                        "Tushare `fina_indicator` 已作为财务快照主源适配；无 Token 或权限不足时会回落到公开财报摘要。",
                     ],
                 },
             ],
@@ -185,6 +197,76 @@ def ensure_runtime_defaults(session: Session) -> None:
             changed = True
     if changed:
         session.flush()
+
+
+def get_builtin_llm_executor_config() -> dict[str, Any]:
+    configured_transport = (
+        os.getenv("ASHARE_BUILTIN_LLM_TRANSPORT")
+        or DEFAULT_BUILTIN_LLM_TRANSPORT
+    ).strip().lower()
+    api_key = (
+        os.getenv("ASHARE_BUILTIN_LLM_API_KEY")
+        or os.getenv("OPENAI_API_KEY")
+        or ""
+    ).strip()
+    base_url = (
+        os.getenv("ASHARE_BUILTIN_LLM_BASE_URL")
+        or os.getenv("OPENAI_BASE_URL")
+        or DEFAULT_BUILTIN_LLM_BASE_URL
+    ).strip().rstrip("/")
+    model_name = (
+        os.getenv("ASHARE_BUILTIN_LLM_MODEL")
+        or os.getenv("OPENAI_MODEL")
+        or DEFAULT_BUILTIN_LLM_MODEL
+    ).strip()
+    provider_name = (os.getenv("ASHARE_BUILTIN_LLM_PROVIDER") or "openai").strip().lower()
+    codex_bin = _resolve_builtin_codex_bin()
+    openai_api_enabled = bool(api_key and base_url and model_name)
+    transport_kind = "openai_api"
+    if configured_transport == "codex_cli":
+        if codex_bin:
+            transport_kind = "codex_cli"
+        elif openai_api_enabled:
+            transport_kind = "openai_api"
+    elif configured_transport == "openai_api" and openai_api_enabled:
+        transport_kind = "openai_api"
+    elif codex_bin:
+        transport_kind = "codex_cli"
+    enabled = bool(
+        (transport_kind == "codex_cli" and codex_bin)
+        or (transport_kind == "openai_api" and openai_api_enabled)
+    )
+    return {
+        "id": None,
+        "name": "builtin-gpt",
+        "provider_name": provider_name,
+        "model_name": model_name,
+        "base_url": DEFAULT_BUILTIN_CODEX_BASE_URL if transport_kind == "codex_cli" else base_url,
+        "api_key": api_key,
+        "codex_bin": codex_bin,
+        "transport_kind": transport_kind,
+        "enabled": enabled,
+    }
+
+
+def _resolve_builtin_codex_bin() -> str | None:
+    candidates: list[str] = []
+    explicit = (os.getenv("ASHARE_BUILTIN_CODEX_BIN") or "").strip()
+    if explicit:
+        candidates.append(explicit)
+    discovered = shutil.which("codex")
+    if discovered:
+        candidates.append(discovered)
+    candidates.extend(DEFAULT_BUILTIN_CODEX_CANDIDATES)
+    seen: set[str] = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        path = Path(candidate).expanduser()
+        if path.is_file() and os.access(path, os.X_OK):
+            return str(path)
+    return None
 
 
 def _mask_secret(value: str | None) -> str | None:
@@ -442,6 +524,19 @@ def get_runtime_settings(session: Session) -> dict[str, Any]:
             )
         elif runtimeStatus:
             status_label = str(runtimeStatus.get("status_label") or status_label)
+        intraday_status = get_intraday_market_status(session)
+        supports_intraday = provider_name in {"tushare", "akshare"}
+        intraday_runtime_ready = False
+        intraday_status_label = None
+        if supports_intraday:
+            if provider_name == "tushare":
+                intraday_runtime_ready = credential_configured
+                intraday_status_label = "实时分钟已配置" if credential_configured else "实时分钟需权限"
+            else:
+                intraday_runtime_ready = runtime_ready
+                intraday_status_label = "分钟兜底可用" if runtime_ready else "分钟兜底不可用"
+            if intraday_status.get("provider_name") == provider_name and intraday_status.get("latest_market_data_at"):
+                intraday_status_label = f"{intraday_status_label} · 最近同步 {intraday_status['latest_market_data_at']}"
         data_sources.append(
             {
                 **provider,
@@ -449,6 +544,9 @@ def get_runtime_settings(session: Session) -> dict[str, Any]:
                 "credential_required": credential_required,
                 "runtime_ready": runtime_ready,
                 "status_label": status_label,
+                "supports_intraday": supports_intraday,
+                "intraday_runtime_ready": intraday_runtime_ready,
+                "intraday_status_label": intraday_status_label,
                 "base_url": credential["base_url"] if credential else None,
                 "enabled": credential["enabled"] if credential else True,
             }
@@ -473,6 +571,15 @@ def get_runtime_settings(session: Session) -> dict[str, Any]:
         "provider_credentials": list(provider_records.values()),
         "model_api_keys": key_records,
         "default_model_api_key_id": next((item["id"] for item in key_records if item["is_default"]), None),
+    }
+
+
+def get_runtime_overview(session: Session) -> dict[str, Any]:
+    settings = get_runtime_settings(session)
+    return {
+        key: value
+        for key, value in settings.items()
+        if key not in {"provider_credentials", "model_api_keys", "default_model_api_key_id"}
     }
 
 

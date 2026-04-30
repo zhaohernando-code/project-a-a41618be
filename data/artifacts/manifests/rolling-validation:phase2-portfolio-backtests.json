@@ -1,0 +1,96 @@
+{
+  "artifact_id": "rolling-validation:phase2-portfolio-backtests",
+  "artifact_type": "rolling_validation",
+  "availability_rule": "orders_and_fills_only_use_observed_daily_closes",
+  "benchmark_context": {
+    "accepted_primary_benchmark_definitions": [
+      "active_watchlist_equal_weight_proxy",
+      "active_watchlist_equal_weight_proxy + primary_sector_equal_weight_proxy"
+    ],
+    "contract_version": "phase5-validation-policy-contract-v1",
+    "defaulted_symbol_count": 0,
+    "defaulted_symbols": [],
+    "first_active_day": "2026-04-21",
+    "last_active_day": "2026-04-27",
+    "market_proxy": true,
+    "market_reference_benchmark": "CSI300",
+    "max_constituent_count": 3,
+    "min_constituent_count": 2,
+    "primary_research_benchmark": "active_watchlist_equal_weight_proxy",
+    "primary_research_benchmark_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "proxy_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "proxy_symbol_count": 3,
+    "research_validation_scope": "full_symbol_history",
+    "sector_code": null,
+    "sector_proxy": false,
+    "symbol_scope": [
+      "002028.SZ",
+      "002270.SZ",
+      "600522.SH"
+    ],
+    "watchlist_tracking_scope": "join_date_forward_only"
+  },
+  "benchmark_definition": "active_watchlist_equal_weight_proxy",
+  "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+  "cost_model": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+  "created_at": "2026-04-27T21:44:24.045420+08:00",
+  "data_snapshot_id": "phase2-portfolio:202604272144",
+  "data_snapshot_ids": [],
+  "experiment_id": "experiment:phase2:portfolio-backtests",
+  "experiment_version": "phase2-rule-baseline-v1",
+  "feature_set_version": "phase2-research-v1",
+  "feature_version": "phase2-research-v1",
+  "generated_at": "2026-04-27T21:44:24.045420+08:00",
+  "label_definition": "portfolio_total_and_excess_return",
+  "leakage_checks": [
+    {
+      "name": "paper_orders_only",
+      "status": "pass"
+    }
+  ],
+  "model_version": "phase2-rule-baseline-v1",
+  "policy_version": "phase2-walk-forward-research-candidate-v1",
+  "rebalance_definition": "paper_order_timeline",
+  "research_contract": {
+    "accepted_primary_benchmark_definitions": [
+      "active_watchlist_equal_weight_proxy",
+      "active_watchlist_equal_weight_proxy + primary_sector_equal_weight_proxy"
+    ],
+    "candidate_label_horizons": [
+      10,
+      20,
+      40
+    ],
+    "contract_version": "phase5-validation-policy-contract-v1",
+    "llm_analysis_scope": "manual_triggered_structured_context_analysis_only",
+    "market_reference_benchmark": "CSI300",
+    "primary_horizon_status": "pending_phase5_selection",
+    "primary_research_benchmark": "active_watchlist_equal_weight_proxy",
+    "primary_research_benchmark_membership_rule": "expanding_active_watchlist_join_date_forward_only",
+    "required_history": {
+      "market_history_lookback_days": 1110,
+      "required_bar_count": 740,
+      "required_observation_count": 660
+    },
+    "research_validation_scope": "full_symbol_history",
+    "rolling_split_baseline": {
+      "test_days": 60,
+      "train_days": 480,
+      "validation_days": 120
+    },
+    "rolling_split_rule": "walk_forward_train_480d_validation_120d_test_60d_daily_decision",
+    "simulation_execution_scope": "simulation_only_auto_execution_no_real_order_routing",
+    "simulation_policy_constraints": {
+      "board_lot": 100,
+      "cash_allowed": true,
+      "max_position_count": 5,
+      "max_single_weight": 0.2
+    },
+    "simulation_policy_type": "phase5_simulation_topk_equal_weight_v1",
+    "watchlist_tracking_scope": "join_date_forward_only"
+  },
+  "rolling_windows": [],
+  "split_plan": [],
+  "universe_definition": "active_watchlist_paper_portfolios",
+  "universe_rule": "manual_and_auto_portfolio_tracks"
+}

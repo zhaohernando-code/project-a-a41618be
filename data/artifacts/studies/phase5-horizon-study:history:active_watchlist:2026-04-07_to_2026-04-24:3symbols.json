@@ -1,0 +1,2281 @@
+{
+  "artifact_id": "phase5-horizon-study:history:active_watchlist:2026-04-07_to_2026-04-24:3symbols",
+  "artifact_type": "phase5_horizon_study",
+  "contract_version": "phase5-validation-policy-contract-v1",
+  "created_at": "2026-04-27T16:22:40.571696+08:00",
+  "decision": {
+    "approval_state": "split_leadership",
+    "candidate_frontier": [
+      40,
+      20
+    ],
+    "lagging_horizons": [
+      10
+    ],
+    "note": "40d 与 20d 之间仍然存在 split leadership；10d 可以继续视为劣后候选。"
+  },
+  "generated_at": "2026-04-27T16:22:40.571696+08:00",
+  "leaderboard": [
+    {
+      "horizon": 40,
+      "leader_count": 28,
+      "leader_share": 0.666667,
+      "mean_net_excess_return": 0.155668,
+      "mean_positive_excess_rate": 0.686747,
+      "mean_rank_ic_mean": -0.167982
+    },
+    {
+      "horizon": 20,
+      "leader_count": 14,
+      "leader_share": 0.333333,
+      "mean_net_excess_return": 0.089308,
+      "mean_positive_excess_rate": 0.650602,
+      "mean_rank_ic_mean": 0.03753
+    },
+    {
+      "horizon": 10,
+      "leader_count": 0,
+      "leader_share": 0.0,
+      "mean_net_excess_return": 0.040213,
+      "mean_positive_excess_rate": 0.674699,
+      "mean_rank_ic_mean": 0.16065
+    }
+  ],
+  "pairwise_net_excess": [
+    {
+      "left_horizon": 10,
+      "left_wins": 0,
+      "mean_net_excess_spread": -0.049095,
+      "right_horizon": 20,
+      "right_wins": 42,
+      "sample_count": 42,
+      "ties": 0
+    },
+    {
+      "left_horizon": 10,
+      "left_wins": 0,
+      "mean_net_excess_spread": -0.115455,
+      "right_horizon": 40,
+      "right_wins": 42,
+      "sample_count": 42,
+      "ties": 0
+    },
+    {
+      "left_horizon": 20,
+      "left_wins": 14,
+      "mean_net_excess_spread": -0.06636,
+      "right_horizon": 40,
+      "right_wins": 28,
+      "sample_count": 42,
+      "ties": 0
+    }
+  ],
+  "primary_horizon_status": "pending_phase5_selection",
+  "records": [
+    {
+      "as_of_data_time": "2026-04-24T15:00:00",
+      "as_of_date": "2026-04-24",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260424-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260424-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260424-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-27T01:30:46.735017",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260424-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-23T15:00:00",
+      "as_of_date": "2026-04-23",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260423-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260423-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260423-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-23T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260423-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-22T15:00:00",
+      "as_of_date": "2026-04-22",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260422-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260422-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260422-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-22T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260422-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-21T15:00:00",
+      "as_of_date": "2026-04-21",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260421-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260421-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260421-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-21T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260421-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-20T15:00:00",
+      "as_of_date": "2026-04-20",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260420-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260420-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260420-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-20T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260420-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-17T15:00:00",
+      "as_of_date": "2026-04-17",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260417-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260417-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260417-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-17T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260417-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-16T15:00:00",
+      "as_of_date": "2026-04-16",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260416-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260416-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260416-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-16T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260416-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-15T15:00:00",
+      "as_of_date": "2026-04-15",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260415-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260415-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260415-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-15T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260415-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-14T07:00:00",
+      "as_of_date": "2026-04-14",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260414-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260414-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260414-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-14T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260414-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-13T15:00:00",
+      "as_of_date": "2026-04-13",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260413-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260413-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260413-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-13T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260413-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-10T15:00:00",
+      "as_of_date": "2026-04-10",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260410-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260410-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260410-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-10T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260410-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-09T15:00:00",
+      "as_of_date": "2026-04-09",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260409-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260409-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260409-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-09T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260409-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-08T15:00:00",
+      "as_of_date": "2026-04-08",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260408-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260408-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260408-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-08T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260408-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-07T07:00:00",
+      "as_of_date": "2026-04-07",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260407-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.13828,
+          "positive_excess_rate": 0.662651,
+          "rank": 1,
+          "rank_ic_mean": 0.008648,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260407-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.075149,
+          "positive_excess_rate": 0.60241,
+          "rank": 2,
+          "rank_ic_mean": 0.136266,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002028.SZ-20260407-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.041308,
+          "positive_excess_rate": 0.626506,
+          "rank": 3,
+          "rank_ic_mean": 0.184627,
+          "sample_count": 83,
+          "turnover_mean": 0.119386
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-07T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "思源电气",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002028.SZ-20260407-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002028.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-24T15:00:00",
+      "as_of_date": "2026-04-24",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260424-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260424-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260424-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-27T01:30:28.626226",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260424-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-23T15:00:00",
+      "as_of_date": "2026-04-23",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260423-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260423-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260423-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-23T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260423-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-22T15:00:00",
+      "as_of_date": "2026-04-22",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260422-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260422-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260422-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-22T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260422-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-21T15:00:00",
+      "as_of_date": "2026-04-21",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260421-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260421-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260421-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-21T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260421-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-20T15:00:00",
+      "as_of_date": "2026-04-20",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260420-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260420-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260420-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-20T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260420-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-17T15:00:00",
+      "as_of_date": "2026-04-17",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260417-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260417-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260417-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-17T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260417-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-16T15:00:00",
+      "as_of_date": "2026-04-16",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260416-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260416-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260416-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-16T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260416-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-15T15:00:00",
+      "as_of_date": "2026-04-15",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260415-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260415-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260415-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-15T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260415-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-14T07:00:00",
+      "as_of_date": "2026-04-14",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260414-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260414-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260414-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-14T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260414-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-13T15:00:00",
+      "as_of_date": "2026-04-13",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260413-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260413-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260413-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-13T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260413-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-10T15:00:00",
+      "as_of_date": "2026-04-10",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260410-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260410-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260410-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-10T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260410-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-09T15:00:00",
+      "as_of_date": "2026-04-09",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260409-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260409-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260409-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-09T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260409-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-08T15:00:00",
+      "as_of_date": "2026-04-08",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260408-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260408-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260408-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-08T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260408-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-07T07:00:00",
+      "as_of_date": "2026-04-07",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260407-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.043869,
+          "positive_excess_rate": 0.590361,
+          "rank": 1,
+          "rank_ic_mean": 0.0492,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260407-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.041991,
+          "positive_excess_rate": 0.433735,
+          "rank": 2,
+          "rank_ic_mean": -0.235926,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        },
+        {
+          "artifact_id": "validation-metrics:reco-002270.SZ-20260407-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.017173,
+          "positive_excess_rate": 0.650602,
+          "rank": 3,
+          "rank_ic_mean": 0.247114,
+          "sample_count": 83,
+          "turnover_mean": 0.037236
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-07T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 20,
+      "leader_rank": 1,
+      "name": "华明装备",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-002270.SZ-20260407-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "002270.SZ",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-24T15:00:00",
+      "as_of_date": "2026-04-24",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260424-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260424-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260424-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-27T01:31:07.175902",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260424-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-23T15:00:00",
+      "as_of_date": "2026-04-23",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260423-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260423-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260423-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-23T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260423-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-22T15:00:00",
+      "as_of_date": "2026-04-22",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260422-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260422-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260422-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-22T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260422-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-21T15:00:00",
+      "as_of_date": "2026-04-21",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260421-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260421-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260421-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-21T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260421-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-20T15:00:00",
+      "as_of_date": "2026-04-20",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260420-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260420-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260420-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-20T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260420-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-17T15:00:00",
+      "as_of_date": "2026-04-17",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260417-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260417-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260417-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-17T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260417-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-16T15:00:00",
+      "as_of_date": "2026-04-16",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260416-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260416-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260416-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-16T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260416-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-15T15:00:00",
+      "as_of_date": "2026-04-15",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260415-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260415-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260415-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-15T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260415-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-14T07:00:00",
+      "as_of_date": "2026-04-14",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260414-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260414-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260414-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-14T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260414-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-13T15:00:00",
+      "as_of_date": "2026-04-13",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260413-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260413-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260413-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-13T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260413-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-10T15:00:00",
+      "as_of_date": "2026-04-10",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260410-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260410-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260410-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-10T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260410-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-09T15:00:00",
+      "as_of_date": "2026-04-09",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260409-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260409-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260409-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-09T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260409-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-08T15:00:00",
+      "as_of_date": "2026-04-08",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260408-phase2:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260408-phase2:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260408-phase2:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-08T15:25:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260408-phase2",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    },
+    {
+      "as_of_data_time": "2026-04-07T07:00:00",
+      "as_of_date": "2026-04-07",
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "candidates": [
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260407-balanced:40d",
+          "horizon": 40,
+          "net_excess_return": 0.286732,
+          "positive_excess_rate": 0.963855,
+          "rank": 1,
+          "rank_ic_mean": -0.276668,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260407-balanced:20d",
+          "horizon": 20,
+          "net_excess_return": 0.148906,
+          "positive_excess_rate": 0.759036,
+          "rank": 2,
+          "rank_ic_mean": -0.072877,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        },
+        {
+          "artifact_id": "validation-metrics:reco-600522.SH-20260407-balanced:10d",
+          "horizon": 10,
+          "net_excess_return": 0.062158,
+          "positive_excess_rate": 0.746988,
+          "rank": 3,
+          "rank_ic_mean": 0.050208,
+          "sample_count": 83,
+          "turnover_mean": 0.045915
+        }
+      ],
+      "contract_version": "phase5-validation-policy-contract-v1",
+      "coverage_status": "full_baseline",
+      "exclusion_reason": null,
+      "generated_at": "2026-04-07T08:05:00",
+      "include_in_aggregate": true,
+      "leader_horizon": 40,
+      "leader_rank": 1,
+      "name": "中天科技",
+      "primary_horizon_status": "pending_phase5_selection",
+      "recommendation_key": "reco-600522.SH-20260407-balanced",
+      "selection_readiness": "comparison_ready",
+      "symbol": "600522.SH",
+      "walk_forward_window_count": 24
+    }
+  ],
+  "required_benchmark_definition": "active_watchlist_equal_weight_proxy",
+  "scope": {
+    "active_watchlist_symbols": [
+      "002270.SZ",
+      "002028.SZ",
+      "600522.SH"
+    ],
+    "include_history": true,
+    "selection_mode": "latest_per_symbol_as_of_day",
+    "symbols": [
+      "002270.SZ",
+      "002028.SZ",
+      "600522.SH"
+    ]
+  },
+  "summary": {
+    "excluded_reasons": {},
+    "excluded_record_count": 0,
+    "included_as_of_date_count": 14,
+    "included_record_count": 42,
+    "included_symbol_count": 3,
+    "selected_record_count": 42
+  },
+  "time_stability": {
+    "stable_symbol_count": 3,
+    "symbol_count": 3,
+    "symbols": [
+      {
+        "as_of_dates": [
+          "2026-04-07",
+          "2026-04-08",
+          "2026-04-09",
+          "2026-04-10",
+          "2026-04-13",
+          "2026-04-14",
+          "2026-04-15",
+          "2026-04-16",
+          "2026-04-17",
+          "2026-04-20",
+          "2026-04-21",
+          "2026-04-22",
+          "2026-04-23",
+          "2026-04-24"
+        ],
+        "is_stable": true,
+        "leader_horizons": [
+          40
+        ],
+        "name": "思源电气",
+        "snapshot_count": 14,
+        "symbol": "002028.SZ"
+      },
+      {
+        "as_of_dates": [
+          "2026-04-07",
+          "2026-04-08",
+          "2026-04-09",
+          "2026-04-10",
+          "2026-04-13",
+          "2026-04-14",
+          "2026-04-15",
+          "2026-04-16",
+          "2026-04-17",
+          "2026-04-20",
+          "2026-04-21",
+          "2026-04-22",
+          "2026-04-23",
+          "2026-04-24"
+        ],
+        "is_stable": true,
+        "leader_horizons": [
+          20
+        ],
+        "name": "华明装备",
+        "snapshot_count": 14,
+        "symbol": "002270.SZ"
+      },
+      {
+        "as_of_dates": [
+          "2026-04-07",
+          "2026-04-08",
+          "2026-04-09",
+          "2026-04-10",
+          "2026-04-13",
+          "2026-04-14",
+          "2026-04-15",
+          "2026-04-16",
+          "2026-04-17",
+          "2026-04-20",
+          "2026-04-21",
+          "2026-04-22",
+          "2026-04-23",
+          "2026-04-24"
+        ],
+        "is_stable": true,
+        "leader_horizons": [
+          40
+        ],
+        "name": "中天科技",
+        "snapshot_count": 14,
+        "symbol": "600522.SH"
+      }
+    ],
+    "unstable_symbol_count": 0
+  }
+}

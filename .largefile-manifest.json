@@ -1,0 +1,144 @@
+{
+  "threshold": 500,
+  "reviewed_at": "2026-04-28",
+  "files": {
+    "frontend/src/App.tsx": {
+      "lines": 2544,
+      "reason": "Main app shell (2544 lines after mobile refactor follow-up). Mobile UI JSX remains in dedicated components/mobile/*; this file only holds shared state/handlers and mobile overlay wiring. Default model selection logic was extracted to components/mobile/modelSelection.ts during review; further App.tsx growth should be blocked unless paired with additional extraction.",
+      "status": "planned_refactor",
+      "reviewed_at": "2026-04-29"
+    },
+    "frontend/src/styles.css": {
+      "lines": 1073,
+      "reason": "Global CSS: variables, layout, component styles, Ant Design overrides, responsive breakpoints. Cascade-dependent.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/analysis_pipeline.py": {
+      "lines": 927,
+      "reason": "Analysis pipeline: announcement body fetching, LLM enrichment, financial trends. Cohesive pipeline definition.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-30"
+    },
+    "src/ashare_evidence/api.py": {
+      "lines": 706,
+      "reason": "FastAPI application with 25+ endpoints across 6 route groups (dashboard, simulation, settings, manual-research, watchlist, stocks). 706 lines is proportional to API surface — ~28 lines per endpoint average. Router extraction would add boilerplate without reducing complexity.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/cli.py": {
+      "lines": 518,
+      "reason": "CLI command group: data refresh, cache management, admin operations.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/dashboard.py": {
+      "lines": 609,
+      "reason": "Dashboard views with direction labels and factor cards. Minor growth from label additions.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-30"
+    },
+    "src/ashare_evidence/intraday_market.py": {
+      "lines": 520,
+      "reason": "Intraday market data: fetching, caching, status tracking. Single responsibility.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/manual_research_workflow.py": {
+      "lines": 656,
+      "reason": "Manual research workflow: request creation, execution, completion, retry. Single workflow.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/models.py": {
+      "lines": 535,
+      "reason": "SQLAlchemy ORM models: Stock, Recommendation, PaperOrder, PaperPortfolio. Naturally cohesive.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/operations.py": {
+      "lines": 1710,
+      "reason": "Operations dashboard builder with tightly coupled payload functions, order checks, and shared module-level constants (MODE_LABELS, PositionState). Extraction attempted 2026-04-28 — dependency cascade risk.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/phase2/holding_policy_experiments.py": {
+      "lines": 750,
+      "reason": "Phase 2 holding policy experiment runner: sweep execution, result collection. Cohesive experiment.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/phase2/holding_policy_study.py": {
+      "lines": 772,
+      "reason": "Phase 2 holding policy study definition: parameters, backtest config, analysis. Cohesive study.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/release_verifier.py": {
+      "lines": 752,
+      "reason": "Release verification: build check, health check, parity verification. Single workflow.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/runtime_config.py": {
+      "lines": 602,
+      "reason": "Runtime configuration management: settings resolution, defaults, validation. Single responsibility.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/schemas.py": {
+      "lines": 1128,
+      "reason": "60+ Pydantic models with cross-references (StockDashboardResponse, OperationsDashboardResponse aggregate types from all domains). Domain split carries medium risk due to model inheritance chains and runtime validation dependencies. Planned but deferred for test coverage.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/services.py": {
+      "lines": 1621,
+      "reason": "Service layer: recommendation serialization, claim gate, direction capping.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-30"
+    },
+    "src/ashare_evidence/signal_engine_parts/recommendation.py": {
+      "lines": 452,
+      "reason": "Fusion engine with dynamic weights, conflict resolution, multi-factor integration (price/news/fundamental).",
+      "status": "accepted",
+      "reviewed_at": "2026-04-30"
+    },
+    "src/ashare_evidence/simulation.py": {
+      "lines": 1508,
+      "reason": "Cohesive simulation engine: position sizing, performance metrics, scenario config, order execution. Single-domain logic with tight internal coupling.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "tests/fixtures.py": {
+      "lines": 630,
+      "reason": "Large file pending review.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "tests/test_analysis_pipeline.py": {
+      "lines": 785,
+      "reason": "Large file pending review.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "tests/test_dashboard_views.py": {
+      "lines": 803,
+      "reason": "Dashboard view contract tests. Current growth locks mobile today's price chart and manual research builtin/default model behavior; split remains lower priority than preserving broad frontend/backend contract coverage.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-29"
+    },
+    "frontend/src/components/OperationsTabs.tsx": {
+      "lines": 715,
+      "reason": "Operations dashboard tabs (portfolio, simulation, replay, research validation, launch readiness). Could be further split into per-tab components.",
+      "status": "accepted",
+      "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/signal_engine_parts/factors.py": {
+      "lines": 562,
+      "reason": "Multi-factor computation module: price, news, fundamental, size, reversal, liquidity factors with cross-sectional normalization. Cohesive factor definition.",
+      "reviewed_at": "2026-04-30",
+      "status": "accepted"
+    }
+  }
+}

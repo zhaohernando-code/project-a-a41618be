@@ -5,29 +5,27 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload
 
 from ashare_evidence.db import align_datetime_timezone
+from ashare_evidence.intraday_market import INTRADAY_MARKET_TIMEFRAME
 from ashare_evidence.models import MarketBar, ModelVersion, NewsEntityLink, Recommendation, SectorMembership, Stock
-from ashare_evidence.services import (
-    _serialize_recommendation,
-    get_recommendation_trace,
+from ashare_evidence.phase2 import phase2_target_horizon_label
+from ashare_evidence.recommendation_selection import (
+    collapse_recommendation_history,
+    recommendation_recency_ordering,
 )
-from ashare_evidence.watchlist import active_watchlist_symbols, reset_watchlist_to_defaults
+from ashare_evidence.research_artifact_store import artifact_root_from_database_url
+from ashare_evidence.services import _serialize_recommendation, get_recommendation_trace
+from ashare_evidence.watchlist import active_watchlist_symbols
 
-DIRECTION_LABELS = {
-    "buy": "偏积极",
-    "watch": "继续观察",
-    "reduce": "偏谨慎",
-    "risk_alert": "风险提示",
-}
+DIRECTION_LABELS = {"buy": "可建仓", "add": "可加仓", "watch": "继续观察", "reduce": "减仓",
+    "sell": "建议离场", "risk_alert": "风险提示"}
 
-FACTOR_LABELS = {
-    "price_baseline": "价格基线",
-    "news_event": "新闻事件",
-    "llm_assessment": "LLM 评估",
-    "fusion": "融合评分",
-}
+FACTOR_LABELS = {"price_baseline": "价格基线", "news_event": "新闻事件", "fundamental": "基本面",
+    "size_factor": "市值因子", "reversal": "短期反转", "liquidity": "流动性",
+    "manual_review_layer": "人工研究层", "llm_assessment": "人工研究兼容壳",
+    "fusion": "融合评分"}
 
 GLOSSARY_ENTRIES: list[dict[str, str]] = [
     {
@@ -56,9 +54,9 @@ GLOSSARY_ENTRIES: list[dict[str, str]] = [
         "why_it_matters": "这决定了建议何时失效，而不是只告诉你现在看起来好不好。",
     },
     {
-        "term": "LLM 因子上限",
-        "plain_explanation": "语言模型只能在结构化证据已经成立时做有限度整合，权重被封顶。",
-        "why_it_matters": "这样可以避免用一段看起来流畅的话，把弱证据包装成强结论。",
+        "term": "人工研究层",
+        "plain_explanation": "语言模型研究结论会保留为独立层，当前需要手动触发，不直接进入主评分。",
+        "why_it_matters": "这样可以避免把尚未验证的模型结论直接包装成量化因子。",
     },
 ]
 
@@ -67,8 +65,18 @@ def get_glossary_entries() -> list[dict[str, str]]:
     return list(GLOSSARY_ENTRIES)
 
 
-def bootstrap_dashboard_demo(session: Session) -> dict[str, Any]:
-    return reset_watchlist_to_defaults(session)
+def _artifact_source_classification(*, artifact_id: str | None) -> str:
+    return "artifact_backed" if artifact_id else "migration_placeholder"
+
+
+def _artifact_validation_mode(*, validation_status: str) -> str:
+    return "artifact_backed" if validation_status == "verified" else "migration_placeholder"
+
+
+def _candidate_compat_projection(*, window_definition: str) -> dict[str, str]:
+    return {
+        "applicable_period": window_definition,
+    }
 
 
 def _all_recommendations(session: Session) -> list[Recommendation]:
@@ -80,19 +88,26 @@ def _all_recommendations(session: Session) -> list[Recommendation]:
             joinedload(Recommendation.prompt_version),
             joinedload(Recommendation.model_run),
         )
-        .order_by(Recommendation.stock_id.asc(), Recommendation.generated_at.desc())
+        .order_by(*recommendation_recency_ordering(stock_id=True))
     ).all()
 
 
 def _latest_recommendations(session: Session) -> list[Recommendation]:
-    latest_by_stock: dict[int, Recommendation] = {}
+    histories_by_stock: dict[int, list[Recommendation]] = {}
     for recommendation in _all_recommendations(session):
-        latest_by_stock.setdefault(recommendation.stock_id, recommendation)
-    return list(latest_by_stock.values())
+        histories_by_stock.setdefault(recommendation.stock_id, []).append(recommendation)
+    return [
+        collapsed[0]
+        for collapsed in (
+            collapse_recommendation_history(records, limit=1)
+            for records in histories_by_stock.values()
+        )
+        if collapsed
+    ]
 
 
 def _recommendation_history(session: Session, symbol: str, limit: int = 2) -> list[Recommendation]:
-    return session.scalars(
+    recommendations = session.scalars(
         select(Recommendation)
         .join(Stock)
         .where(Stock.symbol == symbol)
@@ -102,9 +117,9 @@ def _recommendation_history(session: Session, symbol: str, limit: int = 2) -> li
             joinedload(Recommendation.prompt_version),
             joinedload(Recommendation.model_run),
         )
-        .order_by(Recommendation.generated_at.desc())
-        .limit(limit)
+        .order_by(*recommendation_recency_ordering())
     ).all()
+    return collapse_recommendation_history(recommendations, limit=limit)
 
 
 def _active_memberships(session: Session, stock_id: int, as_of: datetime) -> list[SectorMembership]:
@@ -129,11 +144,39 @@ def _active_memberships(session: Session, stock_id: int, as_of: datetime) -> lis
 def _recent_bars(session: Session, stock_id: int, limit: int = 28) -> list[MarketBar]:
     bars = session.scalars(
         select(MarketBar)
-        .where(MarketBar.stock_id == stock_id)
+        .where(MarketBar.stock_id == stock_id, MarketBar.timeframe == "1d")
         .order_by(MarketBar.observed_at.desc())
         .limit(limit)
     ).all()
     return list(reversed(bars))
+
+
+def _today_intraday_bars(session: Session, stock_id: int, daily_bars: list[MarketBar]) -> list[MarketBar]:
+    latest_intraday = session.scalar(
+        select(MarketBar)
+        .where(MarketBar.stock_id == stock_id, MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME)
+        .order_by(MarketBar.observed_at.desc())
+        .limit(1)
+    )
+    if latest_intraday is None:
+        return []
+
+    intraday_day = latest_intraday.observed_at.date()
+    latest_daily_day = daily_bars[-1].observed_at.date() if daily_bars else None
+    if latest_daily_day is not None and intraday_day < latest_daily_day:
+        return []
+
+    intraday_bars = session.scalars(
+        select(MarketBar)
+        .where(
+            MarketBar.stock_id == stock_id,
+            MarketBar.timeframe == INTRADAY_MARKET_TIMEFRAME,
+            MarketBar.observed_at >= datetime.combine(intraday_day, datetime.min.time()),
+            MarketBar.observed_at <= latest_intraday.observed_at,
+        )
+        .order_by(MarketBar.observed_at.asc())
+    ).all()
+    return list(intraday_bars)
 
 
 def _recent_news(
@@ -150,7 +193,7 @@ def _recent_news(
         .where(NewsEntityLink.effective_at <= as_of)
         .order_by(NewsEntityLink.effective_at.desc())
     ).all()
-    deduped: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
+    deduped: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for link in links:
         if link.stock_id != stock_id and (link.sector_id is None or link.sector_id not in sector_ids):
             continue
@@ -178,8 +221,61 @@ def _direction_rank(direction: str) -> int:
     return {"buy": 3, "watch": 2, "reduce": 1, "risk_alert": 0}.get(direction, 0)
 
 
+def _list_payload(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
 def _factor_score(summary: dict[str, Any], key: str) -> float:
-    return float(summary["recommendation"]["factor_breakdown"].get(key, {}).get("score", 0.0))
+    evidence = summary["recommendation"].get("evidence", {})
+    for card in _list_payload(evidence.get("factor_cards")):
+        if card.get("factor_key") == key and card.get("score") is not None:
+            return float(card["score"])
+    return 0.0
+
+
+def _active_degrade_flags(recommendation: dict[str, Any]) -> list[str]:
+    evidence = recommendation.get("evidence", {})
+    return [str(item) for item in _list_payload(evidence.get("degrade_flags")) if item]
+
+
+def _candidate_window_definition(recommendation: dict[str, Any]) -> str:
+    return str(
+        recommendation.get("historical_validation", {}).get("window_definition")
+        or "研究验证中（历史窗口待重建）"
+    )
+
+
+def _candidate_primary_driver(recommendation: dict[str, Any]) -> str:
+    evidence = recommendation.get("evidence", {})
+    primary_drivers = evidence.get("primary_drivers") or []
+    return str(primary_drivers[0]) if primary_drivers else str(recommendation.get("summary", ""))
+
+
+def _candidate_primary_risk(recommendation: dict[str, Any]) -> str | None:
+    risk = recommendation.get("risk", {})
+    risk_flags = risk.get("risk_flags") or []
+    return str(risk_flags[0]) if risk_flags else None
+
+
+def _historical_validation_metric(
+    recommendation: dict[str, Any],
+    key: str,
+) -> float | int | None:
+    metrics = recommendation.get("historical_validation", {}).get("metrics", {})
+    value = metrics.get(key)
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return value
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if key == "sample_count":
+        return int(numeric)
+    return numeric
 
 
 def _change_payload(current_summary: dict[str, Any], previous_summary: dict[str, Any] | None) -> dict[str, Any]:
@@ -208,7 +304,7 @@ def _change_payload(current_summary: dict[str, Any], previous_summary: dict[str,
         trend = "提升" if confidence_delta > 0 else "回落"
         reasons.append(f"整体置信度较上一版{trend} {abs(confidence_delta):.0%}。")
 
-    for factor_key in ("price_baseline", "news_event", "llm_assessment", "fusion"):
+    for factor_key in ("price_baseline", "news_event", "size_factor", "reversal", "liquidity", "fusion"):
         current_score = _factor_score(current_summary, factor_key)
         previous_score = _factor_score(previous_summary, factor_key)
         delta = current_score - previous_score
@@ -217,8 +313,8 @@ def _change_payload(current_summary: dict[str, Any], previous_summary: dict[str,
                 f"{FACTOR_LABELS[factor_key]}分数从 {previous_score:.2f} {'转强' if delta > 0 else '转弱'}到 {current_score:.2f}。"
             )
 
-    current_flags = current_reco["factor_breakdown"].get("fusion", {}).get("active_degrade_flags", [])
-    previous_flags = previous_reco["factor_breakdown"].get("fusion", {}).get("active_degrade_flags", [])
+    current_flags = _active_degrade_flags(current_reco)
+    previous_flags = _active_degrade_flags(previous_reco)
     if current_flags != previous_flags:
         if current_flags:
             reasons.append(f"当前新增降级标记：{', '.join(current_flags)}。")
@@ -255,6 +351,8 @@ def _hero_payload(
     day_change_pct = (
         latest_bar.close_price / previous_bar.close_price - 1 if previous_bar and previous_bar.close_price else 0.0
     )
+    claim_gate = recommendation.get("claim_gate", {})
+    public_direction = str(claim_gate.get("public_direction") or recommendation["direction"])
     return {
         "latest_close": latest_bar.close_price,
         "day_change_pct": round(day_change_pct, 4),
@@ -263,7 +361,7 @@ def _hero_payload(
         "high_price": latest_bar.high_price,
         "low_price": latest_bar.low_price,
         "sector_tags": [membership.sector.name for membership in memberships],
-        "direction_label": DIRECTION_LABELS.get(recommendation["direction"], recommendation["direction"]),
+        "direction_label": DIRECTION_LABELS.get(public_direction, public_direction),
         "last_updated": recommendation["generated_at"],
     }
 
@@ -285,13 +383,14 @@ def _price_chart_payload(bars: list[MarketBar]) -> list[dict[str, Any]]:
 def _risk_panel(summary: dict[str, Any], change: dict[str, Any], recent_news: list[dict[str, Any]]) -> dict[str, Any]:
     recommendation = summary["recommendation"]
     prompt = summary["prompt"]
+    risk_layer = recommendation.get("risk", {})
     items: list[str] = []
-    items.extend(recommendation["reverse_risks"][:3])
+    items.extend(risk_layer.get("risk_flags", [])[:3])
     if recent_news:
         negative_event = next((item for item in recent_news if item["impact_direction"] == "negative"), None)
         if negative_event is not None:
             items.append(f"最近负向事件：{negative_event['headline']}")
-    items.extend(recommendation["downgrade_conditions"][:2])
+    items.extend(risk_layer.get("downgrade_conditions", [])[:2])
     deduped_items: list[str] = []
     for item in items:
         if item not in deduped_items:
@@ -311,10 +410,18 @@ def _risk_panel(summary: dict[str, Any], change: dict[str, Any], recent_news: li
 
 def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
     recommendation = summary["recommendation"]
+    evidence_layer = recommendation.get("evidence", {})
+    risk_layer = recommendation.get("risk", {})
+    historical_validation = recommendation.get("historical_validation", {})
+    core_quant = recommendation.get("core_quant", {})
+    manual_llm_review = recommendation.get("manual_llm_review", {})
     evidence_lines = [
         f"{item['label']} | {item['lineage']['source_uri']}"
         for item in evidence[:4]
     ]
+    validation_sample_count = _historical_validation_metric(recommendation, "sample_count")
+    validation_rank_ic_mean = _historical_validation_metric(recommendation, "rank_ic_mean")
+    validation_positive_excess_rate = _historical_validation_metric(recommendation, "positive_excess_rate")
     suggested_questions = [
         "如果我只关注未来两周，哪些证据最值得盯？",
         "这条建议最可能因为什么条件而失效？",
@@ -324,29 +431,62 @@ def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence
     copy_prompt = "\n".join(
         [
             "请基于以下结构化证据回答我的追问，不要补充未给出的事实。",
+            "你的任务是做二次解释，不是重复包装已有结论；如果信息不足，请直接说明不足。",
+            "先区分“已知事实”和“你的推断”。如果验证指标之间存在张力或冲突，必须先解释冲突，再决定是否能给方向性判断。",
             f"股票：{summary['stock']['name']}（{summary['stock']['symbol']}）",
-            f"当前建议：{DIRECTION_LABELS.get(recommendation['direction'], recommendation['direction'])}；{recommendation['confidence_expression']}",
-            f"适用周期：{recommendation['applicable_period']}",
+            "已知事实：",
+            f"观察窗口：{_candidate_window_definition(recommendation)}",
+            f"目标 horizon：{core_quant.get('target_horizon_label', phase2_target_horizon_label())}",
+            f"历史验证状态：{historical_validation.get('status', 'pending_rebuild')}",
+            f"验证 artifact：{historical_validation.get('artifact_id') or '未绑定'}",
+            f"验证 manifest：{historical_validation.get('manifest_id') or '未绑定'}",
+            f"验证样本量：{validation_sample_count if validation_sample_count is not None else '未提供'}",
+            f"RankIC 均值：{validation_rank_ic_mean if validation_rank_ic_mean is not None else '未提供'}",
+            f"正超额占比：{validation_positive_excess_rate if validation_positive_excess_rate is not None else '未提供'}",
+            f"人工研究状态：{manual_llm_review.get('status', 'manual_trigger_required')} / {manual_llm_review.get('trigger_mode', 'manual')}",
             "核心驱动：",
-            *[f"- {item}" for item in recommendation["core_drivers"][:3]],
+            *[f"- {item}" for item in evidence_layer.get("primary_drivers", [])[:3]],
             "主要风险：",
-            *[f"- {item}" for item in recommendation["reverse_risks"][:3]],
+            *[f"- {item}" for item in risk_layer.get("risk_flags", [])[:3]],
+            f"系统当前结论（仅供参考，不是必须采纳）：{DIRECTION_LABELS.get(recommendation['direction'], recommendation['direction'])}；{recommendation['confidence_expression']}",
             f"最近变化：{change['summary']}",
             "关键证据：",
             *[f"- {line}" for line in evidence_lines],
             "请回答这个问题：<在这里替换成你的追问>",
-            "回答要求：区分事实与推断，明确失效条件，并指出还需要继续观察的更新时间点。",
+            "回答要求：明确哪些是事实、哪些是推断；如果证据不足以支持买入/卖出/强化动作，要直接说明；写出失效条件，并指出下一次最值得更新观察的时间点或事件。",
         ]
     )
     return {
         "suggested_questions": suggested_questions,
         "copy_prompt": copy_prompt,
         "evidence_packet": evidence_lines,
+        "research_packet": {
+            "validation_status": historical_validation.get("status", "pending_rebuild"),
+            "validation_note": historical_validation.get("note"),
+            "validation_artifact_id": historical_validation.get("artifact_id"),
+            "validation_manifest_id": historical_validation.get("manifest_id"),
+            "validation_sample_count": validation_sample_count,
+            "validation_rank_ic_mean": validation_rank_ic_mean,
+            "validation_positive_excess_rate": validation_positive_excess_rate,
+            "manual_request_id": manual_llm_review.get("request_id"),
+            "manual_request_key": manual_llm_review.get("request_key"),
+            "manual_review_executor_kind": manual_llm_review.get("executor_kind"),
+            "manual_review_status_note": manual_llm_review.get("status_note"),
+            "manual_review_review_verdict": manual_llm_review.get("review_verdict"),
+            "manual_review_stale_reason": manual_llm_review.get("stale_reason"),
+            "manual_review_status": manual_llm_review.get("status", "manual_trigger_required"),
+            "manual_review_trigger_mode": manual_llm_review.get("trigger_mode", "manual"),
+            "manual_review_source_packet": [str(item) for item in manual_llm_review.get("source_packet", []) if item],
+            "manual_review_artifact_id": manual_llm_review.get("artifact_id"),
+            "manual_review_generated_at": manual_llm_review.get("generated_at"),
+        },
     }
 
 
 def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str, Any]:
     active_symbols = set(active_watchlist_symbols(session))
+    bind = session.get_bind()
+    artifact_root = artifact_root_from_database_url(bind.url.render_as_string(hide_password=False) if bind else None)
     if not active_symbols:
         return {
             "generated_at": datetime.now().astimezone(),
@@ -356,9 +496,9 @@ def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str
     for recommendation in _latest_recommendations(session):
         if recommendation.stock.symbol not in active_symbols:
             continue
-        summary = _serialize_recommendation(recommendation)
+        summary = _serialize_recommendation(recommendation, artifact_root=artifact_root)
         history = _recommendation_history(session, summary["stock"]["symbol"], limit=2)
-        previous_summary = _serialize_recommendation(history[1]) if len(history) > 1 else None
+        previous_summary = _serialize_recommendation(history[1], artifact_root=artifact_root) if len(history) > 1 else None
         bars = _recent_bars(session, recommendation.stock_id, limit=21)
         memberships = _active_memberships(session, recommendation.stock_id, recommendation.as_of_data_time)
         latest_bar = bars[-1] if bars else None
@@ -370,6 +510,11 @@ def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str
         change = _change_payload(summary, previous_summary)
         primary_sector = memberships[0].sector.name if memberships else "未映射"
         reco = summary["recommendation"]
+        claim_gate = reco.get("claim_gate", {})
+        public_direction = str(claim_gate.get("public_direction") or reco["direction"])
+        window_definition = _candidate_window_definition(reco)
+        validation_artifact_id = reco["historical_validation"].get("artifact_id")
+        validation_status = reco["historical_validation"]["status"]
         candidates.append(
             {
                 "symbol": summary["stock"]["symbol"],
@@ -377,25 +522,40 @@ def list_candidate_recommendations(session: Session, limit: int = 8) -> dict[str
                 "sector": primary_sector,
                 "direction": reco["direction"],
                 "direction_label": DIRECTION_LABELS.get(reco["direction"], reco["direction"]),
+                "display_direction": public_direction,
+                "display_direction_label": DIRECTION_LABELS.get(public_direction, public_direction),
                 "confidence_label": reco["confidence_label"],
                 "confidence_score": reco["confidence_score"],
                 "summary": reco["summary"],
-                "applicable_period": reco["applicable_period"],
+                "window_definition": window_definition,
+                "target_horizon_label": reco["core_quant"]["target_horizon_label"],
+                "source_classification": _artifact_source_classification(artifact_id=validation_artifact_id),
+                "validation_mode": _artifact_validation_mode(validation_status=validation_status),
+                "validation_status": validation_status,
+                "validation_note": reco["historical_validation"]["note"],
+                "validation_artifact_id": validation_artifact_id,
+                "validation_manifest_id": reco["historical_validation"].get("manifest_id"),
+                "validation_sample_count": _historical_validation_metric(reco, "sample_count"),
+                "validation_rank_ic_mean": _historical_validation_metric(reco, "rank_ic_mean"),
+                "validation_positive_excess_rate": _historical_validation_metric(reco, "positive_excess_rate"),
                 "generated_at": reco["generated_at"],
                 "as_of_data_time": reco["as_of_data_time"],
                 "last_close": latest_bar.close_price if latest_bar is not None else None,
                 "price_return_20d": round(twenty_day_return, 4),
-                "why_now": reco["core_drivers"][0] if reco["core_drivers"] else reco["summary"],
-                "primary_risk": reco["reverse_risks"][0] if reco["reverse_risks"] else None,
+                "price_chart": _price_chart_payload(bars),
+                "why_now": _candidate_primary_driver(reco),
+                "primary_risk": _candidate_primary_risk(reco),
                 "change_summary": change["summary"],
                 "change_badge": change["change_badge"],
                 "evidence_status": reco["evidence_status"],
+                "claim_gate": claim_gate,
+                **_candidate_compat_projection(window_definition=window_definition),
             }
         )
 
     candidates.sort(
         key=lambda item: (
-            _direction_rank(item["direction"]),
+            _direction_rank(str(item.get("display_direction") or item["direction"])),
             float(item["confidence_score"]),
             float(item["price_return_20d"]),
         ),
@@ -414,11 +574,14 @@ def get_stock_dashboard(session: Session, symbol: str) -> dict[str, Any]:
     if not history:
         raise LookupError(f"No recommendation found for {symbol}.")
 
+    bind = session.get_bind()
+    artifact_root = artifact_root_from_database_url(bind.url.render_as_string(hide_password=False) if bind else None)
     latest = history[0]
-    latest_summary = _serialize_recommendation(latest)
-    previous_summary = _serialize_recommendation(history[1]) if len(history) > 1 else None
+    latest_summary = _serialize_recommendation(latest, artifact_root=artifact_root)
+    previous_summary = _serialize_recommendation(history[1], artifact_root=artifact_root) if len(history) > 1 else None
     trace = get_recommendation_trace(session, latest.id)
     bars = _recent_bars(session, latest.stock_id, limit=28)
+    today_intraday_bars = _today_intraday_bars(session, latest.stock_id, bars)
     memberships = _active_memberships(session, latest.stock_id, latest.as_of_data_time)
     recent_news = _recent_news(
         session,
@@ -433,6 +596,7 @@ def get_stock_dashboard(session: Session, symbol: str) -> dict[str, Any]:
         recommendation=trace["recommendation"],
     )
     trace["price_chart"] = _price_chart_payload(bars)
+    trace["today_price_chart"] = _price_chart_payload(today_intraday_bars)
     trace["recent_news"] = recent_news
     trace["change"] = change
     trace["glossary"] = get_glossary_entries()

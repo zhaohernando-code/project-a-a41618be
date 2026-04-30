@@ -1,0 +1,532 @@
+{
+  "action_definition": "delta_to_constrained_target_weight_portfolio",
+  "artifact_id": "phase5-holding-policy-study:auto_model:2026-04-27:3portfolios",
+  "artifact_type": "phase5_holding_policy_study",
+  "contract_version": "phase5-validation-policy-contract-v1",
+  "cost_sensitivity": {
+    "baseline_round_trip_cost_bps": 35.0,
+    "mean_annualized_excess_return_after_baseline_cost": 0.067492,
+    "mean_baseline_cost_drag": 0.000875,
+    "mean_break_even_cost_bps": 2793.333333,
+    "positive_after_baseline_cost_portfolio_count": 1
+  },
+  "created_at": "2026-04-27T16:28:36.762735+08:00",
+  "decision": {
+    "approval_state": "research_candidate_only",
+    "failing_gate_ids": [
+      "positive_after_cost_portfolio_ratio"
+    ],
+    "gate_checks": [
+      {
+        "actual": 3.0,
+        "comparison": ">=",
+        "gate_id": "included_portfolio_count",
+        "metric": "summary.included_portfolio_count",
+        "status": "pass",
+        "threshold": 3.0
+      },
+      {
+        "actual": 0.067492,
+        "comparison": ">=",
+        "gate_id": "after_cost_excess_non_negative",
+        "metric": "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+        "status": "pass",
+        "threshold": 0.0
+      },
+      {
+        "actual": 0.333333,
+        "comparison": ">=",
+        "gate_id": "positive_after_cost_portfolio_ratio",
+        "metric": "cost_sensitivity.positive_after_baseline_cost_portfolio_ratio",
+        "status": "fail",
+        "threshold": 0.5
+      },
+      {
+        "actual": 0.25,
+        "comparison": "<=",
+        "gate_id": "mean_turnover_ceiling",
+        "metric": "summary.mean_turnover",
+        "status": "pass",
+        "threshold": 0.35
+      },
+      {
+        "actual": 10.5,
+        "comparison": ">=",
+        "gate_id": "mean_rebalance_interval_days_floor",
+        "metric": "holding_stability.mean_rebalance_interval_days",
+        "status": "pass",
+        "threshold": 5.0
+      }
+    ],
+    "gate_context": {
+      "gate_version": "phase5-holding-policy-promotion-gate-draft-v1",
+      "guardrails": {
+        "max_mean_turnover": 0.35,
+        "min_included_portfolio_count": 3,
+        "min_mean_annualized_excess_return_after_baseline_cost": 0.0,
+        "min_mean_rebalance_interval_days": 5.0,
+        "min_positive_after_baseline_cost_portfolio_ratio": 0.5
+      },
+      "note": "This draft gate is a research diagnostic for Phase 5 simulation-policy promotion. Passing it does not auto-promote the policy, and failing it should keep the policy at research_candidate_only or trigger redesign.",
+      "status": "draft_not_yet_operator_approved"
+    },
+    "gate_status": "draft_gate_blocked",
+    "governance_action": "prioritize_policy_redesign",
+    "governance_context": {
+      "governance_version": "phase5-holding-policy-governance-draft-v1",
+      "note": "This draft governance readout translates gate results into the current default Phase 5 handling: keep the policy non-promoted, gather more evidence, or prioritize redesign. It is a research governance helper, not an operator-approved auto-promotion rule.",
+      "redesign_trigger_gate_ids": [
+        "after_cost_excess_non_negative",
+        "positive_after_cost_portfolio_ratio"
+      ],
+      "status": "draft_not_yet_operator_approved"
+    },
+    "governance_note": "当前 blocker 已触发 profitability/redesign 信号；默认治理动作是维持 non-promotion，并优先进入 policy redesign，而不是继续把 gate 形式化当成主要工作。",
+    "governance_status": "maintain_non_promotion_prioritize_policy_redesign",
+    "incomplete_gate_ids": [],
+    "note": "simulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（positive_after_cost_portfolio_ratio），baseline 继续保持 research_candidate。",
+    "pending_requirements": [
+      "draft promotion gate is still blocked by current turnover / cost / stability evidence",
+      "research_candidate policy remains simulation-only and must not be promoted to real trading"
+    ],
+    "redesign_context": {
+      "diagnostic_version": "phase5-holding-policy-redesign-diagnostics-draft-v2",
+      "experiment_menu": {
+        "construction_deployment_floor_fallback_v1": {
+          "focus_area": "portfolio_construction",
+          "hypothesis": "the baseline may be leaving too much cash undeployed when the ideal equal-weight target cannot fill naturally, so a deployment-floor fallback may convert valid signals into actual positions more reliably.",
+          "priority": 2,
+          "proposed_policy_changes": [
+            "test a minimum deployment rule that fills additional eligible names when the target portfolio stays too sparse",
+            "inspect board-lot and affordability-driven underdeployment rather than assuming cash drag is acceptable"
+          ],
+          "target_metrics": [
+            "summary.mean_invested_ratio",
+            "summary.mean_active_position_count",
+            "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost"
+          ],
+          "trigger_signal_ids": [
+            "mean_invested_ratio_floor",
+            "mean_active_position_count_floor"
+          ]
+        },
+        "construction_max_position_count_sweep_v1": {
+          "focus_area": "portfolio_construction",
+          "hypothesis": "the current top-k equal-weight cap may be too narrow for real watchlist coverage, so varying position count and per-name weight could improve deployed exposure.",
+          "priority": 1,
+          "proposed_policy_changes": [
+            "compare broader max-position-count settings instead of fixing the research baseline at top-5 only",
+            "pair each capacity setting with compatible single-name weight caps and observe whether exposure improves without collapsing returns"
+          ],
+          "target_metrics": [
+            "summary.mean_invested_ratio",
+            "summary.mean_active_position_count",
+            "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost"
+          ],
+          "trigger_signal_ids": [
+            "mean_invested_ratio_floor",
+            "mean_active_position_count_floor"
+          ]
+        },
+        "profitability_rebalance_hold_band_v1": {
+          "focus_area": "after_cost_profitability",
+          "hypothesis": "the equal-weight baseline may be giving up too much edge by rebalancing on small ranking changes, so a hold-band or minimum delta rule could preserve net returns after cost.",
+          "priority": 2,
+          "proposed_policy_changes": [
+            "test a rebalance hold-band so small score or target-weight changes do not trigger trades",
+            "compare whether turnover-adjusted variants preserve more after-cost excess without collapsing exposure"
+          ],
+          "target_metrics": [
+            "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+            "summary.mean_turnover",
+            "holding_stability.mean_rebalance_interval_days"
+          ],
+          "trigger_signal_ids": [
+            "after_cost_excess_non_negative",
+            "positive_after_cost_portfolio_ratio"
+          ]
+        },
+        "profitability_signal_threshold_sweep_v1": {
+          "focus_area": "after_cost_profitability",
+          "hypothesis": "the current auto-model baseline is deploying on too many weak-ranked long candidates, so a stricter entry threshold may improve after-cost edge breadth.",
+          "priority": 1,
+          "proposed_policy_changes": [
+            "sweep tighter entry thresholds on recommendation confidence / rank before a symbol can enter the target portfolio",
+            "compare whether stronger-entry-only variants improve mean after-cost excess return and positive-after-cost portfolio ratio"
+          ],
+          "target_metrics": [
+            "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+            "cost_sensitivity.positive_after_baseline_cost_portfolio_ratio",
+            "summary.mean_turnover"
+          ],
+          "trigger_signal_ids": [
+            "after_cost_excess_non_negative",
+            "positive_after_cost_portfolio_ratio"
+          ]
+        }
+      },
+      "note": "This draft redesign diagnostic readout explains why the current Phase 5 simulation baseline should stay non-promoted, where redesign work should begin, and which draft research experiments should be prioritized first. It is a research prioritization helper, not an operator-approved policy spec.",
+      "signals": {
+        "after_cost_excess_non_negative": {
+          "comparison": ">=",
+          "focus_area": "after_cost_profitability",
+          "metric": "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+          "note": "after-cost excess return remains negative, so the current baseline is not investable enough to discuss promotion.",
+          "threshold": 0.0
+        },
+        "mean_active_position_count_floor": {
+          "comparison": ">=",
+          "focus_area": "portfolio_construction",
+          "metric": "summary.mean_active_position_count",
+          "note": "the baseline is not reaching enough active positions to behave like a credible diversified holding policy.",
+          "threshold": 2.0
+        },
+        "mean_invested_ratio_floor": {
+          "comparison": ">=",
+          "focus_area": "portfolio_construction",
+          "metric": "summary.mean_invested_ratio",
+          "note": "the portfolio stays under-invested too often, which points to weak capital deployment rather than a healthy top-k policy.",
+          "threshold": 0.4
+        },
+        "positive_after_cost_portfolio_ratio": {
+          "comparison": ">=",
+          "focus_area": "after_cost_profitability",
+          "metric": "cost_sensitivity.positive_after_baseline_cost_portfolio_ratio",
+          "note": "too few portfolios stay positive after baseline cost, so any apparent edge is not broad enough yet.",
+          "threshold": 0.5
+        }
+      },
+      "status": "draft_not_yet_operator_approved"
+    },
+    "redesign_diagnostics": [
+      {
+        "actual": 0.067492,
+        "comparison": ">=",
+        "focus_area": "after_cost_profitability",
+        "gate_id": "after_cost_excess_non_negative",
+        "metric": "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+        "note": "after-cost excess return remains negative, so the current baseline is not investable enough to discuss promotion.",
+        "status": "pass",
+        "threshold": 0.0
+      },
+      {
+        "actual": 0.333333,
+        "comparison": ">=",
+        "focus_area": "after_cost_profitability",
+        "gate_id": "positive_after_cost_portfolio_ratio",
+        "metric": "cost_sensitivity.positive_after_baseline_cost_portfolio_ratio",
+        "note": "too few portfolios stay positive after baseline cost, so any apparent edge is not broad enough yet.",
+        "status": "fail",
+        "threshold": 0.5
+      },
+      {
+        "actual": 0.071667,
+        "comparison": ">=",
+        "focus_area": "portfolio_construction",
+        "gate_id": "mean_invested_ratio_floor",
+        "metric": "summary.mean_invested_ratio",
+        "note": "the portfolio stays under-invested too often, which points to weak capital deployment rather than a healthy top-k policy.",
+        "status": "fail",
+        "threshold": 0.4
+      },
+      {
+        "actual": 1.0,
+        "comparison": ">=",
+        "focus_area": "portfolio_construction",
+        "gate_id": "mean_active_position_count_floor",
+        "metric": "summary.mean_active_position_count",
+        "note": "the baseline is not reaching enough active positions to behave like a credible diversified holding policy.",
+        "status": "fail",
+        "threshold": 2.0
+      }
+    ],
+    "redesign_experiment_candidates": [
+      {
+        "experiment_id": "construction_max_position_count_sweep_v1",
+        "focus_area": "portfolio_construction",
+        "hypothesis": "the current top-k equal-weight cap may be too narrow for real watchlist coverage, so varying position count and per-name weight could improve deployed exposure.",
+        "matched_trigger_signal_ids": [
+          "mean_active_position_count_floor",
+          "mean_invested_ratio_floor"
+        ],
+        "priority": 1,
+        "proposed_policy_changes": [
+          "compare broader max-position-count settings instead of fixing the research baseline at top-5 only",
+          "pair each capacity setting with compatible single-name weight caps and observe whether exposure improves without collapsing returns"
+        ],
+        "selection_reason": "selected because portfolio_construction is an active redesign focus and the current signals include mean_active_position_count_floor, mean_invested_ratio_floor.",
+        "target_metrics": [
+          "summary.mean_invested_ratio",
+          "summary.mean_active_position_count",
+          "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost"
+        ],
+        "trigger_signal_ids": [
+          "mean_invested_ratio_floor",
+          "mean_active_position_count_floor"
+        ]
+      },
+      {
+        "experiment_id": "profitability_signal_threshold_sweep_v1",
+        "focus_area": "after_cost_profitability",
+        "hypothesis": "the current auto-model baseline is deploying on too many weak-ranked long candidates, so a stricter entry threshold may improve after-cost edge breadth.",
+        "matched_trigger_signal_ids": [
+          "positive_after_cost_portfolio_ratio"
+        ],
+        "priority": 1,
+        "proposed_policy_changes": [
+          "sweep tighter entry thresholds on recommendation confidence / rank before a symbol can enter the target portfolio",
+          "compare whether stronger-entry-only variants improve mean after-cost excess return and positive-after-cost portfolio ratio"
+        ],
+        "selection_reason": "selected because after_cost_profitability is an active redesign focus and the current signals include positive_after_cost_portfolio_ratio.",
+        "target_metrics": [
+          "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+          "cost_sensitivity.positive_after_baseline_cost_portfolio_ratio",
+          "summary.mean_turnover"
+        ],
+        "trigger_signal_ids": [
+          "after_cost_excess_non_negative",
+          "positive_after_cost_portfolio_ratio"
+        ]
+      },
+      {
+        "experiment_id": "construction_deployment_floor_fallback_v1",
+        "focus_area": "portfolio_construction",
+        "hypothesis": "the baseline may be leaving too much cash undeployed when the ideal equal-weight target cannot fill naturally, so a deployment-floor fallback may convert valid signals into actual positions more reliably.",
+        "matched_trigger_signal_ids": [
+          "mean_active_position_count_floor",
+          "mean_invested_ratio_floor"
+        ],
+        "priority": 2,
+        "proposed_policy_changes": [
+          "test a minimum deployment rule that fills additional eligible names when the target portfolio stays too sparse",
+          "inspect board-lot and affordability-driven underdeployment rather than assuming cash drag is acceptable"
+        ],
+        "selection_reason": "selected because portfolio_construction is an active redesign focus and the current signals include mean_active_position_count_floor, mean_invested_ratio_floor.",
+        "target_metrics": [
+          "summary.mean_invested_ratio",
+          "summary.mean_active_position_count",
+          "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost"
+        ],
+        "trigger_signal_ids": [
+          "mean_invested_ratio_floor",
+          "mean_active_position_count_floor"
+        ]
+      },
+      {
+        "experiment_id": "profitability_rebalance_hold_band_v1",
+        "focus_area": "after_cost_profitability",
+        "hypothesis": "the equal-weight baseline may be giving up too much edge by rebalancing on small ranking changes, so a hold-band or minimum delta rule could preserve net returns after cost.",
+        "matched_trigger_signal_ids": [
+          "positive_after_cost_portfolio_ratio"
+        ],
+        "priority": 2,
+        "proposed_policy_changes": [
+          "test a rebalance hold-band so small score or target-weight changes do not trigger trades",
+          "compare whether turnover-adjusted variants preserve more after-cost excess without collapsing exposure"
+        ],
+        "selection_reason": "selected because after_cost_profitability is an active redesign focus and the current signals include positive_after_cost_portfolio_ratio.",
+        "target_metrics": [
+          "cost_sensitivity.mean_annualized_excess_return_after_baseline_cost",
+          "summary.mean_turnover",
+          "holding_stability.mean_rebalance_interval_days"
+        ],
+        "trigger_signal_ids": [
+          "after_cost_excess_non_negative",
+          "positive_after_cost_portfolio_ratio"
+        ]
+      }
+    ],
+    "redesign_focus_areas": [
+      "after_cost_profitability",
+      "portfolio_construction"
+    ],
+    "redesign_incomplete_signal_ids": [],
+    "redesign_note": "当前 baseline 已同时暴露 after-cost profitability 与持仓暴露侧的结构化 redesign signals；下一步应优先重做 portfolio construction / exposure policy，而不是继续只补 gate 文案。",
+    "redesign_primary_experiment_ids": [
+      "profitability_signal_threshold_sweep_v1",
+      "construction_max_position_count_sweep_v1"
+    ],
+    "redesign_status": "prioritize_policy_redesign",
+    "redesign_trigger_gate_ids": [
+      "positive_after_cost_portfolio_ratio"
+    ],
+    "redesign_triggered_signal_ids": [
+      "positive_after_cost_portfolio_ratio",
+      "mean_invested_ratio_floor",
+      "mean_active_position_count_floor"
+    ]
+  },
+  "generated_at": "2026-04-27T16:28:36.762735+08:00",
+  "holding_stability": {
+    "mean_orders_per_rebalance_day": 7.0,
+    "mean_rebalance_day_ratio": 0.001309,
+    "mean_rebalance_interval_days": 10.5,
+    "portfolio_count": 3
+  },
+  "policy_type": "phase5_simulation_topk_equal_weight_v1",
+  "portfolios": [
+    {
+      "active_position_count": 3,
+      "annualized_excess_return": 0.2095,
+      "annualized_excess_return_after_baseline_cost": 0.206875,
+      "annualized_return": 0.2117,
+      "average_orders_per_rebalance_day": 7.0,
+      "baseline_cost_drag": 0.002625,
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "break_even_cost_bps": 2793.333333,
+      "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+      "exclusion_reason": null,
+      "include_in_aggregate": true,
+      "invested_ratio": 0.215,
+      "latest_nav_date": "2026-04-27",
+      "max_drawdown": -0.0775,
+      "mean_rebalance_interval_days": 10.5,
+      "mode": "auto_model",
+      "name": "模型自动持仓模拟仓",
+      "observation_day_count": 764,
+      "order_count": 21,
+      "portfolio_key": "portfolio-auto-wave",
+      "rebalance_day_count": 3,
+      "rebalance_day_ratio": 0.003927,
+      "round_trip_cost_bps": 35.0,
+      "status": "active",
+      "turnover": 0.75,
+      "validation_artifact_id": "portfolio-backtest:portfolio-auto-wave",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "组合回测已切到真实 daily 价格与 proxy benchmark；模型轨道的 simulation baseline 已升级为 constrained TopK，但仍处于 research candidate。",
+      "validation_status": "research_candidate",
+      "win_rate": 0.979058
+    },
+    {
+      "active_position_count": 0,
+      "annualized_excess_return": -0.0022,
+      "annualized_excess_return_after_baseline_cost": -0.0022,
+      "annualized_return": 0.0,
+      "average_orders_per_rebalance_day": null,
+      "baseline_cost_drag": 0.0,
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "break_even_cost_bps": null,
+      "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+      "exclusion_reason": null,
+      "include_in_aggregate": true,
+      "invested_ratio": 0.0,
+      "latest_nav_date": "2026-04-27",
+      "max_drawdown": 0.0,
+      "mean_rebalance_interval_days": null,
+      "mode": "auto_model",
+      "name": "模型自动轨道",
+      "observation_day_count": 764,
+      "order_count": 0,
+      "portfolio_key": "sim-20260421163822-4979e8-model",
+      "rebalance_day_count": 0,
+      "rebalance_day_ratio": 0.0,
+      "round_trip_cost_bps": 35.0,
+      "status": "ended",
+      "turnover": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260421163822-4979e8-model",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "组合回测已切到真实 daily 价格与 proxy benchmark；模型轨道的 simulation baseline 已升级为 constrained TopK，但仍处于 research candidate。",
+      "validation_status": "research_candidate",
+      "win_rate": 0.994764
+    },
+    {
+      "active_position_count": 0,
+      "annualized_excess_return": -0.0022,
+      "annualized_excess_return_after_baseline_cost": -0.0022,
+      "annualized_return": 0.0,
+      "average_orders_per_rebalance_day": null,
+      "baseline_cost_drag": 0.0,
+      "benchmark_definition": "active_watchlist_equal_weight_proxy",
+      "break_even_cost_bps": null,
+      "cost_definition": "双边 35 bps，含交易费与滑点占位；A 股 T+1、涨跌停、停牌约束进入研究契约。",
+      "exclusion_reason": null,
+      "include_in_aggregate": true,
+      "invested_ratio": 0.0,
+      "latest_nav_date": "2026-04-27",
+      "max_drawdown": 0.0,
+      "mean_rebalance_interval_days": null,
+      "mode": "auto_model",
+      "name": "模型自动轨道",
+      "observation_day_count": 764,
+      "order_count": 0,
+      "portfolio_key": "sim-20260424085719-13379a-model",
+      "rebalance_day_count": 0,
+      "rebalance_day_ratio": 0.0,
+      "round_trip_cost_bps": 35.0,
+      "status": "running",
+      "turnover": 0.0,
+      "validation_artifact_id": "portfolio-backtest:sim-20260424085719-13379a-model",
+      "validation_manifest_id": "rolling-validation:phase2-portfolio-backtests",
+      "validation_note": "组合回测已切到真实 daily 价格与 proxy benchmark；模型轨道的 simulation baseline 已升级为 constrained TopK，但仍处于 research candidate。",
+      "validation_status": "research_candidate",
+      "win_rate": 0.994764
+    },
+    {
+      "active_position_count": null,
+      "annualized_excess_return": null,
+      "annualized_excess_return_after_baseline_cost": null,
+      "annualized_return": null,
+      "average_orders_per_rebalance_day": null,
+      "baseline_cost_drag": null,
+      "benchmark_definition": null,
+      "break_even_cost_bps": null,
+      "cost_definition": null,
+      "exclusion_reason": "missing_backtest_artifact",
+      "include_in_aggregate": false,
+      "invested_ratio": null,
+      "latest_nav_date": null,
+      "max_drawdown": null,
+      "mean_rebalance_interval_days": null,
+      "mode": "auto_model",
+      "name": "模型自动轨道",
+      "observation_day_count": 0,
+      "order_count": 0,
+      "portfolio_key": "sim-20260427082836-f3ba34-model",
+      "rebalance_day_count": 0,
+      "rebalance_day_ratio": null,
+      "round_trip_cost_bps": 35.0,
+      "status": "running",
+      "turnover": null,
+      "validation_artifact_id": "portfolio-backtest:portfolio-auto-live",
+      "validation_manifest_id": null,
+      "validation_note": null,
+      "validation_status": "pending_rebuild",
+      "win_rate": null
+    }
+  ],
+  "quantity_definition": "board_lot_delta_to_target_weight",
+  "required_benchmark_definition": "active_watchlist_equal_weight_proxy",
+  "scope": {
+    "default_portfolio_keys": [
+      "portfolio-auto-wave",
+      "sim-20260421163822-4979e8-model",
+      "sim-20260424085719-13379a-model",
+      "sim-20260427082836-f3ba34-model"
+    ],
+    "mode": "auto_model",
+    "portfolio_keys": [
+      "portfolio-auto-wave",
+      "sim-20260421163822-4979e8-model",
+      "sim-20260424085719-13379a-model",
+      "sim-20260427082836-f3ba34-model"
+    ]
+  },
+  "summary": {
+    "excluded_portfolio_count": 1,
+    "excluded_reasons": {
+      "missing_backtest_artifact": 1
+    },
+    "included_portfolio_count": 3,
+    "latest_nav_date_count": 1,
+    "mean_active_position_count": 1.0,
+    "mean_annualized_excess_return": 0.068367,
+    "mean_annualized_return": 0.070567,
+    "mean_invested_ratio": 0.071667,
+    "mean_max_drawdown": -0.025833,
+    "mean_turnover": 0.25,
+    "mean_win_rate": 0.989529,
+    "rebalance_day_count": 3,
+    "selected_portfolio_count": 4,
+    "total_order_count": 21
+  }
+}

@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "akshare>=1.18,<2.0",
+  "certifi>=2026.4.22,<2027.0",
   "fastapi>=0.115,<1.0",
   "pydantic>=2.11,<3.0",
   "sqlalchemy>=2.0,<3.0",
@@ -21,3 +22,15 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

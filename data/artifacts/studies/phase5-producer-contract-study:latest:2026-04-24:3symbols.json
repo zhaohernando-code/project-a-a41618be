@@ -1,0 +1,212 @@
+{
+  "artifact_id": "phase5-producer-contract-study:latest:2026-04-24:3symbols",
+  "artifact_type": "phase5_producer_contract_study",
+  "contract_version": "phase5-producer-contract-study-draft-v1",
+  "created_at": null,
+  "decision": {
+    "approval_state": "current_contract_still_preferred",
+    "note": "当前样本下，替代 contract 还没有在不放大 claim 风险的前提下明显改善 supply。",
+    "recommended_variant_id": "current_hard_block"
+  },
+  "focus_records": [],
+  "generated_at": "2026-04-27T16:23:11.631526+08:00",
+  "scope": {
+    "active_watchlist_symbols": [
+      "002270.SZ",
+      "002028.SZ",
+      "600522.SH"
+    ],
+    "include_history": false,
+    "selection_mode": "latest_per_symbol",
+    "symbols": [
+      "002270.SZ",
+      "002028.SZ",
+      "600522.SH"
+    ]
+  },
+  "summary": {
+    "excluded_record_count": 0,
+    "included_as_of_dates": [
+      "2026-04-24"
+    ],
+    "included_record_count": 3,
+    "missing_news_only_record_count": 0,
+    "missing_news_record_count": 0
+  },
+  "symbol_analysis": [
+    {
+      "missing_news_only_record_count": 0,
+      "name": "思源电气",
+      "record_count": 1,
+      "symbol": "002028.SZ",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        }
+      }
+    },
+    {
+      "missing_news_only_record_count": 0,
+      "name": "华明装备",
+      "record_count": 1,
+      "symbol": "002270.SZ",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 0,
+          "long_count": 0,
+          "reduce": 1,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 0,
+          "long_count": 0,
+          "reduce": 1,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 0,
+          "long_count": 0,
+          "reduce": 1,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 0,
+          "long_count": 0,
+          "reduce": 1,
+          "risk_alert": 0,
+          "watch": 0
+        }
+      }
+    },
+    {
+      "missing_news_only_record_count": 0,
+      "name": "中天科技",
+      "record_count": 1,
+      "symbol": "600522.SH",
+      "variant_direction_counts": {
+        "current_hard_block": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_and_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "remove_hard_override_keep_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        },
+        "watch_ceiling_keep_penalty": {
+          "buy": 1,
+          "long_count": 1,
+          "reduce": 0,
+          "risk_alert": 0,
+          "watch": 0
+        }
+      }
+    }
+  ],
+  "variants": [
+    {
+      "buy_count": 2,
+      "changed_direction_count": 1,
+      "direction_counts": {
+        "buy": 2,
+        "reduce": 1
+      },
+      "long_count": 2,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 0,
+      "promoted_from_risk_alert_count": 0,
+      "reduce_count": 1,
+      "risk_alert_count": 0,
+      "variant_id": "current_hard_block",
+      "watch_count": 0
+    },
+    {
+      "buy_count": 2,
+      "changed_direction_count": 1,
+      "direction_counts": {
+        "buy": 2,
+        "reduce": 1
+      },
+      "long_count": 2,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 0,
+      "promoted_from_risk_alert_count": 0,
+      "reduce_count": 1,
+      "risk_alert_count": 0,
+      "variant_id": "remove_hard_override_keep_penalty",
+      "watch_count": 0
+    },
+    {
+      "buy_count": 2,
+      "changed_direction_count": 1,
+      "direction_counts": {
+        "buy": 2,
+        "reduce": 1
+      },
+      "long_count": 2,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 0,
+      "promoted_from_risk_alert_count": 0,
+      "reduce_count": 1,
+      "risk_alert_count": 0,
+      "variant_id": "watch_ceiling_keep_penalty",
+      "watch_count": 0
+    },
+    {
+      "buy_count": 2,
+      "changed_direction_count": 1,
+      "direction_counts": {
+        "buy": 2,
+        "reduce": 1
+      },
+      "long_count": 2,
+      "missing_news_only_buy_count": 0,
+      "missing_news_only_long_count": 0,
+      "promoted_from_risk_alert_count": 0,
+      "reduce_count": 1,
+      "risk_alert_count": 0,
+      "variant_id": "remove_hard_override_and_penalty",
+      "watch_count": 0
+    }
+  ]
+}

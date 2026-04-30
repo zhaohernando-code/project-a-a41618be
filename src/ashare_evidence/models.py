@@ -101,6 +101,10 @@ class MarketBar(TimestampedMixin, LineageMixin, Base):
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     turnover_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     adj_factor: Mapped[float | None] = mapped_column(Float, nullable=True)
+    total_mv: Mapped[float | None] = mapped_column(Float, nullable=True)
+    circ_mv: Mapped[float | None] = mapped_column(Float, nullable=True)
+    pe_ttm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    pb: Mapped[float | None] = mapped_column(Float, nullable=True)
     raw_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
     stock: Mapped[Stock] = relationship(back_populates="market_bars")
@@ -293,6 +297,42 @@ class Recommendation(TimestampedMixin, LineageMixin, Base):
     paper_orders: Mapped[list["PaperOrder"]] = relationship(back_populates="recommendation")
 
 
+class ManualResearchRequest(TimestampedMixin, Base):
+    __tablename__ = "manual_research_requests"
+    __table_args__ = (UniqueConstraint("request_key", name="uq_manual_research_request_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    request_key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    recommendation_key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    trigger_source: Mapped[str] = mapped_column(String(32), nullable=False)
+    executor_kind: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    model_api_key_id: Mapped[int | None] = mapped_column(ForeignKey("model_api_keys.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    status_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    failed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    artifact_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requested_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    superseded_by_request_id: Mapped[int | None] = mapped_column(
+        ForeignKey("manual_research_requests.id"),
+        nullable=True,
+        index=True,
+    )
+    stale_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_packet_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    validation_artifact_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    validation_manifest_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    request_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+    model_api_key: Mapped["ModelApiKey | None"] = relationship(back_populates="manual_research_requests")
+    superseded_by: Mapped["ManualResearchRequest | None"] = relationship(remote_side=[id])
+
+
 class RecommendationEvidence(TimestampedMixin, LineageMixin, Base):
     __tablename__ = "recommendation_evidence"
     __table_args__ = (
@@ -318,6 +358,7 @@ class PaperPortfolio(TimestampedMixin, LineageMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     portfolio_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    owner_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     mode: Mapped[str] = mapped_column(String(32), nullable=False)
     benchmark_symbol: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -335,6 +376,8 @@ class PaperOrder(TimestampedMixin, LineageMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     order_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    owner_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
+    actor_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
     portfolio_id: Mapped[int] = mapped_column(ForeignKey("paper_portfolios.id"), nullable=False, index=True)
     stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"), nullable=False, index=True)
     recommendation_id: Mapped[int | None] = mapped_column(ForeignKey("recommendations.id"), nullable=True, index=True)
@@ -360,6 +403,8 @@ class PaperFill(TimestampedMixin, LineageMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     fill_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    owner_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
+    actor_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("paper_orders.id"), nullable=False, index=True)
     stock_id: Mapped[int] = mapped_column(ForeignKey("stocks.id"), nullable=False, index=True)
     filled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -407,6 +452,33 @@ class WatchlistEntry(TimestampedMixin, LineageMixin, Base):
     watchlist_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
 
+class AccountSpace(TimestampedMixin, Base):
+    __tablename__ = "account_spaces"
+
+    account_login: Mapped[str] = mapped_column(String(128), primary_key=True)
+    role_snapshot: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_acted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by_root: Mapped[bool] = mapped_column(default=False, nullable=False)
+    metadata_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class WatchlistFollow(TimestampedMixin, Base):
+    __tablename__ = "watchlist_follows"
+    __table_args__ = (UniqueConstraint("account_login", "symbol", name="uq_watchlist_follow_account_symbol"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_login: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(16), default="active", nullable=False, index=True)
+    source_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_actor_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
+    follow_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
 class AppSetting(TimestampedMixin, Base):
     __tablename__ = "app_settings"
     __table_args__ = (UniqueConstraint("setting_key", name="uq_app_setting_key"),)
@@ -449,6 +521,8 @@ class ModelApiKey(TimestampedMixin, Base):
     last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     metadata_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
+    manual_research_requests: Mapped[list[ManualResearchRequest]] = relationship(back_populates="model_api_key")
+
 
 class SimulationSession(TimestampedMixin, LineageMixin, Base):
     __tablename__ = "simulation_sessions"
@@ -456,6 +530,7 @@ class SimulationSession(TimestampedMixin, LineageMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     session_key: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    owner_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
     focus_symbol: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -483,6 +558,8 @@ class SimulationEvent(TimestampedMixin, LineageMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     event_key: Mapped[str] = mapped_column(String(96), nullable=False, index=True)
+    owner_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
+    actor_login: Mapped[str] = mapped_column(String(128), nullable=False, default="root", index=True)
     session_id: Mapped[int] = mapped_column(ForeignKey("simulation_sessions.id"), nullable=False, index=True)
     step_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
     track: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
