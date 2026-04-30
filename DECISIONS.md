@@ -1,5 +1,19 @@
 # 一个关于a股的当前数据和投资建议看板 Decisions
 
+[2026-04-30T15:00:00+08:00] Event-driven LLM deep analysis must not be a daily scoring factor; it is a trigger-based advisory layer:
+
+LLM 不做日常轮询评分，只在事件触发时介入。触发条件为六类：价格冲击(±5%)、方向切换、置信崩塌(>0.10)、因子冲突(2+ 方向相反)、重大公告(importance≥0.7)、每周六定时复盘。每个 stock 每天最多触发 2 次，同类型冷却 3 天。
+
+分析结果不直接修改 factor_breakdown 或 FUSION_WEIGHTS，而是通过已有的 `manual_review_layer`（当前 score=0.0 占位）影响建议表达。LLM 同时接收内部全量数据（OHLCV、因子 breakdown、公告全文、同板块对比、验证指标）和外部信息（AKShare stock_individual_info_flow），输出结构化 JSON（independent_direction / key_evidence / risks / information_gaps / correction_suggestion）。
+
+选择 DeepSeek Flash 作为默认模型以控制成本；重大事件可手动指定 Pro。外部搜索仍缺真正的 web search API — 当前仅覆盖 AKShare 免费接口，Phase 2 需评估 Bing/SerpAPI 接入。
+
+补充说明
+- 与现有 AI 追问（manual research / follow-up）的关系：追问是用户主动触发的交互式分析，事件分析是系统自动触发的批处理。两者共享 LLM transport 和 artifact 存储模式，但触发机制、prompt 结构和输出合同不同。
+- 事件分析的 prompt 显著大于追问 prompt（包含完整价格序列、因子表格、公告全文、板块对比），因此使用独立超时配置（120s）和独立模型路由（event_analysis task → Flash）。
+- 数据快照 hash 用于检测分析结果是否过期：当 latest_close、day_change_pct 或最近 5 根 K 线变化时，旧分析自动标记为可能过期。
+- 与 Phase 5 研究 artifact 存储模式保持一致：`data/event_analysis/{symbol}/` 下按 `{timestamp}_{trigger_type}.json` 命名，index.json 维护索引。
+
 [2026-04-30T01:28:00+08:00] Multi-account watchlist presentation and root act-as lifetime decision:
 多账号隔离上线后，前端不再允许把“当前账号自选”和“全局候选池”继续渲染成一个模糊共享列表；root 的 `act_as` 也不再跨页面刷新持久化。当前批准的交互 contract 是：账号自选单独成区显示，候选池单独成区显示；root 代看只在当前单页会话内有效，刷新或重开标签后默认回到 root 自己的空间。
 

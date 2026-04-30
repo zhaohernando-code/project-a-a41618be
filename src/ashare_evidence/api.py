@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterator
-from contextlib import asynccontextmanager
 import contextlib
 import logging
 import os
+from collections.abc import Iterator
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from ashare_evidence.account_space import visible_account_spaces
+from ashare_evidence.api_event import register_event_routes
 from ashare_evidence.dashboard import (
     get_glossary_entries,
     get_stock_dashboard,
@@ -29,7 +30,6 @@ from ashare_evidence.manual_research_workflow import (
     retry_manual_research_request,
 )
 from ashare_evidence.operations import build_operations_dashboard
-from ashare_evidence.runtime_ops import run_operations_tick
 from ashare_evidence.runtime_config import (
     create_model_api_key,
     delete_model_api_key,
@@ -37,27 +37,15 @@ from ashare_evidence.runtime_config import (
     get_runtime_overview,
     get_runtime_settings,
     set_default_model_api_key,
-    upsert_provider_credential,
     update_model_api_key,
+    upsert_provider_credential,
 )
-from ashare_evidence.simulation import (
-    end_simulation_session,
-    get_simulation_workspace,
-    pause_simulation_session,
-    place_manual_order,
-    restart_simulation_session,
-    resume_simulation_session,
-    start_simulation_session,
-    step_simulation_session,
-    update_simulation_config,
-)
-from ashare_evidence.stock_auth import StockAccessContext, require_stock_access, require_stock_root
+from ashare_evidence.runtime_ops import run_operations_tick
 from ashare_evidence.schemas import (
     AuthContextResponse,
+    CandidateListResponse,
     FollowUpAnalysisRequest,
     FollowUpAnalysisResponse,
-    CandidateListResponse,
-    ManualSimulationOrderRequest,
     LatestRecommendationResponse,
     ManualResearchRequestCompleteRequest,
     ManualResearchRequestCreateRequest,
@@ -66,6 +54,7 @@ from ashare_evidence.schemas import (
     ManualResearchRequestListResponse,
     ManualResearchRequestRetryRequest,
     ManualResearchRequestView,
+    ManualSimulationOrderRequest,
     ModelApiKeyCreateRequest,
     ModelApiKeyDeleteResponse,
     ModelApiKeyUpdateRequest,
@@ -85,6 +74,18 @@ from ashare_evidence.schemas import (
     WatchlistResponse,
 )
 from ashare_evidence.services import get_latest_recommendation_summary, get_recommendation_trace
+from ashare_evidence.simulation import (
+    end_simulation_session,
+    get_simulation_workspace,
+    pause_simulation_session,
+    place_manual_order,
+    restart_simulation_session,
+    resume_simulation_session,
+    start_simulation_session,
+    step_simulation_session,
+    update_simulation_config,
+)
+from ashare_evidence.stock_auth import StockAccessContext, require_stock_access, require_stock_root
 from ashare_evidence.watchlist import (
     add_watchlist_symbol,
     list_watchlist_entries,
@@ -93,7 +94,6 @@ from ashare_evidence.watchlist import (
 )
 
 LOGGER = logging.getLogger(__name__)
-
 
 def create_app(
     database_url: str | None = None,
@@ -168,6 +168,7 @@ def create_app(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    register_event_routes(app, get_session, require_stock_access, StockAccessContext)
 
     @app.get("/health")
     def health() -> dict[str, str]:
@@ -788,6 +789,5 @@ def create_app(
             raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     return app
-
 
 app = create_app()

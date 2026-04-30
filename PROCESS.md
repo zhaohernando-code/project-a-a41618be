@@ -2,6 +2,13 @@
 
 反回归笔记和可复用经验。状态快照见 PROJECT_STATUS.json。
 
+## 2026-04-30
+
+- **事件驱动分析的外部数据必须 fail-open**：AKShare `stock_individual_info_flow` 等外部接口可能在非交易时段返回空 DataFrame、超时或抛异常。`event_analyzer._fetch_external_data()` 的所有外部调用必须在 try/except 内，失败时返回空数据而非中断整个分析流程。prompt 中 `外部实时信息` 块显示"暂无外部实时信息流数据"比让整个 refresh pipeline 崩溃合理得多。
+- **新模块集成到已有 pipeline 时要保护现有流程**：CLI `_refresh_runtime_data_output` 中的事件检测和分析调用包裹在 try/except 内，确保 trigger check 或 LLM 调用失败不会阻断后续的 intraday sync、simulation step 和 Phase 2 rebuild。
+- **prompt 改动必须同步更新测试里的断言字符串**：`_follow_up_payload` 中 `目标 horizon` → `目标周期`、`系统当前结论` → `系统当前建议`、`验证样本量` → `回测样本量` 三处文案调整后，`test_dashboard_views.py` 的对应断言也会断裂。每次改 prompt 文案后跑一遍相关测试确认。
+- **用 Python 脚本做文件替换时注意行结构**：直接 `result = lines[:411] + [new_body + "\n"] + lines[483:]` 会把整个函数体压成一行。正确做法是把 new_body 拆成 `list[str]`，每个元素是一行（含 `\n`），再用 extend/concatenate。
+
 ## 2026-04-29
 
 - **多账号回归要先分清“真串号”和“展示误导”**：这次 canonical 用户反馈里，后端隔离其实已经成立，`member` 的 watchlist/simulation 都是空白；真正误导来自前端把“当前账号自选”和“全局候选池”继续混在一个工作台里展示。排查顺序应先用直连或 canonical API 验证账号态，再决定是修数据层还是修呈现层。

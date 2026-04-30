@@ -45,7 +45,7 @@ class OpenAICompatibleTransport:
             method="POST",
         )
         try:
-            with urlopen(http_request, timeout=OPENAI_COMPATIBLE_TIMEOUT_SECONDS) as response:
+            with urlopen(http_request, timeout=OPENAI_COMPATIBLE_TIMEOUT_SECONDS, disable_proxies=True) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore") or str(exc)
@@ -95,7 +95,7 @@ class AnthropicCompatibleTransport:
             method="POST",
         )
         try:
-            with urlopen(http_request, timeout=ANTHROPIC_COMPATIBLE_TIMEOUT_SECONDS) as response:
+            with urlopen(http_request, timeout=ANTHROPIC_COMPATIBLE_TIMEOUT_SECONDS, disable_proxies=True) as response:
                 resp_body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore") or str(exc)

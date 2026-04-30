@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from io import BytesIO
 from math import tanh
 from typing import Any
 from urllib import request
@@ -8,7 +9,8 @@ from urllib import request
 from ashare_evidence.http_client import urlopen
 
 ANNOUNCEMENT_BODY_TIMEOUT = 8
-ANNOUNCEMENT_BODY_MAX_CHARS = 5000
+ANNOUNCEMENT_PDF_TIMEOUT = 15
+ANNOUNCEMENT_BODY_MAX_CHARS = 8000
 
 _HTML_TAG = re.compile(r"<[^>]+>")
 _HTML_ENTITY = re.compile(r"&[a-zA-Z]+;|&#\d+;")
@@ -16,28 +18,105 @@ _HTML_WHITESPACE = re.compile(r"\s{3,}")
 _CNINFO_CONTENT_RE = re.compile(
     r'<div[^>]*class="[^"]*detail-content[^"]*"[^>]*>(.*?)</div>', re.DOTALL
 )
+_PDF_URL_RE = re.compile(r'https?://[^"\'\s]+\.(?:PDF|pdf)')
+_ANNOUNCEMENT_ID_RE = re.compile(r'announcementId=(\d+)')
+
+
+def _extract_pdf_text(pdf_data: bytes) -> str | None:
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(BytesIO(pdf_data))
+        parts: list[str] = []
+        for page in reader.pages[:10]:  # first 10 pages
+            text = page.extract_text()
+            if text:
+                parts.append(text)
+        return "\n".join(parts) if parts else None
+    except Exception:
+        return None
+
+
+def _find_pdf_url(source_uri: str) -> str | None:
+    m = _ANNOUNCEMENT_ID_RE.search(source_uri)
+    if not m:
+        return None
+    aid = m.group(1)
+    # Extract date from source_uri or construct PDF URL pattern
+    date_match = re.search(r'announcementTime=(\d{4}-\d{2}-\d{2})', source_uri)
+    date_str = date_match.group(1) if date_match else ""
+    if date_str:
+        pdf_url = f"http://static.cninfo.com.cn/finalpage/{date_str}/{aid}.PDF"
+    else:
+        pdf_url = f"http://static.cninfo.com.cn/finalpage/{aid}.PDF"
+    return pdf_url
 
 
 def fetch_announcement_body(source_uri: str) -> str | None:
     if not source_uri:
         return None
+
+    # Step 1: Try PDF directly if source_uri points to a PDF
+    if ".PDF" in source_uri.upper():
+        return _fetch_pdf_body(source_uri)
+
+    # Step 2: Fetch the CNINFO page
     http_request = request.Request(source_uri, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urlopen(http_request, timeout=ANNOUNCEMENT_BODY_TIMEOUT, disable_proxies=True) as resp:
-            raw = resp.read().decode("utf-8", errors="ignore")
+            raw = resp.read()
     except Exception:
         return None
-    if not raw or len(raw) < 200:
+
+    if not raw or len(raw) < 50:
         return None
-    content_match = _CNINFO_CONTENT_RE.search(raw)
+
+    # Step 3: Check if page is actually a PDF
+    if raw[:4] == b"%PDF":
+        return _extract_pdf_text(raw)
+
+    # Step 4: Try HTML extraction
+    try:
+        html = raw.decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+    # Step 5: Check for PDF link in the HTML (CNINFO redirect pattern)
+    pdf_match = _PDF_URL_RE.search(html)
+    if pdf_match:
+        pdf_url = pdf_match.group(0)
+        pdf_text = _fetch_pdf_body(pdf_url)
+        if pdf_text:
+            return pdf_text
+
+    # Step 6: Also try constructing PDF URL from announcementId
+    pdf_url = _find_pdf_url(source_uri)
+    if pdf_url:
+        pdf_text = _fetch_pdf_body(pdf_url)
+        if pdf_text:
+            return pdf_text
+
+    # Step 7: Fall back to HTML content extraction
+    content_match = _CNINFO_CONTENT_RE.search(html)
     if content_match:
-        raw = content_match.group(1)
-    text = _HTML_TAG.sub(" ", raw)
+        html = content_match.group(1)
+    text = _HTML_TAG.sub(" ", html)
     text = _HTML_ENTITY.sub(" ", text)
     text = _HTML_WHITESPACE.sub("\n", text).strip()
     if len(text) < 40:
         return None
     return text[:ANNOUNCEMENT_BODY_MAX_CHARS]
+
+
+def _fetch_pdf_body(pdf_url: str) -> str | None:
+    http_request = request.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urlopen(http_request, timeout=ANNOUNCEMENT_PDF_TIMEOUT, disable_proxies=True) as resp:
+            pdf_data = resp.read()
+    except Exception:
+        return None
+    if not pdf_data or len(pdf_data) < 100:
+        return None
+    return _extract_pdf_text(pdf_data)
 
 
 def compute_financial_trends(snapshot: dict[str, Any] | None) -> dict[str, Any]:
@@ -126,6 +205,8 @@ def compute_financial_trends(snapshot: dict[str, Any] | None) -> dict[str, Any]:
 def enrich_with_llm_analysis(
     news_items: list[dict[str, Any]],
     news_links: list[dict[str, Any]],
+    *,
+    financial_snapshot: dict[str, Any] | None = None,
 ) -> None:
     from ashare_evidence.news_analysis import (
         analyze_announcements_batch,
@@ -136,13 +217,13 @@ def enrich_with_llm_analysis(
     for item in news_items:
         existing = (item.get("raw_payload") or {}).get("llm_analysis")
         if existing and not existing.get("_fallback"):
-            continue  # already successfully analyzed
+            continue
         candidates.append(item)
     if not candidates:
         return
 
     try:
-        llm_results = analyze_announcements_batch(candidates)
+        llm_results = analyze_announcements_batch(candidates, financial_snapshot=financial_snapshot)
     except Exception:
         return
 
@@ -152,8 +233,13 @@ def enrich_with_llm_analysis(
         if summary:
             item["summary"] = summary
         new_direction = llm_sentiment_to_impact_direction(llm)
-        if new_direction:
-            for link in news_links:
-                if link.get("news_key") == item["news_key"]:
+        for link in news_links:
+            if link.get("news_key") == item["news_key"]:
+                if new_direction:
                     link["impact_direction"] = new_direction
                     link.setdefault("mapping_payload", {})["llm_override"] = True
+                elif llm.get("_fallback"):
+                    link["impact_direction"] = "llm_failed"
+                    link.setdefault("mapping_payload", {})["llm_failed"] = True
+                else:
+                    link["impact_direction"] = new_direction or "neutral"

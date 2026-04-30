@@ -8,6 +8,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from ashare_evidence.db import align_datetime_timezone
+from ashare_evidence.follow_up_prompt import (
+    build_evidence_lines,
+    build_market_lines,
+    build_news_lines,
+    build_validation_lines,
+)
 from ashare_evidence.intraday_market import INTRADAY_MARKET_TIMEFRAME
 from ashare_evidence.models import MarketBar, ModelVersion, NewsEntityLink, Recommendation, SectorMembership, Stock
 from ashare_evidence.phase2 import phase2_target_horizon_label
@@ -60,24 +66,19 @@ GLOSSARY_ENTRIES: list[dict[str, str]] = [
     },
 ]
 
-
 def get_glossary_entries() -> list[dict[str, str]]:
     return list(GLOSSARY_ENTRIES)
-
 
 def _artifact_source_classification(*, artifact_id: str | None) -> str:
     return "artifact_backed" if artifact_id else "migration_placeholder"
 
-
 def _artifact_validation_mode(*, validation_status: str) -> str:
     return "artifact_backed" if validation_status == "verified" else "migration_placeholder"
-
 
 def _candidate_compat_projection(*, window_definition: str) -> dict[str, str]:
     return {
         "applicable_period": window_definition,
     }
-
 
 def _all_recommendations(session: Session) -> list[Recommendation]:
     return session.scalars(
@@ -415,47 +416,46 @@ def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence
     historical_validation = recommendation.get("historical_validation", {})
     core_quant = recommendation.get("core_quant", {})
     manual_llm_review = recommendation.get("manual_llm_review", {})
-    evidence_lines = [
-        f"{item['label']} | {item['lineage']['source_uri']}"
-        for item in evidence[:4]
-    ]
-    validation_sample_count = _historical_validation_metric(recommendation, "sample_count")
-    validation_rank_ic_mean = _historical_validation_metric(recommendation, "rank_ic_mean")
-    validation_positive_excess_rate = _historical_validation_metric(recommendation, "positive_excess_rate")
+    hero, recent_news = summary.get("hero", {}), summary.get("recent_news", [])
+    evidence_lines = build_evidence_lines(evidence)
+    news_lines = build_news_lines(recent_news)
+    v_sc, v_ric, v_per = (
+        _historical_validation_metric(recommendation, k)
+        for k in ("sample_count", "rank_ic_mean", "positive_excess_rate")
+    )
+    validation_lines = build_validation_lines(v_sc, v_ric, v_per)
     suggested_questions = [
         "如果我只关注未来两周，哪些证据最值得盯？",
         "这条建议最可能因为什么条件而失效？",
         "最近一版建议为什么比上一版更强/更弱？",
         "如果只允许保守跟踪，应该先看哪些风险信号？",
     ]
-    copy_prompt = "\n".join(
-        [
-            "请基于以下结构化证据回答我的追问，不要补充未给出的事实。",
-            "你的任务是做二次解释，不是重复包装已有结论；如果信息不足，请直接说明不足。",
-            "先区分“已知事实”和“你的推断”。如果验证指标之间存在张力或冲突，必须先解释冲突，再决定是否能给方向性判断。",
-            f"股票：{summary['stock']['name']}（{summary['stock']['symbol']}）",
-            "已知事实：",
-            f"观察窗口：{_candidate_window_definition(recommendation)}",
-            f"目标 horizon：{core_quant.get('target_horizon_label', phase2_target_horizon_label())}",
-            f"历史验证状态：{historical_validation.get('status', 'pending_rebuild')}",
-            f"验证 artifact：{historical_validation.get('artifact_id') or '未绑定'}",
-            f"验证 manifest：{historical_validation.get('manifest_id') or '未绑定'}",
-            f"验证样本量：{validation_sample_count if validation_sample_count is not None else '未提供'}",
-            f"RankIC 均值：{validation_rank_ic_mean if validation_rank_ic_mean is not None else '未提供'}",
-            f"正超额占比：{validation_positive_excess_rate if validation_positive_excess_rate is not None else '未提供'}",
-            f"人工研究状态：{manual_llm_review.get('status', 'manual_trigger_required')} / {manual_llm_review.get('trigger_mode', 'manual')}",
-            "核心驱动：",
-            *[f"- {item}" for item in evidence_layer.get("primary_drivers", [])[:3]],
-            "主要风险：",
-            *[f"- {item}" for item in risk_layer.get("risk_flags", [])[:3]],
-            f"系统当前结论（仅供参考，不是必须采纳）：{DIRECTION_LABELS.get(recommendation['direction'], recommendation['direction'])}；{recommendation['confidence_expression']}",
-            f"最近变化：{change['summary']}",
-            "关键证据：",
-            *[f"- {line}" for line in evidence_lines],
-            "请回答这个问题：<在这里替换成你的追问>",
-            "回答要求：明确哪些是事实、哪些是推断；如果证据不足以支持买入/卖出/强化动作，要直接说明；写出失效条件，并指出下一次最值得更新观察的时间点或事件。",
-        ]
-    )
+    prompt_blocks: list[str] = [
+        "请基于以下结构化证据回答我的追问，不要补充未给出的事实。",
+        "你的任务是做二次解释，不是重复包装已有结论；如果信息不足，请直接说明不足。",
+        "先区分“已知事实”和“你的推断”。如果验证指标之间存在张力或冲突，必须先解释冲突，再决定是否能给方向性判断。",
+        f"股票：{summary['stock']['name']}（{summary['stock']['symbol']}）",
+        *build_market_lines(hero),
+        f"观察窗口：{_candidate_window_definition(recommendation)}",
+        f"目标周期：{core_quant.get('target_horizon_label', phase2_target_horizon_label())}",
+        "核心驱动：",
+        *[f"- {item}" for item in evidence_layer.get("primary_drivers", [])[:3]],
+        "主要风险：",
+        *[f"- {item}" for item in risk_layer.get("risk_flags", [])[:3]],
+        f"系统当前建议（仅供参考，不是必须采纳）：{DIRECTION_LABELS.get(recommendation['direction'], recommendation['direction'])}；{recommendation['confidence_expression']}",
+        f"最近变化：{change['summary']}",
+        "关键证据：",
+        *evidence_lines,
+    ]
+    if news_lines:
+        prompt_blocks.extend(["近期事件：", *news_lines])
+    if validation_lines:
+        prompt_blocks.extend(["验证数据（用于评估建议可靠性）：", *validation_lines])
+    prompt_blocks.extend([
+        "请回答这个问题：<在这里替换成你的追问>",
+        "回答要求：明确哪些是事实、哪些是推断；如果证据不足以支持买入/卖出/强化动作，要直接说明；写出失效条件，并指出下一次最值得更新观察的时间点或事件。",
+    ])
+    copy_prompt = "\n".join(prompt_blocks)
     return {
         "suggested_questions": suggested_questions,
         "copy_prompt": copy_prompt,
@@ -465,9 +465,9 @@ def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence
             "validation_note": historical_validation.get("note"),
             "validation_artifact_id": historical_validation.get("artifact_id"),
             "validation_manifest_id": historical_validation.get("manifest_id"),
-            "validation_sample_count": validation_sample_count,
-            "validation_rank_ic_mean": validation_rank_ic_mean,
-            "validation_positive_excess_rate": validation_positive_excess_rate,
+            "validation_sample_count": v_sc,
+            "validation_rank_ic_mean": v_ric,
+            "validation_positive_excess_rate": v_per,
             "manual_request_id": manual_llm_review.get("request_id"),
             "manual_request_key": manual_llm_review.get("request_key"),
             "manual_review_executor_kind": manual_llm_review.get("executor_kind"),

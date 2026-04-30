@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ashare_evidence.db import init_database, session_scope
+from ashare_evidence.cli_event import add_event_check_parser, handle_event_check, run_refresh_event_checks
 from ashare_evidence.dashboard import get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
+from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.intraday_market import sync_intraday_market
 from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.phase2 import rebuild_phase2_research_state
@@ -42,14 +43,12 @@ from ashare_evidence.watchlist import active_watchlist_symbols, refresh_watchlis
 def _print_json(payload: Any) -> None:
     print(json.dumps(payload, ensure_ascii=False, indent=2, default=str))
 
-
 def _should_initialize_database(database_url: str | None) -> bool:
     if not database_url:
         return True
     if not database_url.startswith("sqlite:///") or database_url == "sqlite:///:memory:":
         return True
     return not Path(database_url.removeprefix("sqlite:///")).exists()
-
 
 def _phase5_horizon_study_output(
     session,
@@ -83,7 +82,6 @@ def _phase5_horizon_study_output(
         },
     }
 
-
 def _phase5_holding_policy_study_output(
     session,
     *,
@@ -113,7 +111,6 @@ def _phase5_holding_policy_study_output(
             "reused_existing_snapshot": prior_artifact is not None,
         },
     }
-
 
 def _phase5_holding_policy_experiment_output(
     session,
@@ -150,7 +147,6 @@ def _phase5_holding_policy_experiment_output(
         },
     }
 
-
 def _phase5_producer_contract_study_output(
     session,
     *,
@@ -183,7 +179,6 @@ def _phase5_producer_contract_study_output(
         },
     }
 
-
 def _refresh_runtime_data_output(
     session,
     *,
@@ -195,6 +190,7 @@ def _refresh_runtime_data_output(
     run_analysis_refresh = not ops_only
     run_ops_refresh = not analysis_only
     refreshed = [refresh_watchlist_symbol(session, symbol) for symbol in symbols] if run_analysis_refresh else []
+    event_results = run_refresh_event_checks(session, [item["symbol"] for item in refreshed]) if run_analysis_refresh and refreshed else []
     intraday = sync_intraday_market(session, symbols) if run_ops_refresh else None
     simulation = None
     if not skip_simulation and run_analysis_refresh:
@@ -216,9 +212,8 @@ def _refresh_runtime_data_output(
         },
         "intraday_market": intraday,
         "simulation_last_data_time": None if simulation is None else simulation["session"]["last_data_time"],
-        "simulation_current_step": None if simulation is None else simulation["session"]["current_step"],
+        "simulation_current_step": None if simulation is None else simulation["session"]["current_step"], "event_analyses_triggered": len(event_results), "event_analyses": event_results[:3] if event_results else [],
     }
-
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evidence-first data foundation CLI.")
@@ -308,6 +303,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     glossary = subparsers.add_parser("glossary", help="Show the dashboard glossary entries.")
     glossary.add_argument("--database-url", default=None)
+    add_event_check_parser(subparsers)
 
     refresh_runtime = subparsers.add_parser(
         "refresh-runtime-data",
@@ -328,7 +324,6 @@ def build_parser() -> argparse.ArgumentParser:
     phase5_daily.add_argument("--skip-simulation", action="store_true")
 
     return parser
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
@@ -426,6 +421,12 @@ def main(argv: list[str] | None = None) -> int:
         _print_json(get_glossary_entries())
         return 0
 
+    if args.command == "event-check":
+        with session_scope(args.database_url) as session:
+            collected = handle_event_check(session, symbol=args.symbol, run=args.run, database_url=args.database_url)
+        _print_json(collected)
+        return 0
+
     if args.command == "refresh-runtime-data":
         if args.analysis_only and args.ops_only:
             parser.error("--analysis-only 和 --ops-only 不能同时传入")
@@ -512,7 +513,6 @@ def main(argv: list[str] | None = None) -> int:
 
     parser.error(f"Unsupported command: {args.command}")
     return 2
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

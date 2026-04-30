@@ -21,20 +21,20 @@
       "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/api.py": {
-      "lines": 706,
-      "reason": "FastAPI application with 25+ endpoints across 6 route groups (dashboard, simulation, settings, manual-research, watchlist, stocks). 706 lines is proportional to API surface — ~28 lines per endpoint average. Router extraction would add boilerplate without reducing complexity.",
+      "lines": 828,
+      "reason": "FastAPI application with 27+ endpoints across 7 route groups (dashboard, simulation, settings, manual-research, watchlist, stocks, event-analyses). Growth from ~793→828 lines — added 2 event analysis endpoints. Router extraction would add boilerplate for marginal line-count savings.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/cli.py": {
-      "lines": 518,
-      "reason": "CLI command group: data refresh, cache management, admin operations.",
+      "lines": 576,
+      "reason": "CLI command group: data refresh, cache management, admin operations, event-check. Growth from ~518→576 — added event-check command + trigger/analysis integration in refresh pipeline.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/dashboard.py": {
-      "lines": 609,
-      "reason": "Dashboard views with direction labels and factor cards. Minor growth from label additions.",
+      "lines": 671,
+      "reason": "Dashboard views: hero payload, price chart, follow-up prompt, candidate list, change detection. Growth from ~605→671 — _follow_up_payload restructured with market data/event blocks for better LLM context.",
       "status": "accepted",
       "reviewed_at": "2026-04-30"
     },
