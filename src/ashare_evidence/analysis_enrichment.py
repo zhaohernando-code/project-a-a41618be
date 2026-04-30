@@ -132,7 +132,12 @@ def enrich_with_llm_analysis(
         llm_sentiment_to_impact_direction,
     )
 
-    candidates = [item for item in news_items if item.get("summary") == item.get("headline")]
+    candidates = []
+    for item in news_items:
+        existing = (item.get("raw_payload") or {}).get("llm_analysis")
+        if existing and not existing.get("_fallback"):
+            continue  # already successfully analyzed
+        candidates.append(item)
     if not candidates:
         return
 
