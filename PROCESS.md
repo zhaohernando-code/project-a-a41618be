@@ -13,8 +13,6 @@
 - **持久化 recommendation payload 需要显示层向后兼容**：新闻因子生产逻辑已把 score 限制在 `[-0.98, 0.98]`，但 runtime DB 可能仍有旧 payload 的 `±1.0`。服务层和 factor card 层必须同时做用户可见钳制，避免专业用户看到“满分因子”误判为满置信。
 - **发布刷新不能无限阻塞 verification**：`publish-local-runtime.sh` 现在支持 `ASHARE_PUBLISH_REFRESH_MODE=sync|async|skip`，同步刷新有 `ASHARE_PUBLISH_REFRESH_TIMEOUT_SECONDS` 外层超时；本轮最终发布使用 `skip`，因为 API 显示层修复已能直接验证当前已服务 payload。
 - **最终收尾记录**：`PYTHONPATH=src python3 -m pytest -q` 为 `212 passed in 516.29s`；最终发布快照 commit 为 `a76683eb0d41ca6e6165abb429fbb4a6ceeec3f5`，runtime `latest-successful.json` 已更新；发布脚本内置 deploy verifier 为 `19 passed, 0 failed` 并输出 `VERIFICATION PASSED`；真实 Chrome served-page 验收通过，页面标题 `波段决策看板`，可见 `工作台 / 关注股票 / 复盘`，console error 为空，截图为 `output/playwright/runtime-verify.png`。
-- **计划池默认目标必须是 live control-plane，而不是本机 127.0.0.1**：此前 `accept-plan` 默认写到本机 `http://127.0.0.1:8787`，导致股票看板显示“已进入计划池”，但 `/middle` live 状态里没有对应任务。修复方式不是继续硬编码公网地址，而是在未显式配置 `ASHARE_CONTROL_PLANE_API_BASE` 时，默认通过 `ssh://codex-server` relay 到远端 `http://127.0.0.1:8787`。这样保留了测试直连入口，也保证真实用户看到的中台和股票看板写入同一状态库。
-- **这类 live/state 错位必须同时做 API 和已登录浏览器双验收**：本轮先用 Safari 已登录会话确认 `https://hernando-zhao.cn/api/tasks/task-momlkmg7-4mrd59` 返回 `Task ... not found`，再在修复后确认 `https://hernando-zhao.cn/api/tasks/task-momq87hq-w54xos` 返回 live 任务 JSON，最后在 `https://hernando-zhao.cn/middle` 的 `ashare-dashboard` 需求列表看到该任务卡片。只做本地 API 或只做 runtime 页面其中一边都不足以说明问题真正收口。
 
 ## 2026-04-30
 
