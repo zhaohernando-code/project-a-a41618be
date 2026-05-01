@@ -726,7 +726,6 @@ def build_real_evidence_bundle(
         from ashare_evidence.signal_engine_parts.market_cap_seed import SEED_MARKET_CAP
         if normalized_symbol in SEED_MARKET_CAP:
             market_cap = {"total_mv": SEED_MARKET_CAP[normalized_symbol], "source": "seed"}
-
     enrich_with_llm_analysis(news_items, news_links, financial_snapshot=financial_snapshot)
 
     financial_trends = compute_financial_trends(financial_snapshot)

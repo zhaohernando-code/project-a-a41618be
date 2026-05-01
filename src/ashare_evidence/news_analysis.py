@@ -73,21 +73,15 @@ def _parse_llm_json(raw: str) -> dict[str, Any]:
                 return result
             except json.JSONDecodeError:
                 continue
-    return {"sentiment": "neutral", "sentiment_confidence": 0.3, "key_findings": [],
-            "impact_areas": [], "summary_sentence": "", "reasoning": "LLM response parse failed.",
-            "importance_score": 0.0}
-    result.setdefault("sentiment", "neutral")
-    result.setdefault("sentiment_confidence", 0.3)
-    result.setdefault("key_findings", [])
-    result.setdefault("impact_areas", [])
-    result.setdefault("summary_sentence", "")
-    result.setdefault("reasoning", "")
-    valid_sentiments = {"positive", "negative", "neutral", "mixed"}
-    if result["sentiment"] not in valid_sentiments:
-        result["sentiment"] = "neutral"
-    conf = result["sentiment_confidence"]
-    if not isinstance(conf, (int, float)) or conf < 0 or conf > 1:
-        result["sentiment_confidence"] = 0.3
+    result = {
+        "sentiment": "neutral",
+        "sentiment_confidence": 0.3,
+        "key_findings": [],
+        "impact_areas": [],
+        "summary_sentence": "",
+        "reasoning": "LLM response parse failed.",
+        "importance_score": 0.0,
+    }
     return result
 
 
@@ -161,13 +155,12 @@ def analyze_announcement(
     if (importance >= IMPORTANCE_THRESHOLD or needs_deeper) and not result.get("_fallback"):
         t2, _, _, pro_model = route_model("financial_analysis")
         result2 = _call_llm(t2, base_url, api_key, pro_model, prompt, _ANNOUNCEMENT_PRO_SYSTEM_PROMPT)
-        if not result2.get("_fallback") and result2.get("summary_sentence"):
+        if not result2.get("_fallback"):
             result2["_tier"] = 2
             result2["_flash_model"] = flash_model
             result2["_flash_sentiment"] = result.get("sentiment")
             result2["_flash_importance"] = importance
             return result2
-        # Pro failed or returned empty — keep Flash result but mark tier as attempted
         result["_pro_attempted"] = True
 
     return result
