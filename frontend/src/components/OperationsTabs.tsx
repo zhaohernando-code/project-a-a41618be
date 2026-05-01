@@ -89,6 +89,7 @@ export interface BuildOperationsTabsInput {
   handleUpdateImprovementSuggestionStatus: (suggestionId: string, status: string, reason: string) => Promise<void>;
   improvementSuggestionFilter: string | null;
   setImprovementSuggestionFilter: (v: string | null) => void;
+  loadingSections: Set<string>;
 }
 
 function suggestionConfidenceLabel(value?: string | null): string {
@@ -106,7 +107,6 @@ function suggestionActionLabel(value?: string | null): string {
   if (value === "create_experiment") return "进入实验";
   return value || "未给出";
 }
-
 function reviewerSummary(item: ImprovementSuggestionView, reviewer: string): string {
   const review = item.reviews?.[reviewer];
   if (!review) return "未返回审计";
@@ -123,7 +123,6 @@ function improvementSuggestionFilterLabel(value?: string | null): string {
   if (value === "needs_more_data") return "缺证据";
   return "本周建议";
 }
-
 function filterImprovementSuggestions(items: ImprovementSuggestionView[], filter: string | null): ImprovementSuggestionView[] {
   if (!filter) return items;
   if (filter === "reviewed") return items.filter((item) => item.status === "reviewed" || Boolean(item.reviews));
@@ -165,7 +164,6 @@ function openImprovementPlanModelPicker(
     onOk: () => handleAcceptImprovementSuggestionForPlan(item.suggestion_id, selectedModel),
   });
 }
-
 export function buildOperationsTabs(input: BuildOperationsTabsInput) {
   const {
     operations,
@@ -187,10 +185,9 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
     manualResearchAction, setManualResearchAction,
     handleRunImprovementSuggestionReview, handleAcceptImprovementSuggestionForPlan, handleUpdateImprovementSuggestionStatus,
     improvementSuggestionFilter, setImprovementSuggestionFilter,
+    loadingSections,
   } = input;
-
   if (!operations) return [];
-
   const improvementSuggestions = operations.improvement_suggestions;
   const improvementSuggestionItems = improvementSuggestions?.suggestions ?? improvementSuggestions?.top_suggestions ?? [];
   const filteredImprovementSuggestions = filterImprovementSuggestions(improvementSuggestionItems, improvementSuggestionFilter);
@@ -204,13 +201,14 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
     { key: "model_split", label: "模型分歧", value: improvementSuggestions.summary.model_split ?? 0 },
     { key: "needs_more_data", label: "缺证据", value: improvementSuggestions.summary.needs_more_data ?? 0 },
   ] : [];
-
   return [
     {
       key: "execution",
       label: "模拟参数",
-      children: (
-        <Row gutter={[16, 16]}>
+      children: loadingSections.has("simulation_workspace") && !simulation ? (<Row gutter={[16, 16]}>
+        <Col xs={24} xl={10}><Card className="panel-card" title="模型轨道建议"><Skeleton active paragraph={{ rows: 4 }}/></Card></Col>
+        <Col xs={24} xl={14}><Card className="panel-card" title="模拟参数"><Skeleton.Input active style={{ width: 200, marginBottom: 16 }}/><Skeleton active paragraph={{ rows: 6 }}/></Card></Col>
+      </Row>) : (<Row gutter={[16, 16]}>
           <Col xs={24} xl={10}>
             <Card className="panel-card" title="模型轨道建议">
               <List
@@ -369,7 +367,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
             </Card>
           </Col>
         </Row>
-      ),
+      )),
     },
     {
       key: "analysis",
@@ -385,7 +383,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
               </Button>
             )}
           >
-            {operations.improvement_suggestions ? (
+            {loadingSections.has("improvement_suggestions") && !operations.improvement_suggestions ? <Skeleton active paragraph={{ rows: 4 }}/> : operations.improvement_suggestions ? (
               <>
                 <div className="suggestion-stat-grid">
                   {improvementSuggestionStatFilters.map((item) => (
@@ -518,7 +516,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
               </>
             ) : (
               <Empty description="暂无可审计建议" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            )}
+            ))}
           </Card>
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={14}>
@@ -666,7 +664,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
                     description={sanitizeDisplayText(operations.overview.run_health.note)}
                   />
                 ) : null}
-                {portfolioTabs.length > 0 ? (
+                {loadingSections.has("portfolios") && portfolioTabs.length === 0 ? <Skeleton active paragraph={{ rows: 3 }}/> : portfolioTabs.length > 0 ? (
                   <Tabs items={portfolioTabs} />
                 ) : (
                   <Empty description="当前没有可展示的组合轨道" image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -755,9 +753,9 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
               <Card
                 className="panel-card"
                 title="人工研究队列"
-                extra={<Text type="secondary">{`快照时间 ${formatDate(operations.manual_research_queue.generated_at)}`}</Text>}
+                extra={loadingSections.has("manual_queue") && !operations.manual_research_queue?.generated_at ? null : <Text type="secondary">{`快照时间 ${formatDate(operations.manual_research_queue.generated_at)}`}</Text>}
               >
-                <Space wrap className="inline-tags">
+                {loadingSections.has("manual_queue") && !operations.manual_research_queue?.generated_at ? <Skeleton active paragraph={{ rows: 4 }}/> : (<Space wrap className="inline-tags">
                   <Tag>{`排队 ${operations.manual_research_queue.counts.queued ?? 0}`}</Tag>
                   <Tag>{`执行中 ${operations.manual_research_queue.counts.in_progress ?? 0}`}</Tag>
                   <Tag>{`失败 ${operations.manual_research_queue.counts.failed ?? 0}`}</Tag>
@@ -834,6 +832,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
                     </List.Item>
                   )}
                 />
+                )}
               </Card>
             </Col>
             <Col xs={24} xl={10}>
@@ -943,13 +942,14 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={14}>
               <Card className="panel-card" title="建议命中复盘">
-                <Table
+                {loadingSections.has("replay") && !operations.recommendation_replay?.length ? <Skeleton active paragraph={{ rows: 3 }}/> : (<Table
                   rowKey="recommendation_id"
                   size="small"
                   pagination={false}
                   dataSource={operations.recommendation_replay}
                   columns={replayColumns}
                 />
+                )}
               </Card>
             </Col>
             <Col xs={24} xl={10}>

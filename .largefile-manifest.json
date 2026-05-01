@@ -3,14 +3,14 @@
   "reviewed_at": "2026-04-28",
   "files": {
     "frontend/src/App.tsx": {
-      "lines": 2879,
-      "reason": "Main app shell now also carries event-analysis surfaces, operations audit handlers, and multi-view shared state. Mobile UI JSX remains in dedicated components/mobile/*; this file still centralizes shared state, handlers, and overlay wiring, but should be revisited if more workflow-specific state lands here.",
+      "lines": 2891,
+      "reason": "Main app shell: event-analysis, operations audit, multi-view state, per-section loading skeleton tracking. Mobile UI JSX in dedicated components/mobile/*. Planned refactor deferred.",
       "status": "planned_refactor",
       "reviewed_at": "2026-05-01"
     },
     "frontend/src/styles.css": {
-      "lines": 1139,
-      "reason": "Global CSS: variables, layout, component styles, Ant Design overrides, responsive breakpoints, and the suggestion-audit / event-analysis presentation states added in this tranche. Cascade-dependent.",
+      "lines": 1165,
+      "reason": "Global CSS: variables, layout, component styles, Ant Design overrides, responsive breakpoints, dark-mode Select dropdown/selection-item fixes. Cascade-dependent.",
       "status": "accepted",
       "reviewed_at": "2026-05-01"
     },
@@ -135,8 +135,8 @@
       "reviewed_at": "2026-05-01"
     },
     "frontend/src/components/OperationsTabs.tsx": {
-      "lines": 986,
-      "reason": "Operations dashboard tabs now include suggestion-audit interactions, filter state, and model-picking modal wiring in addition to portfolio, simulation, replay, research validation, and launch readiness. A future split into per-tab components still makes sense, but the current turn kept the behavior together to avoid contract drift.",
+      "lines": 1014,
+      "reason": "Operations dashboard tabs: suggestion-audit, filter state, model-picking modal, per-section loading skeletons for simulation_workspace, improvement_suggestions, manual_queue, replay, portfolios. Future split into per-tab components still desirable.",
       "status": "accepted",
       "reviewed_at": "2026-05-01"
     },

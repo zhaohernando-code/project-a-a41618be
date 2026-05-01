@@ -90,25 +90,19 @@ import { buildOperationsTabs } from "./components/OperationsTabs";
 import { MobileAppShell } from "./components/mobile/MobileAppShell";
 import { MobileManualOrderModal } from "./components/mobile/MobileManualOrderModal";
 import { readAnalysisModelPreference, selectMobileAnalysisModel } from "./components/mobile/modelSelection";
-import type { MobileTabKey } from "./components/mobile/types";
 
 import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
-import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, statusColor, valueTone } from "./utils/format";
 import { buildPendingDetailMessage, canCompleteManualResearch, canExecuteManualResearch, canFailManualResearch, canRetryManualResearch, candidateValidationSummary, claimGateAlertType, claimGateDescription, claimGateStatusLabel, dataSourceStatusColor, deploymentModeLabel, displayBenchmarkLabel, displayLabelDefinition, displayWindowLabel, eventDirectionLabel, eventDirectionStatus, eventEvidenceText, eventTriggerLabel, fieldMappingLabel, formatMarketFreshness, horizonLabel, manualResearchActionStatusMessage, manualReviewModelLabel, manualReviewStatusLabel, operationsValidationDescription, operationsValidationMessage, parseMultilineItems, portfolioTrackLabel, providerSelectionModeLabel, publicValidationSummary, sanitizeDisplayText, validationStatusLabel, watchlistScopeLabel } from "./utils/labels";
 import { directionLabels, factorLabels, manualResearchVerdictOptions } from "./utils/constants";
 
-
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
-
 type ViewMode = "candidates" | "stock" | "operations" | "settings";
 type ThemeMode = "light" | "dark";
-
 
 type ViewCard = {
   key: ViewMode;
   label: string;
-  description: string;
   icon: ReactNode;
 };
 
@@ -135,6 +129,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
   const [simulation, setSimulation] = useState<SimulationWorkspaceResponse | null>(null);
   const [simulationConfigDraft, setSimulationConfigDraft] = useState<SimulationConfigRequest | null>(null);
   const [operationsDetailSectionsLoaded, setOperationsDetailSectionsLoaded] = useState<string[]>([]);
+  const [loadingSections, setLoadingSections] = useState<Set<string>>(new Set());
   const [improvementSuggestionFilter, setImprovementSuggestionFilter] = useState<string | null>(null);
   const [operationsFocusSymbol, setOperationsFocusSymbol] = useState<string | null>(null);
   const [orderModalSymbol, setOrderModalSymbol] = useState<string | null>(null);
@@ -432,6 +427,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
         setSimulation(null);
         setSimulationConfigDraft(null);
         setOperationsDetailSectionsLoaded([]);
+        setLoadingSections(new Set());
         setOperationsLoading(false);
         return;
       } catch (loadError) {
@@ -463,14 +459,16 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     if (pendingSections.length === 0) {
       return;
     }
-    const detailRequests = pendingSections.map((section) => (
-      section === "improvement_suggestions"
-        ? api.getImprovementSuggestionDetails().then((result) => ({
-          data: { improvement_suggestions: result.data },
-          source: result.source,
-        }))
-        : api.getOperationsDetails(section, symbol)
-    ));
+    setLoadingSections((prev) => new Set([...prev, ...pendingSections]));
+    try {
+      const detailRequests = pendingSections.map((section) => (
+        section === "improvement_suggestions"
+          ? api.getImprovementSuggestionDetails().then((result) => ({
+            data: { improvement_suggestions: result.data },
+            source: result.source,
+          }))
+          : api.getOperationsDetails(section, symbol)
+      ));
     const detailResults = await Promise.allSettled(detailRequests);
     const loadedSections: string[] = [];
     const errors: string[] = [];
@@ -493,6 +491,13 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
       setOperationsError(errors[0]);
     } else {
       setOperationsError(null);
+    }
+    } finally {
+      setLoadingSections((prev) => {
+        const next = new Set(prev);
+        pendingSections.forEach((s) => next.delete(s));
+        return next;
+      });
     }
   }
 
@@ -847,12 +852,6 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
       setWatchlistMutationSymbol(null);
     }
   }
-
-
-
-
-
-
   async function refreshManualResearchContext(targetSymbol: string): Promise<void> {
     if (selectedSymbol === targetSymbol) {
       await loadDetailData(targetSymbol);
@@ -1821,6 +1820,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     handleUpdateImprovementSuggestionStatus,
     improvementSuggestionFilter,
     setImprovementSuggestionFilter,
+    loadingSections,
   });
   const addWatchlistOverlay = buildAddWatchlistOverlay({
     addPopoverOpen, setAddPopoverOpen,

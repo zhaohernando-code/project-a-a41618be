@@ -26,7 +26,6 @@ body,
 #root {
   min-height: 100%;
 }
-
 body {
   margin: 0;
   color: var(--text-main);
@@ -39,7 +38,6 @@ body {
     "Microsoft YaHei",
     sans-serif;
 }
-
 .app-theme-shell {
   position: relative;
   min-height: 100vh;
@@ -156,7 +154,6 @@ body[data-theme="dark"] {
   line-height: 1.6;
   color: var(--text-muted);
 }
-
 .header-meta {
   margin-top: 14px;
 }
@@ -169,7 +166,6 @@ body[data-theme="dark"] {
   border: 1px solid var(--line);
   background: linear-gradient(180deg, var(--surface-1), transparent);
 }
-
 .hero-refresh-note {
   justify-self: end;
   font-size: 12px;
@@ -184,7 +180,6 @@ body[data-theme="dark"] {
 .global-focus-select {
   width: 100%;
 }
-
 .operations-focus-select {
   width: min(100%, 260px);
 }
@@ -194,7 +189,6 @@ body[data-theme="dark"] {
   flex-wrap: wrap;
   gap: 10px;
 }
-
 .theme-toggle-button {
   border-color: rgba(10, 91, 255, 0.22);
 }
@@ -224,7 +218,6 @@ body[data-theme="dark"] {
     box-shadow 0.16s ease,
     background 0.16s ease;
 }
-
 .workspace-nav-card:hover {
   transform: translateY(-1px);
   border-color: rgba(10, 91, 255, 0.22);
@@ -247,7 +240,6 @@ body[data-theme="dark"] {
   font-size: 18px;
   color: var(--brand);
 }
-
 .workspace-nav-copy {
   display: grid;
   gap: 6px;
@@ -271,7 +263,6 @@ body[data-theme="dark"] {
 .loading-card {
   min-height: 240px;
 }
-
 .panel-stack {
   display: grid;
   gap: 18px;
@@ -952,11 +943,9 @@ body[data-theme="dark"] {
 .track-holdings-table .ant-table-tbody > tr > td {
   white-space: nowrap;
 }
-
 .ant-list-item {
   border-block-end-color: var(--line);
 }
-
 body[data-theme="dark"] .ant-card,
 body[data-theme="dark"] .ant-modal-content,
 body[data-theme="dark"] .ant-popover-inner,
@@ -977,6 +966,17 @@ body[data-theme="dark"] .candidate-mobile-card,
 .app-theme-shell[data-theme="dark"] .candidate-mobile-card {
   background: var(--panel-bg);
 }
+
+body[data-theme="dark"] .ant-select-dropdown,
+.app-theme-shell[data-theme="dark"] .ant-select-dropdown { background: var(--panel-bg); }
+body[data-theme="dark"] .ant-select-selection-item,
+body[data-theme="dark"] .ant-select-item,
+.app-theme-shell[data-theme="dark"] .ant-select-selection-item,
+.app-theme-shell[data-theme="dark"] .ant-select-item { color: var(--text-main); }
+body[data-theme="dark"] .ant-select-item-option-selected,
+.app-theme-shell[data-theme="dark"] .ant-select-item-option-selected { background: var(--brand-soft); color: var(--text-main); }
+body[data-theme="dark"] .ant-select-item-option-active,
+.app-theme-shell[data-theme="dark"] .ant-select-item-option-active { background: var(--surface-1); }
 
 body[data-theme="dark"] .ant-btn-default,
 body[data-theme="dark"] .workspace-nav-card,
