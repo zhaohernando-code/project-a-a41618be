@@ -178,6 +178,44 @@ export function sanitizeDisplayText(value?: string | null): string {
 }
 
 
+export function eventTriggerLabel(trigger?: string | null): string {
+  if (trigger === "price_shock") return "价格冲击";
+  if (trigger === "direction_switch") return "方向切换";
+  if (trigger === "confidence_collapse") return "置信回落";
+  if (trigger === "factor_conflict") return "因子冲突";
+  if (trigger === "major_announcement") return "重大公告";
+  if (trigger === "weekly_review") return "周度例行复盘";
+  return sanitizeDisplayText(trigger);
+}
+
+
+export function eventDirectionLabel(direction?: string | null): string {
+  if (direction === "agree") return "独立判断一致";
+  if (direction === "partial_agree") return "部分一致";
+  if (direction === "disagree") return "独立判断不一致";
+  if (direction === "insufficient_evidence") return "证据不足";
+  return sanitizeDisplayText(direction);
+}
+
+
+export function eventDirectionStatus(direction?: string | null): string {
+  if (direction === "agree") return "pass";
+  if (direction === "partial_agree") return "warn";
+  if (direction === "disagree") return "fail";
+  if (direction === "insufficient_evidence") return "warn";
+  return "pending";
+}
+
+
+export function eventEvidenceText(item: Record<string, any> | string): string {
+  if (typeof item === "string") return sanitizeDisplayText(item);
+  const content = item.content ?? item.finding ?? item.text ?? item.summary ?? item.evidence ?? "";
+  const source = item.source ?? item.title ?? item.label ?? "";
+  const joined = [source, content].filter(Boolean).join("：");
+  return sanitizeDisplayText(joined || JSON.stringify(item));
+}
+
+
 export function displayWindowLabel(value?: string | null): string {
   if (!value) return "以滚动验证结论为准";
   if (
@@ -399,4 +437,3 @@ export function buildPendingDetailMessage(item: WatchlistItemView | null): strin
   }
   return item.last_error || "真实行情待刷新，当前还没有可展示的单票分析面板。";
 }
-

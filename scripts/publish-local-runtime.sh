@@ -8,8 +8,11 @@ BACKEND_URL="${ASHARE_LOCAL_BACKEND_URL:-http://127.0.0.1:8000/health}"
 FRONTEND_URL="${ASHARE_LOCAL_FRONTEND_URL:-http://127.0.0.1:5173/}"
 LOCAL_API_BASE_URL="${ASHARE_LOCAL_API_BASE_URL:-http://127.0.0.1:8000/}"
 CANONICAL_BASE_URL="${ASHARE_CANONICAL_BASE_URL:-https://hernando-zhao.cn/projects/ashare-dashboard/}"
+BACKEND_ENV_FILE="${ASHARE_LOCAL_BACKEND_ENV_FILE:-$HOME/.config/codex/ashare-dashboard.backend.env}"
 RSYNC_BIN="${RSYNC_BIN:-rsync}"
 MAX_WAIT_SECONDS="${ASHARE_PUBLISH_MAX_WAIT_SECONDS:-30}"
+REFRESH_MODE="${ASHARE_PUBLISH_REFRESH_MODE:-sync}"
+REFRESH_TIMEOUT_SECONDS="${ASHARE_PUBLISH_REFRESH_TIMEOUT_SECONDS:-300}"
 
 if ! command -v "$RSYNC_BIN" >/dev/null 2>&1; then
   echo "Missing required command: $RSYNC_BIN" >&2
@@ -184,12 +187,45 @@ echo "[publish] Resuming scheduled-refresh"
 launchctl start "$SCHEDULED_LABEL" 2>/dev/null || true
 
 echo "[publish] Triggering post-deploy data refresh"
-PYTHONPATH="$RUNTIME_ROOT/src" "$PYTHON_BIN" -m ashare_evidence.cli refresh-runtime-data \
-    --analysis-only --skip-simulation 2>&1 | sed 's/^/[publish:refresh] /' &
-REFRESH_PID=$!
-# Don't block publish on refresh completion; it runs asynchronously.
-# If it fails, the scheduled refresh will retry at the next interval.
-echo "[publish] Data refresh triggered (PID $REFRESH_PID)"
+if [[ -f "$BACKEND_ENV_FILE" ]]; then
+  set -a
+  source "$BACKEND_ENV_FILE"
+  set +a
+fi
+if [[ "$REFRESH_MODE" == "skip" ]]; then
+  echo "[publish] Data refresh skipped by ASHARE_PUBLISH_REFRESH_MODE=skip"
+elif [[ "$REFRESH_MODE" == "async" ]]; then
+  PYTHONPATH="$RUNTIME_ROOT/src" "$PYTHON_BIN" -m ashare_evidence.cli refresh-runtime-data \
+      --analysis-only --skip-simulation 2>&1 | sed 's/^/[publish:refresh] /' &
+  REFRESH_PID=$!
+  echo "[publish] Data refresh triggered (PID $REFRESH_PID)"
+else
+  REFRESH_LOG="$(mktemp)"
+  PYTHONPATH="$RUNTIME_ROOT/src" "$PYTHON_BIN" -m ashare_evidence.cli refresh-runtime-data \
+      --analysis-only --skip-simulation >"$REFRESH_LOG" 2>&1 &
+  REFRESH_PID=$!
+  REFRESH_DEADLINE=$((SECONDS + REFRESH_TIMEOUT_SECONDS))
+  while kill -0 "$REFRESH_PID" 2>/dev/null; do
+    if (( SECONDS >= REFRESH_DEADLINE )); then
+      kill "$REFRESH_PID" 2>/dev/null || true
+      wait "$REFRESH_PID" 2>/dev/null || true
+      sed 's/^/[publish:refresh] /' "$REFRESH_LOG" || true
+      rm -f "$REFRESH_LOG"
+      echo "[publish] Data refresh timed out after ${REFRESH_TIMEOUT_SECONDS}s" >&2
+      exit 1
+    fi
+    sleep 1
+  done
+  if ! wait "$REFRESH_PID"; then
+    sed 's/^/[publish:refresh] /' "$REFRESH_LOG" || true
+    rm -f "$REFRESH_LOG"
+    echo "[publish] Data refresh failed" >&2
+    exit 1
+  fi
+  sed 's/^/[publish:refresh] /' "$REFRESH_LOG" || true
+  rm -f "$REFRESH_LOG"
+  echo "[publish] Data refresh completed"
+fi
 
 echo "[publish] Runtime frontend matches repo build"
 echo "[publish] Backend healthy at $BACKEND_URL"

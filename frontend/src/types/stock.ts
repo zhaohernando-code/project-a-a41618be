@@ -33,6 +33,12 @@ export interface RecommendationEvidenceView {
   factor_cards: {
     factor_key: string;
     score?: number | null;
+    dynamic_weight?: number | null;
+    weight?: number | null;
+    score_contribution?: number | null;
+    contribution?: number | null;
+    rolling_ic?: number | null;
+    ic_confidence_note?: string | null;
     direction?: string | null;
     headline: string;
     risk_note?: string | null;
@@ -110,6 +116,9 @@ export interface RecommendationView {
   as_of_data_time: string;
   evidence_status: string;
   degrade_reason?: string | null;
+  data_freshness?: string | null;
+  degraded_sources?: string[];
+  confidence_ceiling_reasons?: string[];
   core_drivers?: string[];
   risk_flags?: string[];
   reverse_risks?: string[];
@@ -201,6 +210,23 @@ export interface RiskPanelView {
   change_hint: string;
 }
 
+export interface EventAnalysisView {
+  file: string;
+  trigger_type: string;
+  triggered_at?: string | null;
+  generated_at?: string | null;
+  status: string;
+  independent_direction?: string | null;
+  confidence?: number | null;
+  trigger_detail?: string | null;
+  key_evidence: Array<Record<string, any> | string>;
+  risks: string[];
+  information_gaps: string[];
+  next_checkpoint?: string | null;
+  correction_suggestion?: string | null;
+  model_used?: string | null;
+}
+
 export interface FollowUpResearchPacketView {
   validation_status: string;
   validation_note?: string | null;
@@ -288,7 +314,12 @@ export interface StockDashboardResponse {
   change: ChangeView;
   glossary: GlossaryEntryView[];
   risk_panel: RiskPanelView;
+  event_analyses: EventAnalysisView[];
   follow_up: FollowUpView;
+  data_quality?: Record<string, any>;
+  research_horizon_readout?: string | Record<string, any> | any[] | null;
+  factor_validation?: Record<string, any>;
+  benchmark_context?: Record<string, any>;
 }
 
 export interface RecommendationReplayView {

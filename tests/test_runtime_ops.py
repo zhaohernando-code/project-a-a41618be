@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.runtime_ops import run_operations_tick
+from ashare_evidence.simulation import start_simulation_session
 from tests.fixtures import seed_watchlist_fixture
 
 
@@ -38,6 +39,7 @@ class RuntimeOpsTests(unittest.TestCase):
     def test_tick_refreshes_intraday_and_attempts_simulation_advance_during_market_hours(self) -> None:
         with session_scope(self.database_url) as session:
             seed_watchlist_fixture(session)
+            start_simulation_session(session)
             with patch(
                 "ashare_evidence.runtime_ops.sync_intraday_market",
                 return_value={"latest_market_data_at": "2026-04-28T02:35:00+00:00"},

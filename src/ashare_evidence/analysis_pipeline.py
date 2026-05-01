@@ -35,6 +35,10 @@ ANNOUNCEMENT_LIMIT = 12
 RESEARCH_METADATA_LIMIT = 5
 MIN_EXISTING_RECOMMENDATION_DAYS_FOR_BACKFILL = 3
 
+# Backward-compatible names for older tests and helper scripts. The implementation
+# lives in analysis_enrichment.
+_compute_financial_trends = compute_financial_trends
+
 class RealDataRefreshError(RuntimeError):
     pass
 

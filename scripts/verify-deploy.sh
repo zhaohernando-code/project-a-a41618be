@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNTIME_ROOT="${HOME}/codex/runtime/projects/ashare-dashboard"
 BACKEND_URL="${BACKEND_URL:-http://127.0.0.1:8000}"
 FRONTEND_URL="${FRONTEND_URL:-http://127.0.0.1:5173}"
+BACKEND_ENV_FILE="${ASHARE_LOCAL_BACKEND_ENV_FILE:-$HOME/.config/codex/ashare-dashboard.backend.env}"
 MAX_RETRIES=3
 PASS=0
 FAIL=0
@@ -77,10 +78,10 @@ check "Backend health endpoint" \
     "curl -s '$BACKEND_URL/health' | python3 -c \"import sys,json; assert json.load(sys.stdin).get('status')=='ok'\""
 
 check "ANTHROPIC_AUTH_TOKEN in backend env (checked via LLM module import)" \
-    "cd '$RUNTIME_ROOT' && PYTHONPATH=src python3 -c \"from ashare_evidence.llm_service import route_model; t,b,k,m = route_model('announcement_general'); assert 'deepseek' in b.lower()\""
+    "cd '$RUNTIME_ROOT' && set -a && [ -f '$BACKEND_ENV_FILE' ] && source '$BACKEND_ENV_FILE' && set +a && PYTHONPATH=src python3 -c \"from ashare_evidence.llm_service import route_model; t,b,k,m = route_model('announcement_general'); assert 'deepseek' in b.lower()\""
 
 check "Database accessible" \
-    "cd '$RUNTIME_ROOT' && PYTHONPATH=src python3 -c \"from ashare_evidence.db import get_session_factory; s=get_session_factory()(); s.execute('SELECT 1'); s.close()\""
+    "cd '$RUNTIME_ROOT' && PYTHONPATH=src python3 -c \"from sqlalchemy import text; from ashare_evidence.db import get_session_factory; s=get_session_factory()(); s.execute(text('SELECT 1')); s.close()\""
 
 check "MarketBar has total_mv column" \
     "cd '$RUNTIME_ROOT' && PYTHONPATH=src python3 -c \"from ashare_evidence.models import MarketBar; assert hasattr(MarketBar, 'total_mv')\""
@@ -176,7 +177,7 @@ echo ""
 echo "--- Phase 5: Frontend ---"
 
 check "Frontend health check" \
-    "curl -s '$FRONTEND_URL' | grep -q 'ashare-dashboard'"
+    "curl -s '$FRONTEND_URL' | python3 -c \"import sys; html=sys.stdin.read(); assert '<div id=\\\"root\\\"' in html and 'assets/index-' in html\""
 
 check "Frontend dist matches repo build" \
     "diff -rq '$REPO_ROOT/frontend/dist' '$RUNTIME_ROOT/frontend/dist' 2>/dev/null | wc -l | xargs -I{} test {} -eq 0"

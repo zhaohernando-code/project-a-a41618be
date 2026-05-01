@@ -118,6 +118,19 @@ function inferLocalBackendBase(): string {
   return "";
 }
 
+function prefersPlainApiPath(base: string): boolean {
+  try {
+    const parsed = new URL(base, window.location.origin);
+    const host = parsed.hostname.toLowerCase();
+    return (
+      parsed.port === "8000"
+      && (host === "localhost" || host === "127.0.0.1" || host === "::1")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function dedupe(values: string[]): string[] {
   const out: string[] = [];
   for (const value of values) {
@@ -153,9 +166,9 @@ function getApiBases(): string[] {
     envApiBase,
     readApiBaseFromStorage(),
     ...(prefersMountedToolApi ? [] : [mountedBase, locationBase]),
+    inferLocalBackendBase(),
     inferOriginBase(),
     inferSiblingPortBackendBase(),
-    inferLocalBackendBase(),
   ]).filter(Boolean);
 }
 
@@ -188,8 +201,13 @@ function buildRequestUrls(path: string, explicitBase = hasExplicitApiBase()): st
           urls.push(`${baseWithoutApi}${normalizedPath}`);
         }
       } else {
-        urls.push(`${base}/api${normalizedPath}`);
-        urls.push(`${base}${normalizedPath}`);
+        if (prefersPlainApiPath(base)) {
+          urls.push(`${base}${normalizedPath}`);
+          urls.push(`${base}/api${normalizedPath}`);
+        } else {
+          urls.push(`${base}/api${normalizedPath}`);
+          urls.push(`${base}${normalizedPath}`);
+        }
       }
       continue;
     }

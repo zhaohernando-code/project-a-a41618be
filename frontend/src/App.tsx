@@ -94,7 +94,7 @@ import type { MobileTabKey } from "./components/mobile/types";
 
 import { buildCandidateWorkspaceRows, buildInitialSourceInfo, mergeSourceInfo, resolveSimulationFocusSymbol } from "./utils/data";
 import { directionColor, formatDate, formatNumber, formatPercent, formatSignedNumber, simulationAdviceActionLabel, simulationAdvicePolicyLabel, statusColor, valueTone } from "./utils/format";
-import { buildPendingDetailMessage, canCompleteManualResearch, canExecuteManualResearch, canFailManualResearch, canRetryManualResearch, candidateValidationSummary, claimGateAlertType, claimGateDescription, claimGateStatusLabel, dataSourceStatusColor, deploymentModeLabel, displayBenchmarkLabel, displayLabelDefinition, displayWindowLabel, fieldMappingLabel, formatMarketFreshness, horizonLabel, manualResearchActionStatusMessage, manualReviewModelLabel, manualReviewStatusLabel, operationsValidationDescription, operationsValidationMessage, parseMultilineItems, portfolioTrackLabel, providerSelectionModeLabel, publicValidationSummary, sanitizeDisplayText, validationStatusLabel, watchlistScopeLabel } from "./utils/labels";
+import { buildPendingDetailMessage, canCompleteManualResearch, canExecuteManualResearch, canFailManualResearch, canRetryManualResearch, candidateValidationSummary, claimGateAlertType, claimGateDescription, claimGateStatusLabel, dataSourceStatusColor, deploymentModeLabel, displayBenchmarkLabel, displayLabelDefinition, displayWindowLabel, eventDirectionLabel, eventDirectionStatus, eventEvidenceText, eventTriggerLabel, fieldMappingLabel, formatMarketFreshness, horizonLabel, manualResearchActionStatusMessage, manualReviewModelLabel, manualReviewStatusLabel, operationsValidationDescription, operationsValidationMessage, parseMultilineItems, portfolioTrackLabel, providerSelectionModeLabel, publicValidationSummary, sanitizeDisplayText, validationStatusLabel, watchlistScopeLabel } from "./utils/labels";
 import { directionLabels, factorLabels, manualResearchVerdictOptions } from "./utils/constants";
 
 
@@ -134,6 +134,8 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
   const [operations, setOperations] = useState<OperationsDashboardResponse | null>(null);
   const [simulation, setSimulation] = useState<SimulationWorkspaceResponse | null>(null);
   const [simulationConfigDraft, setSimulationConfigDraft] = useState<SimulationConfigRequest | null>(null);
+  const [operationsDetailSectionsLoaded, setOperationsDetailSectionsLoaded] = useState<string[]>([]);
+  const [improvementSuggestionFilter, setImprovementSuggestionFilter] = useState<string | null>(null);
   const [operationsFocusSymbol, setOperationsFocusSymbol] = useState<string | null>(null);
   const [orderModalSymbol, setOrderModalSymbol] = useState<string | null>(null);
   const [analysisReportSymbol, setAnalysisReportSymbol] = useState<string | null>(null);
@@ -424,16 +426,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
 
     for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
       try {
-        const operationsResult = await api.getOperationsDashboard(symbol);
+        const operationsResult = await api.getOperationsSummary(symbol);
         setOperations(operationsResult.data);
         setSourceInfo(operationsResult.source);
-
-        if (operationsResult.data.simulation_workspace) {
-          applySimulationWorkspace(operationsResult.data.simulation_workspace);
-        } else {
-          setSimulation(null);
-          setOperationsError("运营复盘接口未返回双轨模拟工作区数据。");
-        }
+        setSimulation(null);
+        setSimulationConfigDraft(null);
+        setOperationsDetailSectionsLoaded([]);
         setOperationsLoading(false);
         return;
       } catch (loadError) {
@@ -458,6 +456,92 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     const fallbackMessage = lastError instanceof Error ? lastError.message : "加载运营复盘工作区失败。";
     setOperationsError(fallbackMessage);
     setOperationsLoading(false);
+  }
+
+  async function loadOperationsDetailSections(sections: string[], symbol: string): Promise<void> {
+    const pendingSections = sections.filter((section) => !operationsDetailSectionsLoaded.includes(section));
+    if (pendingSections.length === 0) {
+      return;
+    }
+    const detailRequests = pendingSections.map((section) => (
+      section === "improvement_suggestions"
+        ? api.getImprovementSuggestionDetails().then((result) => ({
+          data: { improvement_suggestions: result.data },
+          source: result.source,
+        }))
+        : api.getOperationsDetails(section, symbol)
+    ));
+    const detailResults = await Promise.allSettled(detailRequests);
+    const loadedSections: string[] = [];
+    const errors: string[] = [];
+    detailResults.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        const detailPayload = result.value.data as Record<string, any>;
+        setOperations((current) => (current ? { ...current, ...detailPayload } : current));
+        if (detailPayload.simulation_workspace) {
+          applySimulationWorkspace(detailPayload.simulation_workspace as SimulationWorkspaceResponse);
+        }
+        loadedSections.push(pendingSections[index]);
+        return;
+      }
+      errors.push(result.reason instanceof Error ? result.reason.message : "加载运营复盘明细失败。");
+    });
+    if (loadedSections.length > 0) {
+      setOperationsDetailSectionsLoaded((current) => Array.from(new Set([...current, ...loadedSections])));
+    }
+    if (errors.length > 0) {
+      setOperationsError(errors[0]);
+    } else {
+      setOperationsError(null);
+    }
+  }
+
+  function handleOperationsTabChange(activeKey: string): void {
+    if (!selectedSymbol) {
+      return;
+    }
+    if (activeKey === "execution") {
+      void loadOperationsDetailSections(["simulation_workspace", "portfolios"], selectedSymbol);
+      return;
+    }
+    if (activeKey === "analysis") {
+      void loadOperationsDetailSections(["manual_queue", "replay", "factor_observation", "sector_exposure", "improvement_suggestions"], selectedSymbol);
+    }
+  }
+
+  async function handleRunImprovementSuggestionReview(): Promise<void> {
+    try {
+      const result = await api.runImprovementSuggestionReview(7);
+      setOperations((current) => (current ? { ...current, improvement_suggestions: result.data } : current));
+      setOperationsDetailSectionsLoaded((current) => Array.from(new Set([...current, "improvement_suggestions"])));
+      messageApi.success("改进建议审计已完成");
+    } catch (reviewError) {
+      messageApi.error(reviewError instanceof Error ? reviewError.message : "改进建议审计失败。");
+    }
+  }
+
+  async function handleAcceptImprovementSuggestionForPlan(suggestionId: string, model: string): Promise<void> {
+    try {
+      const result = await api.acceptImprovementSuggestionForPlan(suggestionId, model, "进入计划池");
+      const detail = await api.getImprovementSuggestionDetails();
+      setOperations((current) => (current ? { ...current, improvement_suggestions: detail.data } : current));
+      const taskId = result.data.control_plane_task?.id;
+      messageApi.success(taskId ? `已创建中台 Plan 任务：${taskId}` : "已进入计划池");
+    } catch (acceptError) {
+      messageApi.error(acceptError instanceof Error ? acceptError.message : "进入计划池失败。");
+      throw acceptError;
+    }
+  }
+
+  async function handleUpdateImprovementSuggestionStatus(suggestionId: string, status: string, reason: string): Promise<void> {
+    try {
+      await api.updateImprovementSuggestionStatus(suggestionId, status, reason);
+      const result = await api.getImprovementSuggestionDetails();
+      setOperations((current) => (current ? { ...current, improvement_suggestions: result.data } : current));
+      messageApi.success("建议状态已更新");
+    } catch (statusError) {
+      messageApi.error(statusError instanceof Error ? statusError.message : "建议状态更新失败。");
+    }
   }
 
   useEffect(() => {
@@ -492,6 +576,8 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
       setDashboard(null);
       setOperations(null);
       setSimulation(null);
+      setOperationsDetailSectionsLoaded([]);
+      setImprovementSuggestionFilter(null);
       setOperationsFocusSymbol(null);
       setOperationsError(null);
       return;
@@ -499,6 +585,8 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     let cancelled = false;
     setOperations(null);
     setSimulation(null);
+    setOperationsDetailSectionsLoaded([]);
+    setImprovementSuggestionFilter(null);
     setOperationsError(null);
     void (async () => {
       await loadDetailData(selectedSymbol);
@@ -991,6 +1079,8 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     setDashboard(null);
     setOperations(null);
     setSimulation(null);
+    setOperationsDetailSectionsLoaded([]);
+    setImprovementSuggestionFilter(null);
     await reloadEverything(selectedSymbol);
   }
 
@@ -1041,7 +1131,18 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                             {card.direction ? <Tag color={directionColor(card.direction)}>{directionLabels[card.direction] ?? card.direction}</Tag> : null}
                           </div>
                           {showScore && card.score !== undefined && card.score !== null ? (
-                            <div className="factor-score">{`分数 ${card.score.toFixed(2)}`}</div>
+                            <div className="factor-score">
+                              <span>{`分数 ${card.score.toFixed(2)}`}</span>
+                              {card.dynamic_weight !== undefined && card.dynamic_weight !== null ? (
+                                <span>{`权重 ${formatPercent(card.dynamic_weight)}`}</span>
+                              ) : null}
+                              {card.score_contribution !== undefined && card.score_contribution !== null ? (
+                                <span>{`贡献 ${card.score_contribution.toFixed(3)}`}</span>
+                              ) : null}
+                            </div>
+                          ) : null}
+                          {card.rolling_ic !== undefined && card.rolling_ic !== null ? (
+                            <Text type="secondary">{`滚动 IC ${card.rolling_ic.toFixed(3)}`}</Text>
                           ) : null}
                           <Paragraph className="panel-description">{sanitizeDisplayText(card.headline)}</Paragraph>
                           {card.risk_note ? <Text type="secondary">{sanitizeDisplayText(card.risk_note)}</Text> : null}
@@ -1302,6 +1403,71 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                     },
                   ]}
                 />
+              </Col>
+              <Col xs={24}>
+                <Card size="small" title="事件深度分析" className="sub-panel-card">
+                  {(dashboard.event_analyses ?? []).length === 0 ? (
+                    <Empty description="暂无事件深度分析记录" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  ) : (
+                    <List
+                      dataSource={dashboard.event_analyses ?? []}
+                      renderItem={(item) => (
+                        <List.Item>
+                          <div className="evidence-entry">
+                            <div className="list-item-row">
+                              <div>
+                                <strong>{eventTriggerLabel(item.trigger_type)}</strong>
+                                <div className="muted-line">{`生成时间 ${formatDate(item.generated_at)} · ${item.model_used ? sanitizeDisplayText(item.model_used) : "模型未标注"}`}</div>
+                              </div>
+                              <Space wrap>
+                                <Tag color={statusColor(eventDirectionStatus(item.independent_direction))}>
+                                  {eventDirectionLabel(item.independent_direction)}
+                                </Tag>
+                                <Tag>{`置信 ${formatPercent(item.confidence)}`}</Tag>
+                                <Tag color={statusColor(item.status)}>{sanitizeDisplayText(item.status)}</Tag>
+                              </Space>
+                            </div>
+                            {item.trigger_detail ? (
+                              <Paragraph className="panel-description">{sanitizeDisplayText(item.trigger_detail)}</Paragraph>
+                            ) : null}
+                            {item.key_evidence.length > 0 ? (
+                              <>
+                                <Title level={5}>关键证据</Title>
+                                <ul className="plain-list">
+                                  {item.key_evidence.slice(0, 3).map((evidenceItem, index) => (
+                                    <li key={`${item.file}-evidence-${index}`}>{eventEvidenceText(evidenceItem)}</li>
+                                  ))}
+                                </ul>
+                              </>
+                            ) : null}
+                            {item.risks.length > 0 ? (
+                              <>
+                                <Title level={5}>风险与分歧</Title>
+                                <ul className="plain-list">
+                                  {item.risks.slice(0, 3).map((risk, index) => (
+                                    <li key={`${item.file}-risk-${index}`}>{sanitizeDisplayText(risk)}</li>
+                                  ))}
+                                </ul>
+                              </>
+                            ) : null}
+                            {item.information_gaps.length > 0 ? (
+                              <Text type="secondary">{`信息缺口：${item.information_gaps.map((gap) => sanitizeDisplayText(gap)).join("；")}`}</Text>
+                            ) : null}
+                            {item.correction_suggestion || item.next_checkpoint ? (
+                              <Alert
+                                className="sub-alert"
+                                type="info"
+                                showIcon
+                                message={item.correction_suggestion ? "修正建议" : "下一观察点"}
+                                description={sanitizeDisplayText(item.correction_suggestion || item.next_checkpoint)}
+                              />
+                            ) : null}
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  )}
+                </Card>
               </Col>
               <Col xs={24}>
                 <Card size="small" title="最近影响这条建议的事件" className="sub-panel-card">
@@ -1650,6 +1816,11 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
     setSelectedSymbol, setStockActiveTab, setView,
     setOperations, setOperationsLoading, setOperationsError,
     manualResearchAction, setManualResearchAction,
+    handleRunImprovementSuggestionReview,
+    handleAcceptImprovementSuggestionForPlan,
+    handleUpdateImprovementSuggestionStatus,
+    improvementSuggestionFilter,
+    setImprovementSuggestionFilter,
   });
   const addWatchlistOverlay = buildAddWatchlistOverlay({
     addPopoverOpen, setAddPopoverOpen,
@@ -2407,7 +2578,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
 
                 {operations ? (
                   <Card className="panel-card" title="运营复盘分析">
-                    <Tabs items={operationsTabItems} />
+                    <Tabs defaultActiveKey="governance" items={operationsTabItems} onChange={handleOperationsTabChange} />
                   </Card>
                 ) : null}
               </div>

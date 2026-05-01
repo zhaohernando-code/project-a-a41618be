@@ -10,14 +10,14 @@
   },
   "status": "in_progress",
   "owner": "codex",
-  "updated_at": "2026-04-30T15:00:00+08:00",
-  "progress_summary": "Event-driven LLM deep analysis (Phase 1) implemented: six trigger conditions (price shock ±5%, direction switch, confidence collapse >0.10, factor conflict, major announcement importance≥0.7, weekly Saturday review) with daily throttle (max 2/stock) and 3-day per-type cooldown. event_triggers.py (~170 lines, pure functions) detects triggers; event_analyzer.py (~290 lines) gathers full internal data (OHLCV, factor breakdown, announcement full text, peer comparison, validation metrics) plus external AKShare info flow, builds structured prompt, calls LLM via existing transport, and persists JSON artifacts to data/event_analysis/. Integrated into CLI refresh pipeline (refresh-runtime-data/phase5-daily-refresh) and exposed via new API endpoints GET /stocks/{symbol}/event-analyses and GET /stocks/{symbol}/event-analyses/{filename}. AI follow-up prompt also restructured: removed internal plumbing (artifact_id, manifest_id, source_uri), added market data block (price, sector, day change), recent news block, validation benchmarks, and evidence snippets. Existing manual_review_layer remains a placeholder (score=0.0).",
+  "updated_at": "2026-05-01T15:38:22+08:00",
+  "progress_summary": "P-1/P0 professionalization tranche is now implemented, published to the local runtime, and fully closed through the required verification flow. Phase 5 has explicit target/replacement watchlist constants, soft data-quality snapshots, CSI benchmark context, true factor IC study scaffolding that aligns same-as-of factor scores to future 10/20/40d excess returns, weight-sweep research artifacts that refuse fake precision when samples are insufficient, portfolio-holdings-based sector exposure fallback, and lightweight operations summary/details interfaces. Frontend operations now loads summary first and lazily pulls simulation/portfolio details only when the user enters the detail tab. Stock dashboard responses expose data_quality, factor_validation, benchmark_context, and horizon readouts; operations responses expose data_quality_summary, factor_observation_summary, benchmark_context, sector_exposure, and today_at_a_glance. Closeout fixes also restored legacy test compatibility, capped user-visible news factor saturation below hard +/-1, taught deploy verification to source the backend env for the DeepSeek/ANTHROPIC route-model check, and repaired SQLAlchemy/frontend verifier assertions. Improvement suggestion plan-pool integration is now published to runtime: accepting a reviewed suggestion prompts for an execution model, creates a control-plane task in Plan mode, preserves the visible suggestion/audit/plan evidence in the task description, and writes the returned task id back into the suggestion snapshot. Latest verification: targeted backend/frontend tests passed, deploy verifier 19 passed / 0 failed for the published stock runtime, local Chrome served-page check passed for the model picker, and local control-plane API shows task-momlkmg7-4mrd59 blocked on plan_feedback. P1/P2/P3 remain gated by real sample accumulation and operator approval; no automatic trading, LLM direction override, or production weight auto-change was introduced.",
   "blockers": [
     "Full browser-side member acceptance is still not closed. The canonical root session clearly shows the account selector and lists real member spaces (`amoeba`, `member-a`), but Safari automation still did not reliably complete the dropdown selection interaction. The served member blank-state is therefore verified through real canonical edge/API responses with a signed root session plus `X-Ashare-Act-As-Login`, rather than an end-to-end browser click path.",
     "Validation manifests and portfolio backtests have now been rebuilt on the real database under the expanding-watchlist join-date-forward benchmark contract, but replay artifacts still cannot materialize on current real data because none of the active-watchlist recommendations yet have a full 20-trading-day forward review window. The replay builder bug that previously hard-coded `records[1]` is fixed, so this is now a data-window blocker rather than a rebuild-path blocker.",
     "The simulation model track now has a concrete `phase5_simulation_topk_equal_weight_v1` research-candidate target-weight policy, the live runtime database has a durable `phase5_holding_policy_study` snapshot, and the published refresh path no longer stalls at zero-step sessions or one-cycle pending rebuilds: the latest live refresh has already lifted holding-policy to `9portfolios` with `excluded_reasons={}`, `mean_turnover=0.037037`, `mean_invested_ratio=0.079822`, `mean_active_position_count=0.444444`, and `mean_annualized_excess_return_after_baseline_cost=0.000581`. However, the policy still remains non-promotable. `mean_rebalance_interval_days` is still missing because all live rebalance evidence still sits on the same trading date, `mean_invested_ratio` and `mean_active_position_count` remain weak even after four real order events, and horizon artifacts are still narrow at `3` symbols / `2` as-of dates while `002270.SZ` continues to look like a `20d/40d` instability outlier. The active blocker is therefore no longer missing runtime artifact wiring, a dead simulation evidence path, or same-run rebuild lag, but insufficient multi-date / multi-rebalance breadth to prove that the repaired validation path and newer producer contract materially improve primary-horizon selection and holding-policy credibility on real runtime data."
   ],
-  "next_step": "Publish event-driven analysis to runtime, verify live trigger detection with `event-check --run`, then iterate on Phase 2 (external search API integration, manual_review_layer wiring) once real-world trigger frequency and analysis quality data is available.",
+  "next_step": "Accumulate enough as_of dates, forward benchmark bars, and rebalance breadth before horizon approval, holding-policy promotion, or production weight changes; keep monitoring operations summary payload/performance while the old full endpoint remains in compatibility mode.",
   "linked_docs": [
     {
       "path": "/Users/hernando_zhao/codex/projects/stock_dashboard/PROJECT_PLAN.md",
@@ -75,7 +75,10 @@
     "phase_4_backend_contract": "completed",
     "phase_4_queue_workspace_productization": "completed",
     "phase_4_governance_polish": "completed",
-    "phase_5_validation_policy_research": "in_progress"
+    "phase_5_validation_policy_research": "in_progress",
+    "phase_5_professionalization_p_minus_1_p0": "published_runtime_verified",
+    "phase_5_professionalization_closeout": "completed",
+    "improvement_suggestion_control_plane_plan_pool": "published_runtime_verified"
   },
   "latest_findings": [
     {
@@ -247,6 +250,21 @@
       "id": "F034",
       "severity": "resolved",
       "title": "Resolved on 2026-04-30: AI follow-up LLM prompt restructured to remove internal plumbing (artifact_id, manifest_id, source_uri) and add market data, recent news, validation benchmarks, and evidence snippets. Also implemented Phase 1 event-driven deep analysis with six trigger conditions, external data fetching via AKShare, and CLI/API integration."
+    },
+    {
+      "id": "F035",
+      "severity": "resolved",
+      "title": "Resolved on 2026-05-01: P-1/P0 professionalization is repo-implemented, published to local runtime, and verified on the served browser route. Runtime operations now loads summary first, lazy-loads details, and exposes data-quality, CSI benchmark, true factor IC scaffolding, lightweight operations summary/details, and product-facing data-quality/factor-validation fields. P1 horizon approval and production weight changes remain blocked on sample accumulation and operator approval."
+    },
+    {
+      "id": "F036",
+      "severity": "resolved",
+      "title": "Resolved on 2026-05-01: professionalization closeout now passes the full required flow. `ANTHROPIC_AUTH_TOKEN` is sourced from the backend env file for verifier use without recording the secret, `pytest -q` passes 212 tests, deploy verification passes 19/19 checks against the published runtime, and headless Chrome confirms the served dashboard renders `工作台 / 关注股票 / 复盘` with zero console errors."
+    },
+    {
+      "id": "F037",
+      "severity": "resolved",
+      "title": "Resolved on 2026-05-01: improvement suggestion plan-pool acceptance now creates a control-plane Plan task after model selection. The stock dashboard persists the returned control task id, model, and plan-mode metadata; task-momlkmg7-4mrd59 was created in the control plane and is blocked on plan_feedback pending user review."
     }
   ]
 }

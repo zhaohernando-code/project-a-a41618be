@@ -13,6 +13,9 @@ PHASE5_RESEARCH_UNIVERSE_RULE = (
     "watchlist_tracking_metrics_remain_join_date_forward_only"
 )
 PHASE5_PRIMARY_RESEARCH_BENCHMARK = "active_watchlist_equal_weight_proxy"
+PHASE5_DIAGNOSTIC_RESEARCH_BENCHMARK = "active_watchlist_equal_weight_proxy"
+PHASE5_EXTERNAL_RESEARCH_BENCHMARKS = ("CSI300", "CSI500", "CSI1000")
+PHASE5_APPROVED_BENCHMARK_SELECTION_STATUS = "pending_external_index_bar_backfill"
 PHASE5_PRIMARY_RESEARCH_BENCHMARK_WITH_SECTOR_PROXY = (
     f"{PHASE5_PRIMARY_RESEARCH_BENCHMARK} + primary_sector_equal_weight_proxy"
 )
@@ -47,11 +50,16 @@ PHASE5_AUTO_EXECUTION_NOTE = (
 )
 PHASE5_HOLDING_POLICY_PROMOTION_GATE_VERSION = "phase5-holding-policy-promotion-gate-draft-v1"
 PHASE5_HOLDING_POLICY_PROMOTION_GUARDRAILS = {
+    "min_rebalance_date_count": 8,
     "min_included_portfolio_count": 3,
+    "min_mean_active_position_count": 3,
+    "min_mean_invested_ratio": 0.3,
     "min_mean_annualized_excess_return_after_baseline_cost": 0.0,
     "min_positive_after_baseline_cost_portfolio_ratio": 0.5,
+    "min_sharpe_like_ratio": 0.0,
     "max_mean_turnover": 0.35,
     "min_mean_rebalance_interval_days": 5.0,
+    "max_drawdown_floor": -0.15,
 }
 PHASE5_HOLDING_POLICY_GOVERNANCE_VERSION = "phase5-holding-policy-governance-draft-v1"
 PHASE5_HOLDING_POLICY_REDESIGN_TRIGGER_GATE_IDS = (

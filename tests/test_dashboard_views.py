@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from sqlalchemy import select
 
-from ashare_evidence.dashboard import get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
+from ashare_evidence.dashboard import (
+    _candidate_primary_risk,
+    get_glossary_entries,
+    get_stock_dashboard,
+    list_candidate_recommendations,
+)
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.manual_research_contract import EXECUTOR_KIND_BUILTIN_GPT
 from ashare_evidence.manual_research_workflow import (
@@ -18,6 +24,7 @@ from ashare_evidence.models import Recommendation, Stock
 from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.phase2 import PHASE2_WINDOW_DEFINITION, phase2_target_horizon_label
 from ashare_evidence.release_verifier import audit_user_visible_operations_text
+from ashare_evidence.research_artifact_store import artifact_root_from_database_url
 from ashare_evidence.watchlist import (
     add_watchlist_symbol,
     list_watchlist_entries,
@@ -99,6 +106,45 @@ class DashboardViewTests(unittest.TestCase):
         self.assertNotIn("用于汇总价格、事件与降级状态的融合层", fusion_card["headline"])
         self.assertNotEqual(first_candidate["why_now"], "用于汇总价格、事件与降级状态的融合层。")
 
+    def test_candidate_primary_risk_prioritizes_specific_risk_over_news_template(self) -> None:
+        generic_news_risk = "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。"
+
+        risk = _candidate_primary_risk(
+            {
+                "historical_validation": {
+                    "metrics": {
+                        "rank_ic_mean": -0.147,
+                        "positive_excess_rate": 0.758,
+                    }
+                },
+                "risk": {
+                    "risk_flags": [
+                        generic_news_risk,
+                        "基本面风险：现金流质量-0.70，经营现金流严重不足。",
+                    ]
+                },
+            }
+        )
+
+        assert risk is not None
+        self.assertIn("验证冲突", risk)
+        self.assertIn("RankIC -0.147", risk)
+        self.assertNotEqual(risk, generic_news_risk)
+
+        fallback_risk = _candidate_primary_risk(
+            {
+                "historical_validation": {"metrics": {}},
+                "risk": {
+                    "risk_flags": [
+                        generic_news_risk,
+                        "基本面风险：盈利能力评分0.15，盈利水平极其孱弱。",
+                    ]
+                },
+            }
+        )
+
+        self.assertEqual(fallback_risk, "基本面风险：盈利能力评分0.15，盈利水平极其孱弱。")
+
     def test_dashboard_normalizes_legacy_placeholder_explanations(self) -> None:
         with session_scope(self.database_url) as session:
             seed_watchlist_fixture(session)
@@ -170,6 +216,62 @@ class DashboardViewTests(unittest.TestCase):
         self.assertEqual(dashboard["follow_up"]["research_packet"]["validation_sample_count"], 3)
         self.assertEqual(dashboard["follow_up"]["research_packet"]["manual_review_trigger_mode"], "manual")
         self.assertIsNone(dashboard["follow_up"]["research_packet"]["manual_review_artifact_id"])
+
+    def test_stock_dashboard_embeds_latest_event_deep_analysis(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session)
+
+        artifact_root = artifact_root_from_database_url(self.database_url)
+        event_dir = artifact_root / "event_analysis" / "600519.SH"
+        event_dir.mkdir(parents=True, exist_ok=True)
+        filename = "20260430T090527_direction_switch.json"
+        detail = {
+            "symbol": "600519.SH",
+            "trigger_type": "direction_switch",
+            "trigger_detail": "方向从观察切换到风险提示，需要独立复核。",
+            "triggered_at": "2026-04-30T09:05:27+08:00",
+            "generated_at": "2026-04-30T09:06:10+08:00",
+            "status": "completed",
+            "independent_direction": "partial_agree",
+            "confidence": 0.62,
+            "key_evidence": [
+                {"source": "内部因子", "content": "价格基线转弱但事件因子仍有支撑。"},
+            ],
+            "risks": ["验证样本不足，不能直接强化方向。"],
+            "information_gaps": ["缺少最新公告全文。"],
+            "next_checkpoint": "等待下一根日线确认。",
+            "correction_suggestion": "维持研究候选，不提升为买入表达。",
+            "model_used": "deepseek-flash",
+        }
+        (event_dir / filename).write_text(json.dumps(detail, ensure_ascii=False), encoding="utf-8")
+        (event_dir / "index.json").write_text(
+            json.dumps(
+                [
+                    {
+                        "file": filename,
+                        "trigger_type": detail["trigger_type"],
+                        "triggered_at": detail["triggered_at"],
+                        "generated_at": detail["generated_at"],
+                        "status": detail["status"],
+                        "independent_direction": detail["independent_direction"],
+                        "confidence": detail["confidence"],
+                    }
+                ],
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        with session_scope(self.database_url) as session:
+            dashboard = get_stock_dashboard(session, "600519.SH")
+
+        self.assertEqual(len(dashboard["event_analyses"]), 1)
+        analysis = dashboard["event_analyses"][0]
+        self.assertEqual(analysis["trigger_type"], "direction_switch")
+        self.assertEqual(analysis["independent_direction"], "partial_agree")
+        self.assertEqual(analysis["confidence"], 0.62)
+        self.assertEqual(analysis["key_evidence"][0]["source"], "内部因子")
+        self.assertIn("维持研究候选", analysis["correction_suggestion"])
 
     def test_dashboard_candidates_operations_and_watchlist_ignore_stale_same_as_of_backfill(self) -> None:
         with session_scope(self.database_url) as session:
@@ -571,6 +673,50 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("留空不选模型 Key 时会直接调用本机 Codex，用 `gpt-5.5` 执行 builtin 研究；选择已配置 Key 时则走对应的外部模型 Key。", app_source)
         self.assertIn('<Tabs activeKey={stockActiveTab} onChange={setStockActiveTab} items={visibleStockTabItems} />', app_source)
         self.assertIn(".manual-research-entry-actions {", style_source)
+
+    def test_frontend_stock_page_exposes_event_deep_analysis(self) -> None:
+        frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
+        app_source = (frontend_root / "App.tsx").read_text(encoding="utf-8")
+        mobile_source = (frontend_root / "components" / "mobile" / "MobileStockDetail.tsx").read_text(encoding="utf-8")
+        type_source = (frontend_root / "types" / "stock.ts").read_text(encoding="utf-8")
+        label_source = (frontend_root / "utils" / "labels.ts").read_text(encoding="utf-8")
+
+        self.assertIn('title="事件深度分析"', app_source)
+        self.assertIn("dashboard.event_analyses", app_source)
+        self.assertIn("eventEvidenceText(item.key_evidence[0])", mobile_source)
+        self.assertIn("export interface EventAnalysisView", type_source)
+        self.assertIn("event_analyses: EventAnalysisView[];", type_source)
+        self.assertIn('if (trigger === "weekly_review") return "周度例行复盘";', label_source)
+        self.assertIn('if (direction === "disagree") return "独立判断不一致";', label_source)
+
+    def test_frontend_operations_exposes_improvement_suggestion_audit_without_auto_apply(self) -> None:
+        frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
+        operations_source = (frontend_root / "components" / "OperationsTabs.tsx").read_text(encoding="utf-8")
+        api_source = (frontend_root / "api" / "dashboard.ts").read_text(encoding="utf-8")
+        type_source = (frontend_root / "types" / "operations.ts").read_text(encoding="utf-8")
+
+        self.assertIn("改进建议审计台", operations_source)
+        self.assertIn("GPT", operations_source)
+        self.assertIn("DeepSeek", operations_source)
+        self.assertIn("进入计划池", operations_source)
+        self.assertIn("选择执行模型", operations_source)
+        self.assertIn("GPT-5.5 高级审计 / 仲裁", operations_source)
+        self.assertIn("进入计划池并创建中台任务", operations_source)
+        self.assertIn("Plan 模式", operations_source)
+        self.assertIn("中台任务", operations_source)
+        self.assertIn("标记观察", operations_source)
+        self.assertIn("重新审计", operations_source)
+        self.assertIn("suggestion-stat-button", operations_source)
+        self.assertIn("filterImprovementSuggestions", operations_source)
+        self.assertIn("当前筛选", operations_source)
+        self.assertIn("暂无可审计建议", operations_source)
+        self.assertNotIn("自动实现", operations_source)
+        self.assertNotIn("自动发布", operations_source)
+        self.assertIn("getImprovementSuggestionDetails", api_source)
+        self.assertIn("runImprovementSuggestionReview", api_source)
+        self.assertIn("acceptImprovementSuggestionForPlan", api_source)
+        self.assertIn("export interface ImprovementSuggestionView", type_source)
+        self.assertIn("ImprovementSuggestionControlTask", type_source)
 
     def test_frontend_manual_research_default_submit_executes_builtin_codex(self) -> None:
         frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"

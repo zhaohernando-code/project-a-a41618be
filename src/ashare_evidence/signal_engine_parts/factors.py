@@ -281,7 +281,8 @@ def compute_news_factor(
         if deduped
         else 999.0
     )
-    # Score scale 0.75 prevents saturation from LLM importance-boosted signals.
+    # Keep event pressure bounded below hard ±1 so the card does not imply
+    # impossible certainty when several LLM-weighted events stack together.
     net_dir = 1 if positive_total > negative_total else (-1 if negative_total > positive_total else 0)
     freshness_bonus = (0.06 if freshness_hours <= 72 else 0.0) * net_dir
     coverage_bonus = min(len(event_contributions), 4) * 0.02 * net_dir
@@ -290,6 +291,8 @@ def compute_news_factor(
         + freshness_bonus
         + coverage_bonus
         - conflict_ratio * 0.28,
+        -0.98,
+        0.98,
     )
 
     positive_events = [item for item in event_contributions if item["score"] > 0]
@@ -443,4 +446,3 @@ __all__ = [
     "compute_price_factor",
     "primary_sector_membership",
 ]
-

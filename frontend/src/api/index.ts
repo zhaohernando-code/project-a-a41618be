@@ -1,6 +1,17 @@
 import { getApiBase, getBetaAccessKey, getRuntimeConfig, getActAsLogin, setActAsLogin } from "./core";
 import { getAuthContext } from "./auth";
-import { loadShellData, getStockDashboard, getOperationsDashboard } from "./dashboard";
+import {
+  acceptImprovementSuggestionForPlan,
+  getImprovementSuggestionDetails,
+  getImprovementSuggestionSummary,
+  loadShellData,
+  getStockDashboard,
+  getOperationsDashboard,
+  getOperationsDetails,
+  getOperationsSummary,
+  runImprovementSuggestionReview,
+  updateImprovementSuggestionStatus,
+} from "./dashboard";
 import { addWatchlist, refreshWatchlist, removeWatchlist } from "./watchlist";
 import {
   getSimulationWorkspace, updateSimulationConfig, startSimulation,
@@ -39,6 +50,13 @@ export const api = {
   removeWatchlist,
   getStockDashboard,
   getOperationsDashboard,
+  getOperationsSummary,
+  getOperationsDetails,
+  getImprovementSuggestionSummary,
+  getImprovementSuggestionDetails,
+  runImprovementSuggestionReview,
+  acceptImprovementSuggestionForPlan,
+  updateImprovementSuggestionStatus,
   getSimulationWorkspace,
   updateSimulationConfig,
   startSimulation,

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from datetime import datetime, time, timedelta, timezone
 import json
+from collections.abc import Iterable
+from datetime import UTC, datetime, time, timedelta
 from typing import Any
 from urllib import error, request
 from zoneinfo import ZoneInfo
@@ -55,7 +55,7 @@ def _upsert_setting(session: Session, key: str, value: dict[str, Any], *, descri
 
 
 def _serialize_datetime(value: datetime | None) -> str | None:
-    return value.astimezone(timezone.utc).isoformat() if value is not None else None
+    return value.astimezone(UTC).isoformat() if value is not None else None
 
 
 def _latest_intraday_timestamp(session: Session, symbols: list[str]) -> datetime | None:
@@ -85,7 +85,7 @@ def _latest_intraday_timestamp_for_symbol(session: Session, symbol: str) -> date
 def _market_open_for_day(current_time: datetime) -> datetime:
     local_now = current_time.astimezone(MARKET_TIMEZONE)
     market_open = datetime.combine(local_now.date(), time(9, 30), tzinfo=MARKET_TIMEZONE)
-    return market_open.astimezone(timezone.utc)
+    return market_open.astimezone(UTC)
 
 
 def _intraday_cache_is_fresh(current_time: datetime, latest_market_data_at: datetime | None) -> bool:
@@ -93,7 +93,7 @@ def _intraday_cache_is_fresh(current_time: datetime, latest_market_data_at: date
         return False
     aligned = latest_market_data_at
     if aligned.tzinfo is None:
-        aligned = aligned.replace(tzinfo=timezone.utc)
+        aligned = aligned.replace(tzinfo=UTC)
     return (current_time - aligned).total_seconds() < INTRADAY_MARKET_INTERVAL_SECONDS
 
 
@@ -109,10 +109,13 @@ def get_intraday_market_status(
     persisted = _get_setting(session, INTRADAY_MARKET_SETTING_KEY)
     payload = dict(persisted.setting_value) if persisted is not None else {}
     data_latency_seconds = None
+    latest_is_future = False
     if latest_market_data_at is not None:
         if latest_market_data_at.tzinfo is None:
             latest_market_data_at = latest_market_data_at.replace(tzinfo=current_time.tzinfo)
-        data_latency_seconds = max(int((current_time - latest_market_data_at).total_seconds()), 0)
+        latency_delta_seconds = int((current_time - latest_market_data_at).total_seconds())
+        latest_is_future = latency_delta_seconds < -60
+        data_latency_seconds = max(latency_delta_seconds, 0)
     provider_label = payload.get("provider_label")
     provider_name = payload.get("provider_name")
     status = payload.get("status", "idle")
@@ -133,8 +136,13 @@ def get_intraday_market_status(
         "last_success_at": payload.get("last_success_at"),
         "latest_market_data_at": _serialize_datetime(latest_market_data_at),
         "data_latency_seconds": data_latency_seconds,
+        "future_data": latest_is_future,
         "fallback_used": bool(payload.get("fallback_used", False)),
-        "stale": bool(data_latency_seconds is None or data_latency_seconds > INTRADAY_STALE_THRESHOLD_SECONDS),
+        "stale": bool(
+            data_latency_seconds is None
+            or latest_is_future
+            or data_latency_seconds > INTRADAY_STALE_THRESHOLD_SECONDS
+        ),
         "message": payload.get("message"),
     }
 
@@ -238,7 +246,7 @@ def _parse_row_time(raw_value: Any) -> datetime | None:
     formats = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M")
     for fmt in formats:
         try:
-            return datetime.strptime(text, fmt).replace(tzinfo=MARKET_TIMEZONE).astimezone(timezone.utc)
+            return datetime.strptime(text, fmt).replace(tzinfo=MARKET_TIMEZONE).astimezone(UTC)
         except ValueError:
             continue
     return None
@@ -343,7 +351,7 @@ def _filter_incremental_rows(
     if latest_cached_market_data_at is None:
         return rows
     if latest_cached_market_data_at.tzinfo is None:
-        latest_cached_market_data_at = latest_cached_market_data_at.replace(tzinfo=timezone.utc)
+        latest_cached_market_data_at = latest_cached_market_data_at.replace(tzinfo=UTC)
     minimum_observed_at = latest_cached_market_data_at - timedelta(seconds=INTRADAY_MARKET_INTERVAL_SECONDS)
     return [row for row in rows if row["observed_at"] >= minimum_observed_at]
 

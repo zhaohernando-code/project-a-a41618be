@@ -248,9 +248,49 @@ def _candidate_primary_driver(recommendation: dict[str, Any]) -> str:
 
 
 def _candidate_primary_risk(recommendation: dict[str, Any]) -> str | None:
+    historical_validation = recommendation.get("historical_validation", {})
+    metrics = historical_validation.get("metrics", {})
+    rank_ic = metrics.get("rank_ic_mean")
+    positive_excess_rate = metrics.get("positive_excess_rate")
+    if isinstance(rank_ic, (int, float)) and isinstance(positive_excess_rate, (int, float)):
+        if float(rank_ic) < 0 and float(positive_excess_rate) > 0.55:
+            return (
+                f"验证冲突：RankIC {float(rank_ic):.3f} 为负，但正超额占比 "
+                f"{float(positive_excess_rate):.1%} 偏高，当前信号更像方向受益，排序能力尚未成立。"
+            )
+    validation_conflict = historical_validation.get("validation_conflict")
+    if validation_conflict:
+        return str(validation_conflict)
+
     risk = recommendation.get("risk", {})
-    risk_flags = risk.get("risk_flags") or []
-    return str(risk_flags[0]) if risk_flags else None
+    risk_flags = [str(item) for item in (risk.get("risk_flags") or []) if item]
+    coverage_gaps = [str(item) for item in (risk.get("coverage_gaps") or []) if item]
+    if not risk_flags and coverage_gaps:
+        return coverage_gaps[0]
+
+    generic_news_risks = (
+        "若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。",
+        "7 日内新增负向公告/监管事件并使新闻因子转负时降级。",
+    )
+    concrete_risks = [item for item in risk_flags if item not in generic_news_risks]
+    priority_terms = (
+        "风险公告",
+        "验证冲突",
+        "基本面风险",
+        "现金流",
+        "盈利",
+        "价格已明显",
+        "追价性价比",
+        "趋势",
+        "流动性",
+    )
+    for term in priority_terms:
+        match = next((item for item in concrete_risks if term in item), None)
+        if match:
+            return match
+    if concrete_risks:
+        return concrete_risks[0]
+    return risk_flags[0] if risk_flags else None
 
 
 def _historical_validation_metric(
@@ -405,6 +445,41 @@ def _risk_panel(summary: dict[str, Any], change: dict[str, Any], recent_news: li
         "disclaimer": prompt["risk_disclaimer"],
         "change_hint": change["summary"],
     }
+
+
+def _event_analysis_payload(symbol: str, artifact_root: Any, *, limit: int = 3) -> list[dict[str, Any]]:
+    if not artifact_root:
+        return []
+
+    from ashare_evidence.event_analyzer import list_event_analyses, read_event_analysis
+
+    analyses: list[dict[str, Any]] = []
+    for item in list_event_analyses(symbol, artifact_root=str(artifact_root), limit=limit):
+        filename = str(item.get("file") or "")
+        detail = read_event_analysis(symbol, filename, artifact_root=str(artifact_root)) if filename else None
+        detail = detail if isinstance(detail, dict) else {}
+        confidence = item.get("confidence")
+        if confidence is None:
+            confidence = detail.get("confidence")
+        analyses.append(
+            {
+                "file": filename,
+                "trigger_type": item.get("trigger_type") or detail.get("trigger_type") or "unknown",
+                "triggered_at": item.get("triggered_at") or detail.get("triggered_at"),
+                "generated_at": item.get("generated_at") or detail.get("generated_at"),
+                "status": item.get("status") or detail.get("status") or "unknown",
+                "independent_direction": item.get("independent_direction") or detail.get("independent_direction"),
+                "confidence": confidence,
+                "trigger_detail": detail.get("trigger_detail"),
+                "key_evidence": detail.get("key_evidence") or [],
+                "risks": detail.get("risks") or [],
+                "information_gaps": detail.get("information_gaps") or [],
+                "next_checkpoint": detail.get("next_checkpoint"),
+                "correction_suggestion": detail.get("correction_suggestion"),
+                "model_used": detail.get("model_used"),
+            }
+        )
+    return analyses
 
 
 def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
@@ -600,6 +675,38 @@ def get_stock_dashboard(session: Session, symbol: str) -> dict[str, Any]:
     trace["glossary"] = get_glossary_entries()
     trace["risk_panel"] = _risk_panel(trace, change, recent_news)
     trace["follow_up"] = _follow_up_payload(trace, change, trace["evidence"])
+    from ashare_evidence.benchmark import benchmark_context_summary
+    from ashare_evidence.data_quality import build_stock_data_quality
+    from ashare_evidence.factor_observation import build_factor_observations
+
+    trace["data_quality"] = build_stock_data_quality(
+        session,
+        latest.stock,
+        as_of=latest.as_of_data_time,
+    )
+    try:
+        factor_study = build_factor_observations(
+            session,
+            artifact_root=str(artifact_root or ""),
+            persist=False,
+        )
+        trace["factor_validation"] = {
+            "status": factor_study.get("status"),
+            "note": factor_study.get("note"),
+            "observation_count": factor_study.get("observation_count", 0),
+            "distinct_as_of_date_count": factor_study.get("distinct_as_of_date_count", 0),
+            "benchmark_context": factor_study.get("benchmark_context", {}),
+        }
+    except Exception as exc:
+        trace["factor_validation"] = {
+            "status": "unavailable",
+            "note": f"因子验证摘要暂不可用：{exc}",
+            "observation_count": 0,
+            "distinct_as_of_date_count": 0,
+            "benchmark_context": {},
+        }
+    trace["benchmark_context"] = benchmark_context_summary(session)
     from ashare_evidence.horizon_readout import build_horizon_readout
     trace["research_horizon_readout"] = build_horizon_readout(str(artifact_root) if artifact_root else "")
+    trace["event_analyses"] = _event_analysis_payload(latest.stock.symbol, artifact_root)
     return trace

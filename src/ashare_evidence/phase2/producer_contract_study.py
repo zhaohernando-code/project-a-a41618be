@@ -19,7 +19,7 @@ from ashare_evidence.signal_engine_parts.base import (
 from ashare_evidence.watchlist import active_watchlist_symbols
 
 PHASE5_PRODUCER_CONTRACT_STUDY_VERSION = "phase5-producer-contract-study-draft-v1"
-LONG_DIRECTIONS = {"buy", "watch"}
+LONG_DIRECTIONS = {"buy", "add", "watch"}
 VARIANT_CURRENT_HARD_BLOCK = "current_hard_block"
 VARIANT_REMOVE_HARD_OVERRIDE_KEEP_PENALTY = "remove_hard_override_keep_penalty"
 VARIANT_WATCH_CEILING_KEEP_PENALTY = "watch_ceiling_keep_penalty"

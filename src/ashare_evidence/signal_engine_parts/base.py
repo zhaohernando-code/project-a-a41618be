@@ -117,7 +117,7 @@ def recommendation_direction_with_degrade_flags(score: float, degrade_flags: lis
     if other_flags:
         return recommendation_direction(score, True)
     base_direction = recommendation_direction(score, False)
-    if "missing_news_evidence" in flags and base_direction == "buy":
+    if "missing_news_evidence" in flags and base_direction in {"buy", "add"}:
         return "watch"
     return base_direction
 

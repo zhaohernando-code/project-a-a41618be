@@ -131,6 +131,9 @@ class RecommendationView(BaseModel):
     as_of_data_time: datetime
     evidence_status: str
     degrade_reason: str | None = None
+    data_freshness: str | None = None
+    degraded_sources: list[str] = Field(default_factory=list)
+    confidence_ceiling_reasons: list[str] = Field(default_factory=list)
     core_drivers: list[str] = Field(default_factory=list)
     risk_flags: list[str] = Field(default_factory=list)
     reverse_risks: list[str] = Field(default_factory=list)
@@ -216,6 +219,23 @@ class RiskPanelView(BaseModel):
     items: list[str] = Field(default_factory=list)
     disclaimer: str
     change_hint: str
+
+
+class EventAnalysisView(BaseModel):
+    file: str
+    trigger_type: str
+    triggered_at: datetime | None = None
+    generated_at: datetime | None = None
+    status: str = "unknown"
+    independent_direction: str | None = None
+    confidence: float | None = None
+    trigger_detail: str | None = None
+    key_evidence: list[dict[str, Any] | str] = Field(default_factory=list)
+    risks: list[str] = Field(default_factory=list)
+    information_gaps: list[str] = Field(default_factory=list)
+    next_checkpoint: str | None = None
+    correction_suggestion: str | None = None
+    model_used: str | None = None
 
 
 class FollowUpResearchPacketView(BaseModel):
@@ -335,4 +355,9 @@ class StockDashboardResponse(RecommendationTraceResponse):
     change: ChangeView
     glossary: list[GlossaryEntryView] = Field(default_factory=list)
     risk_panel: RiskPanelView
+    event_analyses: list[EventAnalysisView] = Field(default_factory=list)
     follow_up: FollowUpView
+    data_quality: dict[str, Any] = Field(default_factory=dict)
+    research_horizon_readout: str | dict[str, Any] | list[dict[str, Any]] | None = None
+    factor_validation: dict[str, Any] = Field(default_factory=dict)
+    benchmark_context: dict[str, Any] = Field(default_factory=dict)

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import UTC, datetime, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -98,6 +99,55 @@ def test_factor_scoring():
     print("PASS: fundamental factor scoring")
 
 
+def test_news_factor_does_not_hard_saturate():
+    from ashare_evidence.signal_engine_parts.factors import compute_news_factor
+    from ashare_evidence.signal_engine_parts.fusion_helpers import factor_card
+
+    as_of = datetime(2026, 4, 30, 15, 0, tzinfo=UTC)
+    news_items = []
+    news_links = []
+    for index in range(6):
+        news_key = f"news-{index}"
+        published_at = as_of - timedelta(hours=index + 1)
+        news_items.append(
+            {
+                "news_key": news_key,
+                "dedupe_key": news_key,
+                "headline": f"重大正向事件 {index}",
+                "published_at": published_at,
+                "raw_payload": {"llm_analysis": {"importance_score": 1.0}},
+            }
+        )
+        news_links.append(
+            {
+                "news_key": news_key,
+                "effective_at": published_at,
+                "entity_type": "stock",
+                "stock_symbol": "600519.SH",
+                "relevance_score": 1.0,
+                "decay_half_life_hours": 240,
+                "impact_direction": "positive",
+            }
+        )
+
+    result = compute_news_factor(
+        symbol="600519.SH",
+        as_of_data_time=as_of,
+        news_items=news_items,
+        news_links=news_links,
+        sector_codes=set(),
+    )
+    assert 0.0 < result["score"] < 0.99
+
+    legacy_card = factor_card(
+        "news_event",
+        factor_payload={"score": 1.0, "weight": 0.2, "direction": "positive", "drivers": [], "risks": []},
+        recommendation_direction_value="watch",
+        degrade_flags=[],
+    )
+    assert legacy_card["score"] == 0.98
+
+
 def test_actionable_summary():
     from ashare_evidence.signal_engine_parts.recommendation import _actionable_summary
 
@@ -122,5 +172,6 @@ if __name__ == "__main__":
     test_dynamic_weights()
     test_conflict_resolution()
     test_factor_scoring()
+    test_news_factor_does_not_hard_saturate()
     test_actionable_summary()
     print("\nAll Phase 3-4 logic tests passed!")

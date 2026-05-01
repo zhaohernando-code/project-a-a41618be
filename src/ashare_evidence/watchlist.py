@@ -22,6 +22,31 @@ ACTIVE_STATUS = "active"
 REMOVED_STATUS = "removed"
 USER_SOURCE_KIND = "user_input"
 PENDING_REAL_DATA_STATUS = "pending_real_data"
+PHASE5_TARGET_WATCHLIST_SYMBOLS: tuple[str, ...] = (
+    "600519.SH",
+    "601318.SH",
+    "300750.SZ",
+    "002594.SZ",
+    "600522.SH",
+    "002028.SZ",
+    "000001.SZ",
+    "000651.SZ",
+    "600036.SH",
+    "600276.SH",
+    "601012.SH",
+    "600031.SH",
+    "688981.SH",
+    "300760.SZ",
+    "601899.SH",
+    "600309.SH",
+)
+PHASE5_WATCHLIST_REPLACEMENT_CANDIDATES: tuple[str, ...] = (
+    "000858.SZ",
+    "601088.SH",
+    "600887.SH",
+    "002475.SZ",
+    "300124.SZ",
+)
 
 
 def _dissect_symbol(symbol: str) -> tuple[str, str]:

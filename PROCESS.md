@@ -2,8 +2,25 @@
 
 反回归笔记和可复用经验。状态快照见 PROJECT_STATUS.json。
 
+## 2026-05-01
+
+- **计划池动作必须创建可审视的中台 Plan 任务**：`accepted_for_plan` 不能停留在股票看板本地状态。按钮需要先让用户选择执行模型，然后通过中台 `/api/tasks` 创建 `planMode=true / approvalRequired=true` 的任务，并把页面中的建议、证据、双模型审计、最终判断和生成计划写入任务描述。中台返回的 task id 必须回写到 suggestion snapshot，方便股票页和中台互相追踪。
+- **中台任务 schema 需要向前兼容新增字段**：股票看板创建任务时会传 `provider`，老的本地 SQLite `tasks` 表没有该列会导致控制面后端启动失败。`local-control-server` 的 schema 初始化必须为既有 DB 补 `tasks.provider TEXT NOT NULL DEFAULT ''`，不能只修改新建表结构。
+- **公网中台验收受统一登录层约束**：无登录态 headless 浏览器访问 `https://hernando-zhao.cn/middle` 会被重定向到统一登录页，这是预期认证行为。此类场景需要至少保留本地中台 API 验收结果；若要声明公网页面可见，必须使用已登录浏览器会话或由用户侧确认。
+- **deploy verifier 不能假设 shell 环境等于后端环境**：`ANTHROPIC_AUTH_TOKEN` 实际在 `~/.config/codex/ashare-dashboard.backend.env` 中，发布/验证脚本需要显式 source 后端 env 再执行 `llm_service.route_model(...)` 检查；文档和日志只记录“存在且可用”，不得记录 token 值。
+- **SQLAlchemy 2.x verifier SQL 必须用 `text()`**：`Session.execute("SELECT 1")` 会在 verifier 中误报数据库不可用，正确检查是 `from sqlalchemy import text; s.execute(text("SELECT 1"))`。
+- **前端 health check 不应 grep 过期品牌字符串**：构建后的 `index.html` 当前稳定信号是 `#root` 和 `assets/index-*`，不是旧的 `ashare-dashboard` 文案。verifier 应检查真实构建结构，而不是已经从 HTML 中移除的字符串。
+- **持久化 recommendation payload 需要显示层向后兼容**：新闻因子生产逻辑已把 score 限制在 `[-0.98, 0.98]`，但 runtime DB 可能仍有旧 payload 的 `±1.0`。服务层和 factor card 层必须同时做用户可见钳制，避免专业用户看到“满分因子”误判为满置信。
+- **发布刷新不能无限阻塞 verification**：`publish-local-runtime.sh` 现在支持 `ASHARE_PUBLISH_REFRESH_MODE=sync|async|skip`，同步刷新有 `ASHARE_PUBLISH_REFRESH_TIMEOUT_SECONDS` 外层超时；本轮最终发布使用 `skip`，因为 API 显示层修复已能直接验证当前已服务 payload。
+- **最终收尾记录**：`PYTHONPATH=src python3 -m pytest -q` 为 `212 passed in 516.29s`；最终发布快照 commit 为 `a76683eb0d41ca6e6165abb429fbb4a6ceeec3f5`，runtime `latest-successful.json` 已更新；发布脚本内置 deploy verifier 为 `19 passed, 0 failed` 并输出 `VERIFICATION PASSED`；真实 Chrome served-page 验收通过，页面标题 `波段决策看板`，可见 `工作台 / 关注股票 / 复盘`，console error 为空，截图为 `output/playwright/runtime-verify.png`。
+
 ## 2026-04-30
 
+- **专业化改造先落证据链，再落视觉专业感**：P-1/P0 已按“可审计、可解释、受控内测 beta”方向落到代码。新增 `data_quality_snapshot`、`factor_ic_study`、`weight_sweep_study`、CSI benchmark context 和 operations summary/details，前端只消费真实后端字段；P1/P2/P3 中需要样本积累或人工批准的 horizon/权重/毕业 gate 不做运行时动态切换，也不把当前样本不足的 study 包装成结论。
+- **缺新闻不是硬风险，但仍是置信天花板**：数据质量层把无新闻覆盖记为 `data_coverage_gap:news`，评分保留在 warn 区间，不单独打 fail；producer 仍保持已批准的 positive signal watch ceiling，避免“缺事件证据但价格偏强”直接暴露为强方向建议。
+- **operations 首屏预算需要接口拆分**：新增 `/dashboard/operations/summary` 和 `/dashboard/operations/details`，summary 会清空 portfolios/replay/simulation_workspace 等重字段并保留 today-at-a-glance/data-quality/factor summary。旧 `/dashboard/operations` 暂保留一个兼容期。前端首屏已经改成 summary-first；进入 `模拟参数` tab 时才懒加载 `simulation_workspace`/`portfolios` 明细。
+- **P-1/P0 发布验收记录**：通过临时干净快照 `/tmp/ashare-professionalization-publish.757YdN` 发布到 runtime，manifest 为 `/private/tmp/ashare-professionalization-publish.757YdN/output/releases/20260430T163756Z-ddd8a9c561ce/manifest.json`。发布脚本的同步、backend health、frontend health 都通过，但 `verify-deploy.sh` 仍因 backend env 缺 `ANTHROPIC_AUTH_TOKEN` 在 LLM 模块检查处失败。实际 served-route browser 验证通过：operations 首屏使用 `/dashboard/operations/summary`、未提前调用 full `/dashboard/operations`，切到 `模拟参数` 后才调用 `/dashboard/operations/details?section=simulation_workspace`，单票证据页展示因子权重/贡献，console error 为空。
+- **P-1/P0 最终收尾验证**：`2026-05-01T01:16:03+08:00` 重新跑 `npm run build` 通过，目标回归 `tests/test_professionalization_plan.py tests/test_dashboard_views.py tests/test_phase5_holding_policy_study.py tests/test_phase5_producer_contract_study.py tests/test_phase5_holding_policy_experiments.py tests/test_phase5_horizon_study.py tests/test_api_access.py -q` 为 `54 passed`；runtime smoke 显示 operations summary `20.8KB`、`portfolios=0`、`simulation_workspace=False`，detail endpoint 可取 `simulation_workspace=True`，单票页包含 `data_quality/factor_validation/benchmark_context`。
 - **事件驱动分析的外部数据必须 fail-open**：AKShare `stock_individual_info_flow` 等外部接口可能在非交易时段返回空 DataFrame、超时或抛异常。`event_analyzer._fetch_external_data()` 的所有外部调用必须在 try/except 内，失败时返回空数据而非中断整个分析流程。prompt 中 `外部实时信息` 块显示"暂无外部实时信息流数据"比让整个 refresh pipeline 崩溃合理得多。
 - **新模块集成到已有 pipeline 时要保护现有流程**：CLI `_refresh_runtime_data_output` 中的事件检测和分析调用包裹在 try/except 内，确保 trigger check 或 LLM 调用失败不会阻断后续的 intraday sync、simulation step 和 Phase 2 rebuild。
 - **prompt 改动必须同步更新测试里的断言字符串**：`_follow_up_payload` 中 `目标 horizon` → `目标周期`、`系统当前结论` → `系统当前建议`、`验证样本量` → `回测样本量` 三处文案调整后，`test_dashboard_views.py` 的对应断言也会断裂。每次改 prompt 文案后跑一遍相关测试确认。

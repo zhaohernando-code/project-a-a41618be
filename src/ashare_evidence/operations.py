@@ -11,7 +11,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from ashare_evidence.access import load_beta_access_config
+from ashare_evidence.benchmark import benchmark_context_summary
 from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
+from ashare_evidence.data_quality import build_data_quality_summary
+from ashare_evidence.factor_observation import build_factor_observations
 from ashare_evidence.intraday_market import (
     INTRADAY_MARKET_TIMEFRAME,
     get_intraday_market_status,
@@ -41,7 +44,11 @@ from ashare_evidence.research_artifact_store import (
 )
 from ashare_evidence.research_artifacts import normalize_product_validation_status
 from ashare_evidence.services import _serialize_recommendation
-from ashare_evidence.watchlist import active_watchlist_symbols
+from ashare_evidence.watchlist import (
+    PHASE5_TARGET_WATCHLIST_SYMBOLS,
+    PHASE5_WATCHLIST_REPLACEMENT_CANDIDATES,
+    active_watchlist_symbols,
+)
 
 MODE_LABELS = {
     "manual": "手动模拟",
@@ -249,10 +256,13 @@ def _close_on_or_before(series: list[tuple[datetime, float]], point: datetime | 
 
 
 def _trade_band_limit(order: PaperOrder) -> float:
-    ticker = order.stock.ticker if order.stock is not None else ""
-    if ticker.startswith(("300", "688")):
-        return 0.20
-    return 0.10
+    if order.stock is None:
+        return 0.10
+    from ashare_evidence.market_rules import board_rule
+
+    rule = board_rule(order.stock.symbol, stock_profile=order.stock, as_of=order.requested_at.date())
+    limit_pct = rule.get("limit_pct")
+    return 0.10 if limit_pct is None else float(limit_pct)
 
 
 def _order_checks(
@@ -268,15 +278,19 @@ def _order_checks(
     fill_tax = round(sum(fill.tax for fill in fills), 2)
     checks: list[dict[str, str]] = []
 
-    board_lot_pass = quantity % 100 == 0
+    from ashare_evidence.market_rules import board_rule
+
+    rule = board_rule(order.stock.symbol, stock_profile=order.stock, as_of=fill_day)
+    board_lot = int(rule.get("lot") or 100)
+    board_lot_pass = quantity % board_lot == 0
     checks.append(
         {
             "code": "board_lot",
             "title": "整手约束",
             "status": "pass" if board_lot_pass else "fail",
-            "detail": "买入与常规卖出按 100 股整数倍成交。"
+            "detail": f"买入与常规卖出按 {board_lot} 股整数倍成交。"
             if board_lot_pass
-            else f"当前成交数量 {quantity} 股，不满足 A 股整手约束。",
+            else f"当前成交数量 {quantity} 股，不满足 {board_lot} 股整手约束。",
         }
     )
 
@@ -1158,6 +1172,150 @@ def _manual_research_queue_payload(
     }
 
 
+def _factor_observation_summary(session: Session, *, artifact_root: Any, active_symbols: set[str]) -> dict[str, Any]:
+    try:
+        study = build_factor_observations(
+            session,
+            artifact_root=str(artifact_root or ""),
+            min_records=5,
+            persist=False,
+        )
+    except Exception as exc:
+        return {
+            "status": "unavailable",
+            "note": f"因子 IC 研究摘要暂不可用：{exc}",
+            "observation_count": 0,
+            "distinct_as_of_date_count": 0,
+            "symbol_count": len(active_symbols),
+            "horizons": {},
+        }
+    horizons: dict[str, Any] = {}
+    for horizon, factors in (study.get("factor_results") or {}).items():
+        horizons[horizon] = {
+            factor_key: {
+                "rank_ic_mean": factor_data.get("rank_ic_mean"),
+                "ic_ir": factor_data.get("ic_ir"),
+                "positive_ic_rate": factor_data.get("positive_ic_rate"),
+                "sample_count": factor_data.get("sample_count"),
+            }
+            for factor_key, factor_data in factors.items()
+        }
+    return {
+        "artifact_type": study.get("artifact_type", "factor_ic_study"),
+        "status": study.get("status", "insufficient_sample"),
+        "note": study.get("note"),
+        "observation_count": study.get("observation_count", 0),
+        "distinct_as_of_date_count": study.get("distinct_as_of_date_count", 0),
+        "symbol_count": study.get("universe_symbol_count", len(active_symbols)),
+        "benchmark_context": study.get("benchmark_context", {}),
+        "horizons": horizons,
+    }
+
+
+def _today_at_a_glance(
+    *,
+    overview: dict[str, Any],
+    data_quality_summary: dict[str, Any],
+    launch_gates: list[dict[str, Any]],
+    manual_research_queue: dict[str, Any],
+    replay_items: list[dict[str, Any]],
+    active_symbols: set[str],
+) -> dict[str, Any]:
+    queue_counts = dict(manual_research_queue.get("counts") or {})
+    top_warning = next((gate for gate in launch_gates if gate.get("status") in {"fail", "warn"}), None)
+    run_health = overview.get("run_health", {})
+    research_validation = overview.get("research_validation", {})
+    abnormal_symbol_count = int(data_quality_summary.get("warn_count", 0)) + int(data_quality_summary.get("fail_count", 0))
+    return {
+        "latest_refresh_at": run_health.get("last_market_data_at"),
+        "refresh_status": run_health.get("status"),
+        "data_quality_status": data_quality_summary.get("status"),
+        "abnormal_symbol_count": abnormal_symbol_count,
+        "event_analysis_count": sum(queue_counts.values()),
+        "manual_queue_counts": queue_counts,
+        "top_warning_gate": top_warning.get("gate") if top_warning else None,
+        "top_warning_status": top_warning.get("status") if top_warning else None,
+        "recommendation_replay_count": len(replay_items),
+        "active_watchlist_count": len(active_symbols),
+        "target_watchlist_count": len(PHASE5_TARGET_WATCHLIST_SYMBOLS),
+        "missing_target_symbols": [
+            symbol for symbol in PHASE5_TARGET_WATCHLIST_SYMBOLS if symbol not in active_symbols
+        ],
+        "replacement_candidates": list(PHASE5_WATCHLIST_REPLACEMENT_CANDIDATES),
+        "research_validation_status": research_validation.get("status"),
+        "summary_items": [
+            f"数据质量异常股票 {abnormal_symbol_count} 只。",
+            f"人工研究队列 {sum(queue_counts.values())} 条。",
+            f"复盘记录 {len(replay_items)} 条。",
+            f"当前 active watchlist {len(active_symbols)}/{len(PHASE5_TARGET_WATCHLIST_SYMBOLS)} 只。",
+        ],
+    }
+
+
+def _summary_payload_from_dashboard(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = dict(payload)
+    summary["portfolios"] = []
+    summary["recommendation_replay"] = []
+    summary["simulation_workspace"] = None
+    if isinstance(summary.get("manual_research_queue"), dict):
+        summary["manual_research_queue"] = {
+            **summary["manual_research_queue"],
+            "focus_request": None,
+            "recent_items": [],
+        }
+    summary["performance_thresholds"] = [
+        item
+        for item in summary.get("performance_thresholds", [])
+        if item.get("metric") in {"模拟交易运营面板构建延迟", "运营面板 payload 体积"}
+    ]
+    return summary
+
+
+def build_operations_summary(
+    session: Session,
+    sample_symbol: str = "600519.SH",
+    *,
+    target_login: str = "root",
+) -> dict[str, Any]:
+    payload = build_operations_dashboard(
+        session,
+        sample_symbol=sample_symbol,
+        include_simulation_workspace=False,
+        target_login=target_login,
+    )
+    return _summary_payload_from_dashboard(payload)
+
+
+def build_operations_detail(
+    session: Session,
+    *,
+    section: str,
+    sample_symbol: str = "600519.SH",
+    target_login: str = "root",
+) -> dict[str, Any]:
+    payload = build_operations_dashboard(
+        session,
+        sample_symbol=sample_symbol,
+        include_simulation_workspace=section == "simulation_workspace",
+        target_login=target_login,
+    )
+    section_map = {
+        "portfolios": {"portfolios": payload.get("portfolios", [])},
+        "replay": {"recommendation_replay": payload.get("recommendation_replay", [])},
+        "factor_observation": {"factor_observation_summary": payload.get("factor_observation_summary", {})},
+        "sector_exposure": {"sector_exposure": payload.get("sector_exposure", {})},
+        "manual_queue": {"manual_research_queue": payload.get("manual_research_queue", {})},
+        "simulation_workspace": {"simulation_workspace": payload.get("simulation_workspace")},
+    }
+    if section not in section_map:
+        raise ValueError(f"Unsupported operations detail section: {section}")
+    return {
+        "section": section,
+        "generated_at": payload.get("overview", {}).get("generated_at"),
+        **section_map[section],
+    }
+
+
 def build_operations_dashboard(
     session: Session,
     sample_symbol: str = "600519.SH",
@@ -1281,6 +1439,30 @@ def build_operations_dashboard(
                 "recent_items": [],
             },
             "simulation_workspace": None,
+            "data_quality_summary": build_data_quality_summary(session, symbols=active_symbols),
+            "factor_observation_summary": {
+                "status": "insufficient_sample",
+                "note": "行情时间线为空，因子 IC study 暂不可用。",
+                "observation_count": 0,
+                "distinct_as_of_date_count": 0,
+                "symbol_count": len(active_symbols),
+                "horizons": {},
+            },
+            "benchmark_context": benchmark_context_summary(session),
+            "today_at_a_glance": {
+                "latest_refresh_at": None,
+                "refresh_status": "warn",
+                "data_quality_status": "fail",
+                "abnormal_symbol_count": 0,
+                "event_analysis_count": 0,
+                "manual_queue_counts": {},
+                "top_warning_gate": "恢复真实行情与运营时间线",
+                "top_warning_status": "fail",
+                "recommendation_replay_count": 0,
+                "research_validation_status": STATUS_PENDING_REBUILD,
+                "summary_items": ["行情时间线为空，首屏只展示恢复建议。"],
+            },
+            "sector_exposure": {"source": "unavailable", "sectors": {}},
         }
 
     benchmark_close_map = _benchmark_close_map(
@@ -1652,6 +1834,21 @@ def build_operations_dashboard(
         "launch_readiness": launch_readiness,
         **overview_compat_projection,
     }
+    data_quality_summary = build_data_quality_summary(session, symbols=active_symbols)
+    factor_observation_summary = _factor_observation_summary(
+        session,
+        artifact_root=artifact_root,
+        active_symbols=active_symbols,
+    )
+    benchmark_context = benchmark_context_summary(session)
+    today_at_a_glance = _today_at_a_glance(
+        overview=overview,
+        data_quality_summary=data_quality_summary,
+        launch_gates=launch_gates,
+        manual_research_queue=manual_research_queue,
+        replay_items=replay_items,
+        active_symbols=active_symbols,
+    )
     payload_for_measurement = {
         "overview": overview,
         "market_data_timeframe": market_data_timeframe,
@@ -1664,6 +1861,10 @@ def build_operations_dashboard(
         "refresh_policy": refresh_policy,
         "manual_research_queue": manual_research_queue,
         "simulation_workspace": simulation_workspace,
+        "data_quality_summary": data_quality_summary,
+        "factor_observation_summary": factor_observation_summary,
+        "benchmark_context": benchmark_context,
+        "today_at_a_glance": today_at_a_glance,
     }
     operations_ms = round((perf_counter() - started_at) * 1000, 1)
     operations_kb = round(len(json.dumps(payload_for_measurement, ensure_ascii=False, default=str).encode("utf-8")) / 1024, 1)
@@ -1707,6 +1908,10 @@ def build_operations_dashboard(
         "manual_research_queue": manual_research_queue,
         "simulation_workspace": simulation_workspace,
         "sector_exposure": _sector_exposure_snapshot(session),
+        "data_quality_summary": data_quality_summary,
+        "factor_observation_summary": factor_observation_summary,
+        "benchmark_context": benchmark_context,
+        "today_at_a_glance": today_at_a_glance,
     }
 
 

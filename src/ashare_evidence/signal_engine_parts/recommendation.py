@@ -39,6 +39,46 @@ from ashare_evidence.signal_engine_parts.fusion_helpers import (
 )
 
 
+def _dynamic_weights(
+    price_factor: dict[str, Any],
+    news_factor: dict[str, Any],
+    fundamental_factor: dict[str, Any],
+    size_factor: dict[str, Any] | None = None,
+    reversal_factor: dict[str, Any] | None = None,
+    liquidity_factor: dict[str, Any] | None = None,
+) -> dict[str, float]:
+    return dynamic_weights(
+        price_factor,
+        news_factor,
+        fundamental_factor,
+        size_factor,
+        reversal_factor,
+        liquidity_factor,
+    )
+
+
+def _resolve_factor_conflict(
+    price_dir: str,
+    news_dir: str,
+    fund_dir: str,
+    price_conf: float,
+    news_conf: float,
+    fund_conf: float,
+) -> tuple[str | None, list[str]]:
+    return resolve_factor_conflict(price_dir, news_dir, fund_dir, price_conf, news_conf, fund_conf)
+
+
+def _actionable_summary(
+    stock_name: str,
+    direction: str,
+    _fusion_score: float,
+    price_factor: dict[str, Any],
+    news_factor: dict[str, Any],
+    fundamental_factor: dict[str, Any] | None,
+) -> str:
+    return actionable_summary(stock_name, direction, price_factor, news_factor, fundamental_factor)
+
+
 def _fusion_state(
     *,
     as_of_data_time,

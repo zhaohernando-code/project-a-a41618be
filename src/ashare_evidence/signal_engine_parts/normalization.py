@@ -19,14 +19,14 @@ from typing import Any
 def winsorize(values: list[float], *, lower_pct: float = 0.01, upper_pct: float = 0.99) -> list[float]:
     """Clip values at lower/upper percentiles to handle outliers.
 
-    Uses the (n-1)*pct index formula (standard percentile rank definition).
+    Uses int(n*pct) as the boundary rank, clamped to the valid index range.
     """
     if not values:
         return values
     n = len(values)
     sorted_vals = sorted(values)
-    lower_idx = max(0, int((n - 1) * lower_pct))
-    upper_idx = min(n - 1, int((n - 1) * upper_pct))
+    lower_idx = max(0, min(n - 1, int(n * lower_pct)))
+    upper_idx = max(0, min(n - 1, int(n * upper_pct)))
     lower_bound = sorted_vals[lower_idx]
     upper_bound = sorted_vals[upper_idx]
     return [max(lower_bound, min(upper_bound, v)) for v in values]

@@ -11,7 +11,7 @@ def dedup_daily_bars(bars: list[MarketBar]) -> list[MarketBar]:
     deduped: list[MarketBar] = []
     for date_bars in by_date.values():
         if len(date_bars) > 1:
-            best = max(date_bars, key=lambda b: abs((b.observed_at.hour * 60 + b.observed_at.minute) - 900))
+            best = min(date_bars, key=lambda b: abs((b.observed_at.hour * 60 + b.observed_at.minute) - 900))
             deduped.append(best)
         else:
             deduped.append(date_bars[0])

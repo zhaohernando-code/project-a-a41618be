@@ -3,16 +3,16 @@
   "reviewed_at": "2026-04-28",
   "files": {
     "frontend/src/App.tsx": {
-      "lines": 2544,
-      "reason": "Main app shell (2544 lines after mobile refactor follow-up). Mobile UI JSX remains in dedicated components/mobile/*; this file only holds shared state/handlers and mobile overlay wiring. Default model selection logic was extracted to components/mobile/modelSelection.ts during review; further App.tsx growth should be blocked unless paired with additional extraction.",
+      "lines": 2879,
+      "reason": "Main app shell now also carries event-analysis surfaces, operations audit handlers, and multi-view shared state. Mobile UI JSX remains in dedicated components/mobile/*; this file still centralizes shared state, handlers, and overlay wiring, but should be revisited if more workflow-specific state lands here.",
       "status": "planned_refactor",
-      "reviewed_at": "2026-04-29"
+      "reviewed_at": "2026-05-01"
     },
     "frontend/src/styles.css": {
-      "lines": 1073,
-      "reason": "Global CSS: variables, layout, component styles, Ant Design overrides, responsive breakpoints. Cascade-dependent.",
+      "lines": 1139,
+      "reason": "Global CSS: variables, layout, component styles, Ant Design overrides, responsive breakpoints, and the suggestion-audit / event-analysis presentation states added in this tranche. Cascade-dependent.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/analysis_pipeline.py": {
       "lines": 927,
@@ -21,28 +21,28 @@
       "reviewed_at": "2026-04-30"
     },
     "src/ashare_evidence/api.py": {
-      "lines": 828,
-      "reason": "FastAPI application with 27+ endpoints across 7 route groups (dashboard, simulation, settings, manual-research, watchlist, stocks, event-analyses). Growth from ~793→828 lines — added 2 event analysis endpoints. Router extraction would add boilerplate for marginal line-count savings.",
+      "lines": 901,
+      "reason": "FastAPI application with dashboard, simulation, settings, manual-research, watchlist, stock, event-analysis, and improvement-suggestion routes. The latest growth is still cohesive contract wiring; router extraction remains possible but would add broad touch points across the current schema surface.",
       "status": "accepted",
-      "reviewed_at": "2026-04-30"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/cli.py": {
-      "lines": 576,
-      "reason": "CLI command group: data refresh, cache management, admin operations, event-check. Growth from ~518→576 — added event-check command + trigger/analysis integration in refresh pipeline.",
+      "lines": 532,
+      "reason": "CLI command group: data refresh, cache management, admin operations, and event/improvement audit triggers. The current growth still belongs to one operational surface.",
       "status": "accepted",
-      "reviewed_at": "2026-04-30"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/dashboard.py": {
-      "lines": 671,
-      "reason": "Dashboard views: hero payload, price chart, follow-up prompt, candidate list, change detection. Growth from ~605→671 — _follow_up_payload restructured with market data/event blocks for better LLM context.",
+      "lines": 712,
+      "reason": "Dashboard views: hero payload, price chart, follow-up prompt, candidate list, change detection, and event-analysis / data-quality projections. The added growth is still concentrated in dashboard serialization logic.",
       "status": "accepted",
-      "reviewed_at": "2026-04-30"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/intraday_market.py": {
-      "lines": 520,
-      "reason": "Intraday market data: fetching, caching, status tracking. Single responsibility.",
+      "lines": 528,
+      "reason": "Intraday market data: fetching, caching, status tracking, and runtime freshness helpers. Single responsibility.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/manual_research_workflow.py": {
       "lines": 656,
@@ -57,10 +57,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/operations.py": {
-      "lines": 1710,
-      "reason": "Operations dashboard builder with tightly coupled payload functions, order checks, and shared module-level constants (MODE_LABELS, PositionState). Extraction attempted 2026-04-28 — dependency cascade risk.",
+      "lines": 1920,
+      "reason": "Operations dashboard builder with tightly coupled payload functions, order checks, summary/detail split, and suggestion-audit surfaces. Extraction was considered, but the current payload-building path still shares too much domain state to split safely in this closeout turn.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/phase2/holding_policy_experiments.py": {
       "lines": 750,
@@ -69,10 +69,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/phase2/holding_policy_study.py": {
-      "lines": 772,
-      "reason": "Phase 2 holding policy study definition: parameters, backtest config, analysis. Cohesive study.",
+      "lines": 804,
+      "reason": "Phase 2 holding policy study definition: parameters, backtest config, analysis, and graduation gate accounting. Still a cohesive study artifact.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/release_verifier.py": {
       "lines": 752,
@@ -93,22 +93,28 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/services.py": {
-      "lines": 1621,
-      "reason": "Service layer: recommendation serialization, claim gate, direction capping.",
+      "lines": 1649,
+      "reason": "Service layer: recommendation serialization, claim gate, direction capping, and richer factor/data-quality projection. The current growth remains inside one recommendation-serving boundary.",
       "status": "accepted",
-      "reviewed_at": "2026-04-30"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/signal_engine_parts/recommendation.py": {
-      "lines": 452,
-      "reason": "Fusion engine with dynamic weights, conflict resolution, multi-factor integration (price/news/fundamental).",
+      "lines": 551,
+      "reason": "Fusion engine with dynamic weights, conflict resolution, recommendation payload assembly, and richer factor contribution metadata. Still cohesive around final recommendation generation.",
       "status": "accepted",
-      "reviewed_at": "2026-04-30"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/simulation.py": {
       "lines": 1508,
       "reason": "Cohesive simulation engine: position sizing, performance metrics, scenario config, order execution. Single-domain logic with tight internal coupling.",
       "status": "accepted",
       "reviewed_at": "2026-04-28"
+    },
+    "src/ashare_evidence/improvement_suggestions.py": {
+      "lines": 1012,
+      "reason": "Suggestion audit workflow: ledger extraction, dual-model review orchestration, confidence aggregation, snapshot persistence, and control-plane plan handoff. The file is large because the artifact-driven workflow is still cohesive and shares one contract surface; further split can happen later around reviewer transport and snapshot rendering.",
+      "status": "accepted",
+      "reviewed_at": "2026-05-01"
     },
     "tests/fixtures.py": {
       "lines": 630,
@@ -123,16 +129,16 @@
       "reviewed_at": "2026-04-28"
     },
     "tests/test_dashboard_views.py": {
-      "lines": 803,
-      "reason": "Dashboard view contract tests. Current growth locks mobile today's price chart and manual research builtin/default model behavior; split remains lower priority than preserving broad frontend/backend contract coverage.",
+      "lines": 948,
+      "reason": "Dashboard view contract tests now also lock event-analysis, professionalization, and suggestion-audit UI contracts. The file is broad, but that breadth is deliberate because these are cross-surface user-visible contracts.",
       "status": "accepted",
-      "reviewed_at": "2026-04-29"
+      "reviewed_at": "2026-05-01"
     },
     "frontend/src/components/OperationsTabs.tsx": {
-      "lines": 715,
-      "reason": "Operations dashboard tabs (portfolio, simulation, replay, research validation, launch readiness). Could be further split into per-tab components.",
+      "lines": 986,
+      "reason": "Operations dashboard tabs now include suggestion-audit interactions, filter state, and model-picking modal wiring in addition to portfolio, simulation, replay, research validation, and launch readiness. A future split into per-tab components still makes sense, but the current turn kept the behavior together to avoid contract drift.",
       "status": "accepted",
-      "reviewed_at": "2026-04-28"
+      "reviewed_at": "2026-05-01"
     },
     "src/ashare_evidence/event_analyzer.py": {
       "lines": 526,

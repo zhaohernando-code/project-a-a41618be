@@ -134,6 +134,20 @@ def humanize_degrade_flag(flag: str) -> str:
     return DEGRADE_FLAG_DISPLAY.get(cleaned, cleaned.replace("_", " "))
 
 
+def display_factor_score(factor_key: str, score: Any) -> Any:
+    if factor_key != "news_event":
+        return score
+    try:
+        numeric_score = float(score)
+    except (TypeError, ValueError):
+        return score
+    if numeric_score >= 0.99:
+        return 0.98
+    if numeric_score <= -0.99:
+        return -0.98
+    return score
+
+
 def factor_headline_fallback(
     factor_key: str,
     *,
@@ -244,9 +258,23 @@ def factor_card(
     recommendation_direction_value: str,
     degrade_flags: list[str],
 ) -> dict[str, Any]:
+    score = display_factor_score(factor_key, factor_payload.get("score"))
+    weight = factor_payload.get("weight")
+    try:
+        score_contribution = float(score or 0) * float(weight or 0)
+    except (TypeError, ValueError):
+        score_contribution = 0.0
     return {
         "factor_key": factor_key,
-        "score": factor_payload.get("score"),
+        "score": score,
+        "dynamic_weight": weight,
+        "weight": weight,
+        "score_contribution": round(score_contribution, 6),
+        "rolling_ic": factor_payload.get("rolling_ic"),
+        "ic_confidence_note": factor_payload.get(
+            "ic_confidence_note",
+            "因子可信度来自滚动 IC/IC_IR 研究；当前卡片只展示即时贡献。",
+        ),
         "direction": factor_payload.get("direction"),
         "headline": (
             next(

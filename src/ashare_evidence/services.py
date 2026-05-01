@@ -638,6 +638,19 @@ def _dedupe_text_items(items: list[str]) -> list[str]:
     return deduped
 
 
+def _display_factor_score(factor_key: str, score: Any) -> Any:
+    if factor_key != "news_event":
+        return score
+    numeric_score = _metric_number(score)
+    if numeric_score is None:
+        return score
+    if numeric_score >= 0.99:
+        return 0.98
+    if numeric_score <= -0.99:
+        return -0.98
+    return score
+
+
 def _factor_headline_fallback(
     factor_key: str,
     *,
@@ -718,9 +731,21 @@ def _build_display_factor_card(
     recommendation_direction: str,
     degrade_flags: list[str],
 ) -> dict[str, Any]:
+    score = _display_factor_score(factor_key, payload_card.get("score", raw_value.get("score")))
+    dynamic_weight = payload_card.get("dynamic_weight", payload_card.get("weight", raw_value.get("weight")))
+    numeric_score = _metric_number(score) or 0.0
+    numeric_weight = _metric_number(dynamic_weight) or 0.0
     return {
         "factor_key": factor_key,
-        "score": payload_card.get("score", raw_value.get("score")),
+        "score": score,
+        "dynamic_weight": dynamic_weight,
+        "weight": dynamic_weight,
+        "score_contribution": round(numeric_score * numeric_weight, 6),
+        "rolling_ic": payload_card.get("rolling_ic", raw_value.get("rolling_ic")),
+        "ic_confidence_note": payload_card.get(
+            "ic_confidence_note",
+            raw_value.get("ic_confidence_note", "因子可信度来自滚动 IC/IC_IR 研究；当前卡片只展示即时贡献。"),
+        ),
         "direction": payload_card.get("direction", raw_value.get("direction")),
         "headline": (
             _display_ready_text(payload_card.get("headline"))
@@ -878,12 +903,12 @@ def _build_evidence_layer(
     ]
     # Compute factor contributions (score × weight, normalized to sum 1.0)
     raw_contributions = [
-        float(card.get("score") or 0) * float(card.get("weight") or 0)
+        float(card.get("score_contribution") or 0)
         for card in factor_cards
     ]
-    total_contribution = sum(raw_contributions)
+    total_contribution = sum(abs(value) for value in raw_contributions)
     for idx, card in enumerate(factor_cards):
-        card["contribution"] = round(raw_contributions[idx] / total_contribution, 4) if total_contribution > 0 else 0.0
+        card["contribution"] = round(abs(raw_contributions[idx]) / total_contribution, 4) if total_contribution > 0 else 0.0
 
     price_factor = factor_breakdown.get("price_baseline", {})
     news_factor = factor_breakdown.get("news_event", {})
@@ -1525,6 +1550,9 @@ def _serialize_recommendation(recommendation: Recommendation, *, artifact_root: 
             "as_of_data_time": recommendation.as_of_data_time,
             "evidence_status": recommendation.evidence_status,
             "degrade_reason": recommendation.degrade_reason,
+            "data_freshness": evidence_layer.get("data_freshness"),
+            "degraded_sources": list(evidence_layer.get("degrade_flags") or []),
+            "confidence_ceiling_reasons": list(claim_gate.get("blocking_reasons") or []),
             "core_quant": core_quant,
             "evidence": evidence_layer,
             "risk": risk_layer,

@@ -7,7 +7,7 @@ import os
 from collections.abc import Iterator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,13 @@ from ashare_evidence.dashboard import (
     list_candidate_recommendations,
 )
 from ashare_evidence.db import get_database_url, get_session_factory, init_database
+from ashare_evidence.improvement_suggestions import (
+    accept_suggestion_for_plan,
+    run_improvement_suggestion_review,
+    suggestion_details,
+    suggestion_summary,
+    update_suggestion_status,
+)
 from ashare_evidence.llm_service import run_follow_up_analysis
 from ashare_evidence.manual_research_workflow import (
     complete_manual_research_request,
@@ -29,7 +36,7 @@ from ashare_evidence.manual_research_workflow import (
     list_manual_research_requests,
     retry_manual_research_request,
 )
-from ashare_evidence.operations import build_operations_dashboard
+from ashare_evidence.operations import build_operations_dashboard, build_operations_detail, build_operations_summary
 from ashare_evidence.runtime_config import (
     create_model_api_key,
     delete_model_api_key,
@@ -613,6 +620,107 @@ def create_app(
             include_simulation_workspace=True,
             target_login=access.target_login,
         )
+
+    @app.get("/dashboard/operations/summary", response_model=OperationsDashboardResponse)
+    def dashboard_operations_summary(
+        access: StockAccessContext = Depends(require_stock_access),
+        sample_symbol: str = Query(default="600519.SH"),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        run_operations_tick(session)
+        return build_operations_summary(
+            session,
+            sample_symbol,
+            target_login=access.target_login,
+        )
+
+    @app.get("/dashboard/operations/details")
+    def dashboard_operations_details(
+        access: StockAccessContext = Depends(require_stock_access),
+        section: str = Query(default="portfolios"),
+        sample_symbol: str = Query(default="600519.SH"),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        try:
+            return build_operations_detail(
+                session,
+                section=section,
+                sample_symbol=sample_symbol,
+                target_login=access.target_login,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/dashboard/improvement-suggestions/summary")
+    def dashboard_improvement_suggestions_summary(
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        return suggestion_summary(session)
+
+    @app.get("/dashboard/improvement-suggestions/details")
+    def dashboard_improvement_suggestions_details(
+        access: StockAccessContext = Depends(require_stock_access),
+        status: str | None = Query(default=None),
+        category: str | None = Query(default=None),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        return suggestion_details(session, status=status, category=category)
+
+    @app.post("/dashboard/improvement-suggestions/run")
+    def dashboard_improvement_suggestions_run(
+        access: StockAccessContext = Depends(require_stock_access),
+        window_days: int = Query(default=7, ge=1, le=60),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        return run_improvement_suggestion_review(session, window_days=window_days)
+
+    @app.post("/dashboard/improvement-suggestions/{suggestion_id}/status")
+    def dashboard_improvement_suggestion_status(
+        suggestion_id: str,
+        payload: dict[str, str] = Body(default_factory=dict),
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        try:
+            return update_suggestion_status(
+                session,
+                suggestion_id=suggestion_id,
+                status=str(payload.get("status") or ""),
+                reason=str(payload.get("reason") or ""),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/dashboard/improvement-suggestions/{suggestion_id}/accept-plan")
+    def dashboard_improvement_suggestion_accept_plan(
+        suggestion_id: str,
+        payload: dict[str, str] = Body(default_factory=dict),
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        try:
+            return accept_suggestion_for_plan(
+                session,
+                suggestion_id=suggestion_id,
+                model=str(payload.get("model") or ""),
+                reason=str(payload.get("reason") or "进入计划池"),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     @app.get("/simulation/workspace", response_model=SimulationWorkspaceResponse)
     def simulation_workspace(

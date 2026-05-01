@@ -9,6 +9,7 @@ from ashare_evidence.cli_event import add_event_check_parser, handle_event_check
 from ashare_evidence.cli_research import add_research_parsers, handle_factor_observation, handle_weight_sweep
 from ashare_evidence.dashboard import get_glossary_entries, get_stock_dashboard, list_candidate_recommendations
 from ashare_evidence.db import init_database, session_scope
+from ashare_evidence.improvement_suggestions import run_improvement_suggestion_review
 from ashare_evidence.intraday_market import sync_intraday_market
 from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.phase2 import rebuild_phase2_research_state
@@ -315,6 +316,13 @@ def build_parser() -> argparse.ArgumentParser:
     refresh_runtime.add_argument("--ops-only", action="store_true")
     refresh_runtime.add_argument("--skip-simulation", action="store_true")
 
+    suggestion_review = subparsers.add_parser(
+        "review-improvement-suggestions",
+        help="Collect improvement suggestions and run the multi-model audit.",
+    )
+    suggestion_review.add_argument("--database-url", default=None)
+    suggestion_review.add_argument("--window-days", type=int, default=7)
+
     phase5_daily = subparsers.add_parser(
         "phase5-daily-refresh",
         help="Run the daily Phase 5 refresh workflow: refresh runtime data, then write latest/history horizon-study snapshots.",
@@ -437,6 +445,12 @@ def main(argv: list[str] | None = None) -> int:
                 ops_only=args.ops_only,
                 skip_simulation=args.skip_simulation,
             )
+        _print_json(payload)
+        return 0
+
+    if args.command == "review-improvement-suggestions":
+        with session_scope(args.database_url) as session:
+            payload = run_improvement_suggestion_review(session, window_days=args.window_days)
         _print_json(payload)
         return 0
 

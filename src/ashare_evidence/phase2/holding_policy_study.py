@@ -9,25 +9,25 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from ashare_evidence.phase2.constants import PHASE2_COST_MODEL
 from ashare_evidence.models import PaperOrder, PaperPortfolio
 from ashare_evidence.phase2.common import safe_mean
+from ashare_evidence.phase2.constants import PHASE2_COST_MODEL
 from ashare_evidence.phase2.phase5_contract import (
     PHASE5_ACTION_DEFINITION,
     PHASE5_CONTRACT_VERSION,
+    PHASE5_HOLDING_POLICY_PROMOTION_GATE_VERSION,
+    PHASE5_HOLDING_POLICY_PROMOTION_GUARDRAILS,
     PHASE5_HOLDING_POLICY_REDESIGN_DIAGNOSTIC_VERSION,
     PHASE5_HOLDING_POLICY_REDESIGN_EXPERIMENT_MENU,
     PHASE5_HOLDING_POLICY_REDESIGN_SIGNAL_RULES,
     PHASE5_HOLDING_POLICY_REDESIGN_TRIGGER_GATE_IDS,
-    PHASE5_HOLDING_POLICY_PROMOTION_GATE_VERSION,
-    PHASE5_HOLDING_POLICY_PROMOTION_GUARDRAILS,
     PHASE5_PRIMARY_RESEARCH_BENCHMARK,
     PHASE5_QUANTITY_DEFINITION,
     PHASE5_SIMULATION_POLICY,
-    phase5_holding_policy_redesign_diagnostic_context,
     phase5_holding_policy_governance_context,
-    phase5_matches_primary_benchmark,
     phase5_holding_policy_promotion_gate_context,
+    phase5_holding_policy_redesign_diagnostic_context,
+    phase5_matches_primary_benchmark,
 )
 from ashare_evidence.research_artifact_store import (
     artifact_root_from_database_url,
@@ -198,6 +198,38 @@ def evaluate_phase5_holding_policy_promotion_gate(
             metric="holding_stability.mean_rebalance_interval_days",
         ),
     ]
+    if any(
+        key in summary
+        for key in ("rebalance_day_count", "mean_active_position_count", "mean_invested_ratio", "mean_max_drawdown")
+    ):
+        checks.extend(
+            [
+                _at_least_gate(
+                    "rebalance_date_count",
+                    actual=summary.get("rebalance_day_count"),
+                    threshold=guardrails["min_rebalance_date_count"],
+                    metric="summary.rebalance_day_count",
+                ),
+                _at_least_gate(
+                    "mean_active_position_count",
+                    actual=summary.get("mean_active_position_count"),
+                    threshold=guardrails["min_mean_active_position_count"],
+                    metric="summary.mean_active_position_count",
+                ),
+                _at_least_gate(
+                    "mean_invested_ratio",
+                    actual=summary.get("mean_invested_ratio"),
+                    threshold=guardrails["min_mean_invested_ratio"],
+                    metric="summary.mean_invested_ratio",
+                ),
+                _at_least_gate(
+                    "max_drawdown_floor",
+                    actual=summary.get("mean_max_drawdown"),
+                    threshold=guardrails["max_drawdown_floor"],
+                    metric="summary.mean_max_drawdown",
+                ),
+            ]
+        )
     failing_gate_ids = [str(item["gate_id"]) for item in checks if item["status"] == "fail"]
     incomplete_gate_ids = [str(item["gate_id"]) for item in checks if item["status"] == "insufficient_evidence"]
     if incomplete_gate_ids:

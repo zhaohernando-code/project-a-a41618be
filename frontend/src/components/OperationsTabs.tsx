@@ -1,6 +1,6 @@
 import {
   Alert, Button, Card, Col, Collapse, Descriptions, Empty,
-  Form, InputNumber, List, Row, Select, Space, Statistic,
+  Form, InputNumber, List, Modal, Row, Select, Space,
   Switch, Table, Tag, Tabs, Timeline, Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import type {
   CandidateWorkspaceRow,
+  ImprovementSuggestionView,
   OperationsDashboardResponse,
   RecommendationReplayView,
   SimulationConfigRequest,
@@ -45,6 +46,13 @@ import { KlinePanel } from "./KlinePanel";
 import { CompactAnalysisReport } from "./CompactAnalysisReport";
 
 const { Paragraph, Text, Title } = Typography;
+const IMPROVEMENT_TASK_MODEL_OPTIONS = [
+  { label: "GPT-5.5 高级审计 / 仲裁", value: "gpt-5.5" },
+  { label: "GPT-5.4", value: "gpt-5.4" },
+  { label: "GPT-5.3 Codex Spark", value: "gpt-5.3-codex-spark" },
+  { label: "DeepSeek V4 Pro", value: "deepseek-v4-pro[1m]" },
+  { label: "DeepSeek V4 Flash", value: "deepseek-v4-flash" },
+];
 
 export interface BuildOperationsTabsInput {
   operations: OperationsDashboardResponse | null;
@@ -76,6 +84,86 @@ export interface BuildOperationsTabsInput {
   setOperationsError: (v: string | null) => void;
   manualResearchAction: string | null;
   setManualResearchAction: (v: string | null) => void;
+  handleRunImprovementSuggestionReview: () => Promise<void>;
+  handleAcceptImprovementSuggestionForPlan: (suggestionId: string, model: string) => Promise<void>;
+  handleUpdateImprovementSuggestionStatus: (suggestionId: string, status: string, reason: string) => Promise<void>;
+  improvementSuggestionFilter: string | null;
+  setImprovementSuggestionFilter: (v: string | null) => void;
+}
+
+function suggestionConfidenceLabel(value?: string | null): string {
+  if (value === "high") return "高置信";
+  if (value === "moderate") return "中置信";
+  if (value === "low") return "低置信";
+  if (value === "reject") return "拒绝";
+  return value || "未审计";
+}
+
+function suggestionActionLabel(value?: string | null): string {
+  if (value === "ignore") return "忽略";
+  if (value === "monitor") return "继续观察";
+  if (value === "create_plan") return "生成计划";
+  if (value === "create_experiment") return "进入实验";
+  return value || "未给出";
+}
+
+function reviewerSummary(item: ImprovementSuggestionView, reviewer: string): string {
+  const review = item.reviews?.[reviewer];
+  if (!review) return "未返回审计";
+  return `${review.stance} · ${formatPercent(review.confidence)} · ${sanitizeDisplayText(review.main_reason)}`;
+}
+
+function improvementSuggestionFilterLabel(value?: string | null): string {
+  if (value === "reviewed") return "已审计";
+  if (value === "high_confidence") return "高置信";
+  if (value === "moderate_confidence") return "中置信";
+  if (value === "low_confidence") return "低置信";
+  if (value === "reject") return "拒绝";
+  if (value === "model_split") return "模型分歧";
+  if (value === "needs_more_data") return "缺证据";
+  return "本周建议";
+}
+
+function filterImprovementSuggestions(items: ImprovementSuggestionView[], filter: string | null): ImprovementSuggestionView[] {
+  if (!filter) return items;
+  if (filter === "reviewed") return items.filter((item) => item.status === "reviewed" || Boolean(item.reviews));
+  if (filter === "high_confidence") return items.filter((item) => item.final_confidence === "high");
+  if (filter === "moderate_confidence") return items.filter((item) => item.final_confidence === "moderate");
+  if (filter === "low_confidence") return items.filter((item) => item.final_confidence === "low");
+  if (filter === "reject") return items.filter((item) => item.final_confidence === "reject");
+  if (filter === "model_split") return items.filter((item) => item.model_consensus === "split");
+  if (filter === "needs_more_data") return items.filter((item) => item.evidence_status === "needs_more_data");
+  return items;
+}
+
+function openImprovementPlanModelPicker(
+  item: ImprovementSuggestionView,
+  handleAcceptImprovementSuggestionForPlan: (suggestionId: string, model: string) => Promise<void>,
+) {
+  let selectedModel = "gpt-5.4";
+  Modal.confirm({
+    title: "选择执行模型",
+    okText: "进入计划池并创建中台任务",
+    cancelText: "取消",
+    width: 560,
+    content: (
+      <div className="modal-form-stack">
+        <Text type="secondary">
+          中台任务会启用 Plan 模式。模型会先生成计划和待确认项，确认后才开始执行。
+        </Text>
+        <Select
+          className="full-width-control"
+          defaultValue={selectedModel}
+          options={IMPROVEMENT_TASK_MODEL_OPTIONS}
+          onChange={(value) => {
+            selectedModel = value;
+          }}
+        />
+        <Text type="secondary">{sanitizeDisplayText(item.claim)}</Text>
+      </div>
+    ),
+    onOk: () => handleAcceptImprovementSuggestionForPlan(item.suggestion_id, selectedModel),
+  });
 }
 
 export function buildOperationsTabs(input: BuildOperationsTabsInput) {
@@ -97,9 +185,25 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
     setSelectedSymbol, setStockActiveTab, setView,
     setOperations, setOperationsLoading, setOperationsError,
     manualResearchAction, setManualResearchAction,
+    handleRunImprovementSuggestionReview, handleAcceptImprovementSuggestionForPlan, handleUpdateImprovementSuggestionStatus,
+    improvementSuggestionFilter, setImprovementSuggestionFilter,
   } = input;
 
   if (!operations) return [];
+
+  const improvementSuggestions = operations.improvement_suggestions;
+  const improvementSuggestionItems = improvementSuggestions?.suggestions ?? improvementSuggestions?.top_suggestions ?? [];
+  const filteredImprovementSuggestions = filterImprovementSuggestions(improvementSuggestionItems, improvementSuggestionFilter);
+  const improvementSuggestionStatFilters = improvementSuggestions ? [
+    { key: null, label: "本周建议", value: improvementSuggestions.summary.total ?? 0 },
+    { key: "reviewed", label: "已审计", value: improvementSuggestions.summary.reviewed ?? 0 },
+    { key: "high_confidence", label: "高置信", value: improvementSuggestions.summary.high_confidence ?? 0 },
+    { key: "moderate_confidence", label: "中置信", value: improvementSuggestions.summary.moderate_confidence ?? 0 },
+    { key: "low_confidence", label: "低置信", value: improvementSuggestions.summary.low_confidence ?? 0 },
+    { key: "reject", label: "拒绝", value: improvementSuggestions.summary.reject ?? 0 },
+    { key: "model_split", label: "模型分歧", value: improvementSuggestions.summary.model_split ?? 0 },
+    { key: "needs_more_data", label: "缺证据", value: improvementSuggestions.summary.needs_more_data ?? 0 },
+  ] : [];
 
   return [
     {
@@ -272,6 +376,150 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
       label: "差异复盘",
       children: (
         <div className="panel-stack">
+          <Card
+            className="panel-card"
+            title="改进建议审计台"
+            extra={(
+              <Button size="small" icon={<ReloadOutlined />} onClick={() => void handleRunImprovementSuggestionReview()}>
+                重新审计
+              </Button>
+            )}
+          >
+            {operations.improvement_suggestions ? (
+              <>
+                <div className="suggestion-stat-grid">
+                  {improvementSuggestionStatFilters.map((item) => (
+                    <button
+                      key={item.key ?? "all"}
+                      type="button"
+                      className={`suggestion-stat-button ${improvementSuggestionFilter === item.key ? "active" : ""}`}
+                      onClick={() => setImprovementSuggestionFilter(item.key)}
+                    >
+                      <span>{item.label}</span>
+                      <strong>{formatNumber(item.value)}</strong>
+                    </button>
+                  ))}
+                </div>
+                <Space wrap className="inline-tags">
+                  <Tag color={statusColor(operations.improvement_suggestions.status ?? "pending")}>
+                    {operations.improvement_suggestions.status ?? "pending"}
+                  </Tag>
+                  <Tag>{`GPT ${operations.improvement_suggestions.model_status?.gpt ?? "unknown"}`}</Tag>
+                  <Tag>{`DeepSeek ${operations.improvement_suggestions.model_status?.deepseek ?? "unknown"}`}</Tag>
+                  <Tag>{`窗口 ${operations.improvement_suggestions.window_days ?? 7} 天`}</Tag>
+                  {improvementSuggestionFilter ? (
+                    <>
+                      <Tag color="blue">{`当前筛选：${improvementSuggestionFilterLabel(improvementSuggestionFilter)}`}</Tag>
+                      <Button size="small" type="link" onClick={() => setImprovementSuggestionFilter(null)}>
+                        清除筛选
+                      </Button>
+                    </>
+                  ) : null}
+                </Space>
+                <List
+                  dataSource={filteredImprovementSuggestions}
+                  locale={{ emptyText: "暂无可审计建议" }}
+                  renderItem={(item) => (
+                    <List.Item
+                      actions={[
+                        <Button
+                          key="plan"
+                          type="link"
+                          disabled={item.status === "accepted_for_plan"}
+                          onClick={() => openImprovementPlanModelPicker(item, handleAcceptImprovementSuggestionForPlan)}
+                        >
+                          进入计划池
+                        </Button>,
+                        <Button
+                          key="monitor"
+                          type="link"
+                          disabled={item.status === "monitoring"}
+                          onClick={() => void handleUpdateImprovementSuggestionStatus(item.suggestion_id, "monitoring", "标记观察")}
+                        >
+                          标记观察
+                        </Button>,
+                        <Button
+                          key="reject"
+                          type="link"
+                          danger
+                          disabled={item.status === "rejected"}
+                          onClick={() => void handleUpdateImprovementSuggestionStatus(item.suggestion_id, "rejected", "当前不采纳")}
+                        >
+                          拒绝
+                        </Button>,
+                      ]}
+                    >
+                      <div className="watchlist-entry">
+                        <div className="list-item-row">
+                          <div>
+                            <strong>{sanitizeDisplayText(item.claim)}</strong>
+                            <div className="muted-line">{`${item.source_type} · ${item.symbol ?? "全局"} · ${formatDate(item.created_at)}`}</div>
+                          </div>
+                          <Space wrap>
+                            <Tag>{item.category}</Tag>
+                            <Tag color={statusColor(item.final_confidence ?? "pending")}>
+                              {suggestionConfidenceLabel(item.final_confidence)}
+                            </Tag>
+                            <Tag>{suggestionActionLabel(item.recommended_action)}</Tag>
+                          </Space>
+                        </div>
+                        <Paragraph className="panel-description">{sanitizeDisplayText(item.proposed_change)}</Paragraph>
+                        {item.control_plane_task?.id ? (
+                          <Space wrap className="inline-tags">
+                            <Tag color="blue">{`中台任务 ${item.control_plane_task.id}`}</Tag>
+                            <Tag>{`模型 ${item.control_plane_task.model}`}</Tag>
+                            <Tag>{item.control_plane_task.plan_mode ? "Plan 模式" : "直接执行"}</Tag>
+                          </Space>
+                        ) : null}
+                        <Collapse
+                          className="compact-collapse"
+                          items={[
+                            {
+                              key: "reviews",
+                              label: "双模型审计与分歧",
+                              children: (
+                                <Descriptions size="small" column={1}>
+                                  <Descriptions.Item label="GPT">{reviewerSummary(item, "gpt")}</Descriptions.Item>
+                                  <Descriptions.Item label="DeepSeek">{reviewerSummary(item, "deepseek")}</Descriptions.Item>
+                                  <Descriptions.Item label="最终判断">{sanitizeDisplayText(item.decision_reason)}</Descriptions.Item>
+                                  <Descriptions.Item label="证据状态">{item.evidence_status ?? "未给出"}</Descriptions.Item>
+                                </Descriptions>
+                              ),
+                            },
+                            {
+                              key: "plan",
+                              label: "生成的开发计划",
+                              children: item.generated_plan ? (
+                                <div>
+                                  <Paragraph className="panel-description">{sanitizeDisplayText(item.generated_plan.summary)}</Paragraph>
+                                  <Title level={5}>实施步骤</Title>
+                                  <ul className="plain-list">
+                                    {item.generated_plan.implementation_steps.map((step) => (
+                                      <li key={`${item.suggestion_id}-${step}`}>{sanitizeDisplayText(step)}</li>
+                                    ))}
+                                  </ul>
+                                  <Title level={5}>测试</Title>
+                                  <ul className="plain-list">
+                                    {item.generated_plan.tests.map((test) => (
+                                      <li key={`${item.suggestion_id}-${test}`}>{sanitizeDisplayText(test)}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ) : (
+                                <Text type="secondary">暂无计划。</Text>
+                              ),
+                            },
+                          ]}
+                        />
+                      </div>
+                    </List.Item>
+                  )}
+                />
+              </>
+            ) : (
+              <Empty description="暂无可审计建议" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            )}
+          </Card>
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={14}>
               <Card className="panel-card" title="双轨核心差异">
@@ -458,7 +706,30 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
                   <Descriptions.Item label="警告门禁">
                     {operations.overview.launch_readiness.warning_gate_count}
                   </Descriptions.Item>
+                  <Descriptions.Item label="数据质量">
+                    <Tag color={statusColor(operations.data_quality_summary?.status ?? "pending")}>
+                      {operations.data_quality_summary?.status ?? "pending"}
+                    </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="异常股票">
+                    {operations.today_at_a_glance?.abnormal_symbol_count ?? 0}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="关注池进度">
+                    {`${operations.today_at_a_glance?.active_watchlist_count ?? 0}/${operations.today_at_a_glance?.target_watchlist_count ?? 0}`}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="主基准">
+                    {operations.benchmark_context?.primary_label ?? operations.benchmark_context?.primary_benchmark ?? "沪深300"}
+                  </Descriptions.Item>
                 </Descriptions>
+                {operations.today_at_a_glance?.top_warning_gate ? (
+                  <Alert
+                    className="sub-alert"
+                    type="warning"
+                    showIcon
+                    message="今日重点"
+                    description={sanitizeDisplayText(operations.today_at_a_glance.top_warning_gate)}
+                  />
+                ) : null}
               </Card>
               <Card className="panel-card" title="上线闸门">
                 <List

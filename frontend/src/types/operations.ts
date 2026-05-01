@@ -118,6 +118,88 @@ export interface ManualResearchQueueView {
   recent_items: ManualResearchRequestView[];
 }
 
+export interface OperationsTodayAtAGlanceView {
+  latest_refresh_at?: string | null;
+  refresh_status?: string | null;
+  data_quality_status?: string | null;
+  abnormal_symbol_count?: number;
+  event_analysis_count?: number;
+  manual_queue_counts?: Record<string, number>;
+  top_warning_gate?: string | null;
+  top_warning_status?: string | null;
+  recommendation_replay_count?: number;
+  active_watchlist_count?: number;
+  target_watchlist_count?: number;
+  missing_target_symbols?: string[];
+  replacement_candidates?: string[];
+  research_validation_status?: string | null;
+  summary_items?: string[];
+}
+
+export interface ImprovementSuggestionReview {
+  reviewer: string;
+  stance: string;
+  confidence: number;
+  main_reason: string;
+  evidence_refs_used: string[];
+  missing_evidence: string[];
+  implementation_notes: string[];
+  red_flags: string[];
+  safe_to_plan: boolean;
+  safe_to_auto_apply: boolean;
+  status: string;
+}
+
+export interface ImprovementSuggestionPlan {
+  title: string;
+  summary: string;
+  implementation_steps: string[];
+  tests: string[];
+  blocked_by: string[];
+}
+
+export interface ImprovementSuggestionControlTask {
+  id: string;
+  title: string;
+  status: string;
+  model: string;
+  project_id: string;
+  plan_mode: boolean;
+  api_base?: string | null;
+}
+
+export interface ImprovementSuggestionView {
+  suggestion_id: string;
+  source_type: string;
+  source_ref: string;
+  symbol?: string | null;
+  category: string;
+  claim: string;
+  proposed_change: string;
+  evidence_refs: string[];
+  status: string;
+  created_at: string;
+  model_consensus?: string;
+  evidence_status?: string;
+  final_confidence?: string;
+  recommended_action?: string;
+  decision_reason?: string;
+  generated_plan?: ImprovementSuggestionPlan;
+  reviews?: Record<string, ImprovementSuggestionReview>;
+  control_plane_task?: ImprovementSuggestionControlTask;
+}
+
+export interface ImprovementSuggestionsPayload {
+  generated_at?: string | null;
+  status?: string | null;
+  snapshot_file?: string | null;
+  window_days?: number;
+  model_status: Record<string, string>;
+  summary: Record<string, any>;
+  top_suggestions?: ImprovementSuggestionView[];
+  suggestions?: ImprovementSuggestionView[];
+}
+
 export interface OperationsDashboardResponse {
   overview: OperationsOverviewView;
   market_data_timeframe: string;
@@ -132,5 +214,10 @@ export interface OperationsDashboardResponse {
   launch_gates: LaunchGateView[];
   manual_research_queue: ManualResearchQueueView;
   simulation_workspace?: SimulationWorkspaceResponse | null;
+  data_quality_summary?: Record<string, any>;
+  factor_observation_summary?: Record<string, any>;
+  sector_exposure?: Record<string, any>;
+  benchmark_context?: Record<string, any>;
+  today_at_a_glance?: OperationsTodayAtAGlanceView;
+  improvement_suggestions?: ImprovementSuggestionsPayload;
 }
-

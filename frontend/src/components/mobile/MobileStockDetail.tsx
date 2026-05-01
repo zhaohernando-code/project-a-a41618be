@@ -8,6 +8,10 @@ import {
   claimGateStatusLabel,
   displayBenchmarkLabel,
   displayWindowLabel,
+  eventDirectionLabel,
+  eventDirectionStatus,
+  eventEvidenceText,
+  eventTriggerLabel,
   horizonLabel,
   manualReviewModelLabel,
   manualReviewStatusLabel,
@@ -64,6 +68,7 @@ export function MobileStockDetail(props: MobileAppShellProps) {
         icon: index === 0 ? <LineChartOutlined /> : index === 1 ? <CalendarOutlined /> : <WarningOutlined />,
       }))
     : fallbackAdvice;
+  const eventAnalyses = dashboard.event_analyses ?? [];
   const panelItems: Array<[MobileStockPanelKey, string]> = [
     ["advice", "建议"],
     ["evidence", "证据"],
@@ -147,6 +152,35 @@ export function MobileStockDetail(props: MobileAppShellProps) {
       ) : null}
 
       <section className="mobile-stock-card mobile-stock-analysis-card">
+        <div className="mobile-stock-section-head">
+          <div>
+            <Title level={4}>事件深度分析</Title>
+            <Text>{eventAnalyses.length > 0 ? `${eventAnalyses.length} 条记录` : "暂无记录"}</Text>
+          </div>
+          <QuestionCircleOutlined />
+        </div>
+        {eventAnalyses.length === 0 ? (
+          <p>暂无事件深度分析记录。</p>
+        ) : (
+          <div className="mobile-stock-insight-list">
+            {eventAnalyses.slice(0, 2).map((item) => (
+              <article key={item.file || `${item.trigger_type}-${item.generated_at}`}>
+                <span className={`mobile-stock-insight-icon ${eventDirectionStatus(item.independent_direction) === "fail" ? "warning" : ""}`}>
+                  <WarningOutlined />
+                </span>
+                <div>
+                  <strong>{eventTriggerLabel(item.trigger_type)}</strong>
+                  <p>{sanitizeDisplayText(item.trigger_detail || item.correction_suggestion || item.next_checkpoint)}</p>
+                  <p>{`${eventDirectionLabel(item.independent_direction)} · 置信 ${formatPercent(item.confidence)} · ${formatDate(item.generated_at)}`}</p>
+                  {item.key_evidence[0] ? <p>{eventEvidenceText(item.key_evidence[0])}</p> : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mobile-stock-card mobile-stock-analysis-card">
         <div className="mobile-stock-tabs">
           {panelItems.map(([key, label]) => (
             <button key={key} type="button" className={panel === key ? "active" : ""} onClick={() => setPanel(key)}>
@@ -177,6 +211,9 @@ export function MobileStockDetail(props: MobileAppShellProps) {
                 <div>
                   <strong>{factorLabels[card.factor_key] ?? card.factor_key}</strong>
                   <p>{sanitizeDisplayText(card.headline)}</p>
+                  {card.score_contribution !== undefined && card.score_contribution !== null ? (
+                    <p>{`贡献 ${card.score_contribution.toFixed(3)}${card.dynamic_weight !== undefined && card.dynamic_weight !== null ? ` · 权重 ${formatPercent(card.dynamic_weight)}` : ""}`}</p>
+                  ) : null}
                   {card.direction ? <em>{directionLabels[card.direction] ?? card.direction}</em> : null}
                 </div>
               </article>

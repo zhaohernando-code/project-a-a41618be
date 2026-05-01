@@ -1,10 +1,11 @@
 """O p e r a t i o n s domain schemas."""
 
-from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from ashare_evidence.contract_status import STATUS_PENDING_REBUILD
 
 from .portfolio import PortfolioSummaryView
 from .research import ManualResearchRequestView
@@ -228,4 +229,8 @@ class OperationsDashboardResponse(BaseModel):
     launch_gates: list[LaunchGateView] = Field(default_factory=list)
     manual_research_queue: ManualResearchQueueView
     simulation_workspace: SimulationWorkspaceResponse | None = None
-
+    data_quality_summary: dict[str, Any] = Field(default_factory=dict)
+    factor_observation_summary: dict[str, Any] = Field(default_factory=dict)
+    sector_exposure: dict[str, Any] = Field(default_factory=dict)
+    benchmark_context: dict[str, Any] = Field(default_factory=dict)
+    today_at_a_glance: dict[str, Any] = Field(default_factory=dict)

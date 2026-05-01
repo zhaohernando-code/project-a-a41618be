@@ -7,13 +7,13 @@ from pathlib import Path
 from sqlalchemy import select
 
 from ashare_evidence.db import init_database, session_scope
+from ashare_evidence.lineage import compute_lineage_hash
+from ashare_evidence.models import FeatureSnapshot, IngestionRun, ModelResult, Recommendation, Stock
 from ashare_evidence.phase2 import (
     PHASE2_LABEL_DEFINITION,
     PHASE2_WINDOW_DEFINITION,
     phase2_target_horizon_label,
 )
-from ashare_evidence.lineage import compute_lineage_hash
-from ashare_evidence.models import FeatureSnapshot, IngestionRun, ModelResult, Recommendation, Stock
 from ashare_evidence.services import get_latest_recommendation_summary, get_recommendation_trace
 from tests.fixtures import inject_market_data_stale_backfill, seed_recommendation_fixture
 
@@ -128,9 +128,12 @@ class EvidenceFoundationTests(unittest.TestCase):
                 snapshot_names,
                 {
                     "fusion_scorecard",
+                    "liquidity_factor",
                     "manual_review_placeholder_layer",
                     "news_event_factor",
                     "price_baseline_factor",
+                    "reversal_factor",
+                    "size_factor",
                 },
             )
 
