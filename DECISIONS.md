@@ -887,4 +887,13 @@ P-1/P0 专业化改造的收尾状态以“测试 + 发布 + deploy verifier + s
 - 股票看板新增 `/dashboard/improvement-suggestions/{suggestion_id}/accept-plan`，由 root/operator 调用。接口会把 suggestion 标记为 `accepted_for_plan`，调用中台 `/api/tasks` 创建任务，并把 `control_plane_task` 回写到最新 suggestion review snapshot。
 - 前端 `改进建议审计台` 的 `进入计划池` 按钮现在会弹出模型选择器，首批模型为 `gpt-5.5`、`gpt-5.4`、`gpt-5.3-codex-spark`、`deepseek-v4-pro[1m]`、`deepseek-v4-flash`；`gpt-5.5` 用于高级审计/仲裁场景，但默认执行模型仍保持 `gpt-5.4`。已入池建议会展示中台任务 ID、模型和 Plan 模式标签。
 - 该链路保持原边界：多模型审计和中台任务可以自动生成计划，但不能自动改代码、自动发布、直接修改因子权重、horizon、claim gate 或买卖方向。
-- 本轮实测已把 `suggestion:ed36ed8c8753600d` 送入中台，创建任务 `task-momlkmg7-4mrd59`，状态为 `blocked / plan_feedback`，模型为 `gpt-5.4`，等待用户确认计划。
+
+[2026-05-01T17:46:00+08:00] Improvement suggestion handoff targets the live control plane by default:
+改进建议审计台的“进入计划池”默认不再直连本机 `http://127.0.0.1:8787`。如果没有显式配置 `ASHARE_CONTROL_PLANE_API_BASE`，股票看板现在会经由 `ssh://codex-server -> http://127.0.0.1:8787` 把 Plan 任务写入 live 控制中台，避免用户在 `/middle` 看不到刚入池的建议。
+
+补充说明
+- 新增 `src/ashare_evidence/control_plane_client.py`，集中管理 direct HTTP 与 SSH relay 两种中台写入方式；`improvement_suggestions.py` 只保留建议审计和 snapshot 回写逻辑。
+- 保留显式 `api_base`/`ASHARE_CONTROL_PLANE_API_BASE` 的直连模式，方便测试和本地开发；默认模式改为 relay 到 live 中台。
+- 已确认此前声称创建成功的 `task-momlkmg7-4mrd59` 实际只存在于本机 control-plane 状态，不存在于 live `/middle`；该本地任务已请求取消。
+- 修复后已把 `suggestion:ed36ed8c8753600d` 重新写入 live 中台，当前 canonical 任务为 `task-momq87hq-w54xos`，状态 `blocked / plan_feedback`，模型 `gpt-5.4`。
+- Safari 已登录会话验收：`https://hernando-zhao.cn/middle` 的 `ashare-dashboard` 需求列表可见该任务卡片；同时 `https://hernando-zhao.cn/api/tasks/task-momlkmg7-4mrd59` 返回 not found，证明旧任务确实不在 live 状态库中。
