@@ -516,7 +516,7 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
               </>
             ) : (
               <Empty description="暂无可审计建议" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            ))}
+            )}
           </Card>
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={14}>
