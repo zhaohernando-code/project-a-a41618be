@@ -12,6 +12,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ashare_evidence.analysis_enrichment import (
+    _CNINFO_CONTENT_RE as _ANALYSIS_ENRICHMENT_CNINFO_CONTENT_RE,
+)
+from ashare_evidence.analysis_enrichment import (
+    _HTML_TAG as _ANALYSIS_ENRICHMENT_HTML_TAG,
+)
+from ashare_evidence.analysis_enrichment import (
     compute_financial_trends,
     enrich_with_llm_analysis,
     fetch_announcement_body,
@@ -38,6 +44,8 @@ MIN_EXISTING_RECOMMENDATION_DAYS_FOR_BACKFILL = 3
 # Backward-compatible names for older tests and helper scripts. The implementation
 # lives in analysis_enrichment.
 _compute_financial_trends = compute_financial_trends
+_CNINFO_CONTENT_RE = _ANALYSIS_ENRICHMENT_CNINFO_CONTENT_RE
+_HTML_TAG = _ANALYSIS_ENRICHMENT_HTML_TAG
 
 class RealDataRefreshError(RuntimeError):
     pass
