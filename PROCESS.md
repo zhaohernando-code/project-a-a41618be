@@ -18,6 +18,7 @@
 ## 2026-05-02
 
 - **运营复盘默认 tab 不能决定模拟盘是否拉取**：当前页面默认停在 `治理与验收`，而 `simulation_workspace` 过去只在切到 `模拟参数` tab 后才懒加载，导致首屏缺少模拟盘状态与双轨明细。复盘页首轮加载应保持 `summary-first`，但在 summary 成功后立即补拉 `simulation_workspace`；`portfolios`、`manual_queue` 等更重 section 仍按 tab 懒加载。
+- **运营复盘模拟盘首屏拉取修复已发布并复验**：本轮通过临时快照仓 `/tmp/ashare-ops-prefetch.3XGKN1` 发布，release manifest 为 `/private/tmp/ashare-ops-prefetch.3XGKN1/output/releases/20260502T153722Z-40b27f0f1984/manifest.json`。发布脚本完成 runtime 同步、localhost 健康检查、parity verifier 与 deploy verification（`19 passed, 0 failed`）。浏览器侧复验分两路完成：1) Safari 真实登录态下访问 `https://hernando-zhao.cn/projects/ashare-dashboard/`，进入 `复盘` 后直接看到用户轨道/模型轨道与复盘卡片；2) Playwright 桌面视口访问 `http://127.0.0.1:5173/`，切到 `运营复盘` 时默认 tab 仍是 `治理与验收`，但页面已同步出现 `双轨同步模拟台`、`焦点 K 线`、`用户轨道`、`模型轨道`，无需再点击 `模拟参数` 才能看到模拟盘信息。
 
 ## 2026-04-30
 
