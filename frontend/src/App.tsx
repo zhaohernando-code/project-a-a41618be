@@ -428,6 +428,7 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
         setSimulationConfigDraft(null);
         setOperationsDetailSectionsLoaded([]);
         setLoadingSections(new Set());
+        void loadOperationsDetailSections(["simulation_workspace"], symbol);
         setOperationsLoading(false);
         return;
       } catch (loadError) {
@@ -455,7 +456,9 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
   }
 
   async function loadOperationsDetailSections(sections: string[], symbol: string): Promise<void> {
-    const pendingSections = sections.filter((section) => !operationsDetailSectionsLoaded.includes(section));
+    const pendingSections = sections.filter(
+      (section) => !operationsDetailSectionsLoaded.includes(section) && !loadingSections.has(section),
+    );
     if (pendingSections.length === 0) {
       return;
     }

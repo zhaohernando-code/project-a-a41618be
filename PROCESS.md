@@ -15,6 +15,10 @@
 - **发布刷新不能无限阻塞 verification**：`publish-local-runtime.sh` 现在支持 `ASHARE_PUBLISH_REFRESH_MODE=sync|async|skip`，同步刷新有 `ASHARE_PUBLISH_REFRESH_TIMEOUT_SECONDS` 外层超时；本轮最终发布使用 `skip`，因为 API 显示层修复已能直接验证当前已服务 payload。
 - **最终收尾记录**：`PYTHONPATH=src python3 -m pytest -q` 为 `212 passed in 516.29s`；最终发布快照 commit 为 `a76683eb0d41ca6e6165abb429fbb4a6ceeec3f5`，runtime `latest-successful.json` 已更新；发布脚本内置 deploy verifier 为 `19 passed, 0 failed` 并输出 `VERIFICATION PASSED`；真实 Chrome served-page 验收通过，页面标题 `波段决策看板`，可见 `工作台 / 关注股票 / 复盘`，console error 为空，截图为 `output/playwright/runtime-verify.png`。
 
+## 2026-05-02
+
+- **运营复盘默认 tab 不能决定模拟盘是否拉取**：当前页面默认停在 `治理与验收`，而 `simulation_workspace` 过去只在切到 `模拟参数` tab 后才懒加载，导致首屏缺少模拟盘状态与双轨明细。复盘页首轮加载应保持 `summary-first`，但在 summary 成功后立即补拉 `simulation_workspace`；`portfolios`、`manual_queue` 等更重 section 仍按 tab 懒加载。
+
 ## 2026-04-30
 
 - **专业化改造先落证据链，再落视觉专业感**：P-1/P0 已按“可审计、可解释、受控内测 beta”方向落到代码。新增 `data_quality_snapshot`、`factor_ic_study`、`weight_sweep_study`、CSI benchmark context 和 operations summary/details，前端只消费真实后端字段；P1/P2/P3 中需要样本积累或人工批准的 horizon/权重/毕业 gate 不做运行时动态切换，也不把当前样本不足的 study 包装成结论。
