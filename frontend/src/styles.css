@@ -107,7 +107,11 @@ body[data-theme="dark"] {
 .panel-card .ant-card-extra {
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+}
+
+.panel-card .ant-card-extra .ant-tag {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .panel-card > .ant-card-body,
@@ -285,8 +289,12 @@ body[data-theme="dark"] {
 
 .inline-tags {
   row-gap: 6px;
-  overflow: hidden;
   max-width: 100%;
+}
+
+.inline-tags .ant-tag {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .modal-form-stack {
@@ -813,6 +821,7 @@ body[data-theme="dark"] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
 }
 
 .prompt-actions {
@@ -850,8 +859,12 @@ body[data-theme="dark"] {
 
 .portfolio-badges {
   margin-bottom: -2px;
-  overflow: hidden;
   max-width: 100%;
+}
+
+.portfolio-badges .ant-tag {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .sub-alert {

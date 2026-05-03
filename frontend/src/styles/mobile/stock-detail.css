@@ -114,7 +114,6 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 6px;
-  overflow: hidden;
 }
 
 .mobile-stock-pill-row .ant-tag {
@@ -123,6 +122,8 @@
   border-radius: var(--mobile-radius-pill);
   font-size: 11px;
   font-weight: 850;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .mobile-stock-conclusion p,
@@ -293,6 +294,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
 }
 
 .mobile-stock-meta-grid {
