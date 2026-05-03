@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from ashare_evidence.account_space import ROLE_ROOT, ROOT_ACCOUNT_LOGIN, record_account_presence
-from ashare_evidence.analysis_pipeline import refresh_real_analysis
+from ashare_evidence.analysis_pipeline import refresh_real_analysis, repair_stock_profile_snapshot
 from ashare_evidence.db import align_datetime_timezone, utcnow
 from ashare_evidence.lineage import build_lineage
 from ashare_evidence.models import Recommendation, Stock, WatchlistEntry, WatchlistFollow
@@ -215,6 +215,10 @@ def _sync_watchlist_symbol(
             )
         except Exception as exc:
             session.rollback()
+            try:
+                repair_stock_profile_snapshot(session, symbol=normalized_symbol, stock_name=stock_name)
+            except Exception:
+                session.rollback()
             latest = _latest_recommendation(session, normalized_symbol)
             refresh_error = f"真实数据刷新失败：{exc}"
     analyzed_at = latest.generated_at if latest is not None else None

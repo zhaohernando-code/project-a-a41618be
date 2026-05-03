@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from sqlalchemy import select
 
@@ -942,6 +943,21 @@ class DashboardViewTests(unittest.TestCase):
         self.assertEqual(refreshed["name"], "思源电气")
         self.assertGreaterEqual(refreshed["latest_generated_at"], latest_before)
         self.assertEqual(refreshed["analysis_status"], "ready")
+
+    def test_refresh_watchlist_repairs_profile_snapshot_when_full_rebuild_fails(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session)
+            seed_recommendation_fixture(session, "002028.SZ")
+            add_watchlist_symbol(session, "002028")
+
+        with session_scope(self.database_url) as session:
+            with patch("ashare_evidence.watchlist.refresh_real_analysis", side_effect=RuntimeError("缺少足够日线")):
+                with patch("ashare_evidence.watchlist.repair_stock_profile_snapshot") as repair_mock:
+                    refreshed = refresh_watchlist_symbol(session, "002028")
+
+        repair_mock.assert_called_once()
+        self.assertEqual(refreshed["analysis_status"], "ready")
+        self.assertIn("真实数据刷新失败", refreshed["last_error"] or "")
 
 
 if __name__ == "__main__":

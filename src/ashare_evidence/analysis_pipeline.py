@@ -24,6 +24,7 @@ from ashare_evidence.analysis_enrichment import (
 )
 from ashare_evidence.http_client import urlopen
 from ashare_evidence.lineage import build_lineage
+from ashare_evidence.market_rules import board_rule
 from ashare_evidence.models import ProviderCredential, Recommendation, Stock
 from ashare_evidence.phase2 import rebuild_phase2_research_state
 from ashare_evidence.phase2.phase5_contract import PHASE5_MARKET_HISTORY_LOOKBACK_DAYS
@@ -746,6 +747,14 @@ def build_real_evidence_bundle(
             financial_llm = None
 
     generated_at = datetime.now(SHANGHAI_TZ)
+    resolved_board_rule = board_rule(
+        normalized_symbol,
+        stock_profile={
+            "name": profile.name or stock_name or normalized_symbol,
+            "listed_date": profile.listed_date,
+        },
+        as_of=generated_at.date(),
+    )
     signal_artifacts = build_signal_artifacts(
         symbol=normalized_symbol,
         stock_name=profile.name or stock_name or normalized_symbol,
@@ -774,6 +783,9 @@ def build_real_evidence_bundle(
             "industry": profile.industry,
             "template_key": profile.template_key,
             "profile_source": profile.source,
+            "board": resolved_board_rule.get("board"),
+            "board_name": resolved_board_rule.get("label"),
+            "board_rule_source": resolved_board_rule.get("rule_source"),
             "analysis_pipeline": {
                 "daily_market_provider": daily_market.provider_name,
                 "news_provider": "cninfo_official" if news_items else None,
@@ -819,6 +831,86 @@ def build_real_evidence_bundle(
         paper_orders=[],
         paper_fills=[],
     )
+
+
+def repair_stock_profile_snapshot(
+    session: Session,
+    *,
+    symbol: str,
+    stock_name: str | None = None,
+) -> Stock | None:
+    normalized_symbol = normalize_symbol(symbol)
+    stock = session.scalar(select(Stock).where(Stock.symbol == normalized_symbol))
+    if stock is None:
+        return None
+
+    profile = resolve_stock_profile(session, symbol=normalized_symbol, preferred_name=stock_name or stock.name)
+    generated_at = datetime.now(SHANGHAI_TZ)
+    resolved_board_rule = board_rule(
+        normalized_symbol,
+        stock_profile={
+            "name": profile.name or stock.name or stock_name or normalized_symbol,
+            "listed_date": profile.listed_date or stock.listed_date,
+        },
+        as_of=generated_at.date(),
+    )
+    try:
+        financial_snapshot = _fetch_financial_snapshot(session, normalized_symbol)
+    except Exception:
+        financial_snapshot = None
+    try:
+        research_metadata = _fetch_research_metadata(normalized_symbol)
+    except Exception:
+        research_metadata = []
+
+    profile_payload = dict(stock.profile_payload) if isinstance(stock.profile_payload, dict) else {}
+    analysis_pipeline_payload = profile_payload.get("analysis_pipeline")
+    if not isinstance(analysis_pipeline_payload, dict):
+        analysis_pipeline_payload = {}
+    if financial_snapshot is not None:
+        analysis_pipeline_payload["financial_provider"] = financial_snapshot.get("provider_name")
+    if research_metadata:
+        analysis_pipeline_payload["research_provider"] = "eastmoney_research_metadata"
+
+    profile_payload.update(
+        {
+            "industry": profile.industry or profile_payload.get("industry"),
+            "template_key": profile.template_key or profile_payload.get("template_key"),
+            "profile_source": profile.source,
+            "board": resolved_board_rule.get("board"),
+            "board_name": resolved_board_rule.get("label"),
+            "board_rule_source": resolved_board_rule.get("rule_source"),
+            "analysis_pipeline": analysis_pipeline_payload,
+        }
+    )
+    if financial_snapshot is not None:
+        profile_payload["financial_snapshot"] = financial_snapshot
+    if research_metadata:
+        profile_payload["research_report_metadata"] = research_metadata
+
+    stock.name = profile.name or stock.name
+    stock.provider_symbol = normalized_symbol
+    stock.listed_date = profile.listed_date or stock.listed_date
+    stock.profile_payload = profile_payload
+    lineage = build_lineage(
+        {
+            "symbol": normalized_symbol,
+            "name": stock.name,
+            "listed_date": stock.listed_date,
+            "profile_payload": profile_payload,
+        },
+        source_uri=f"pipeline://stock-profile-repair/{normalized_symbol}",
+        license_tag="internal-derived",
+        usage_scope="internal_research",
+        redistribution_scope="none",
+    )
+    stock.source_uri = lineage["source_uri"]
+    stock.license_tag = lineage["license_tag"]
+    stock.usage_scope = lineage["usage_scope"]
+    stock.redistribution_scope = lineage["redistribution_scope"]
+    stock.lineage_hash = lineage["lineage_hash"]
+    session.flush()
+    return stock
 
 def _recommendation_trade_days(session: Session, symbol: str) -> list[date]:
     rows = session.execute(

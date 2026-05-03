@@ -7,13 +7,14 @@ from datetime import date
 from pathlib import Path
 
 from sqlalchemy import delete
+from sqlalchemy import select
 
 from ashare_evidence.dashboard import get_stock_dashboard
 from ashare_evidence.data_quality import build_data_quality_summary
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.factor_observation import build_factor_observations, sweep_weights
 from ashare_evidence.market_rules import board_rule
-from ashare_evidence.models import NewsEntityLink, NewsItem
+from ashare_evidence.models import FeatureSnapshot, NewsEntityLink, NewsItem, Stock
 from ashare_evidence.operations import build_operations_detail, build_operations_summary
 from ashare_evidence.schemas import StockDashboardResponse
 from tests.fixtures import seed_watchlist_fixture
@@ -61,6 +62,34 @@ class ProfessionalizationPlanTests(unittest.TestCase):
         self.assertTrue(new_rule["new_listing_no_limit"])
         self.assertIsNone(new_rule["limit_pct"])
         self.assertEqual(board_rule("123456.SH")["rule_status"], "wip_unknown")
+
+    def test_data_quality_uses_profile_financial_snapshot_and_board_payload_fallbacks(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session, symbols=("600519.SH",))
+            stock = session.scalar(select(Stock).where(Stock.symbol == "600519.SH"))
+            assert stock is not None
+            session.execute(delete(FeatureSnapshot).where(FeatureSnapshot.stock_id == stock.id))
+            stock.profile_payload = {
+                **stock.profile_payload,
+                "board": "main",
+                "board_name": "主板",
+                "financial_snapshot": {
+                    "provider_name": "tushare_fina_indicator",
+                    "ann_date": "20260425",
+                    "report_period": "2026一季报",
+                },
+            }
+            session.commit()
+
+        with session_scope(self.database_url) as session:
+            summary = build_data_quality_summary(session, symbols=["600519.SH"])
+
+        item = summary["items"][0]
+        self.assertEqual(item["financial_freshness"]["status"], "pass")
+        self.assertEqual(item["financial_freshness"]["latest_as_of"], "2026-04-25T00:00:00+00:00")
+        self.assertEqual(item["profile_completeness"]["status"], "pass")
+        self.assertNotIn("financial_data_stale", item["degraded_sources"])
+        self.assertNotIn("profile_incomplete", item["degraded_sources"])
 
     def test_factor_ic_and_weight_sweep_emit_insufficient_sample_not_fake_precision(self) -> None:
         with session_scope(self.database_url) as session:

@@ -12,12 +12,13 @@ from sqlalchemy import select
 from ashare_evidence.analysis_pipeline import (
     DailyMarketFetch,
     build_real_evidence_bundle,
+    repair_stock_profile_snapshot,
     refresh_real_analysis,
     _fetch_research_metadata,
 )
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.lineage import build_lineage
-from ashare_evidence.models import PaperFill, PaperOrder, PaperPortfolio, Recommendation, WatchlistEntry
+from ashare_evidence.models import PaperFill, PaperOrder, PaperPortfolio, Recommendation, Stock, WatchlistEntry
 from ashare_evidence.phase2 import rebuild_phase2_research_state
 from ashare_evidence.phase2.common import build_expanding_equal_weight_proxy
 from ashare_evidence.phase2.phase5_contract import (
@@ -327,6 +328,8 @@ class AnalysisPipelineTests(unittest.TestCase):
         self.assertEqual(bundle.provider_name, "real_data_pipeline")
         self.assertEqual(bundle.stock["name"], "宁德时代")
         self.assertEqual(bundle.stock["profile_payload"]["industry"], "电力设备")
+        self.assertEqual(bundle.stock["profile_payload"]["board"], "chnext")
+        self.assertEqual(bundle.stock["profile_payload"]["board_name"], "创业板")
         self.assertEqual(bundle.stock["profile_payload"]["analysis_pipeline"]["daily_market_provider"], "akshare_sina_daily")
         self.assertEqual(bundle.stock["profile_payload"]["financial_snapshot"]["provider_name"], "akshare_em_financials")
         self.assertEqual(len(bundle.market_bars), len(self.market_bars))
@@ -364,6 +367,36 @@ class AnalysisPipelineTests(unittest.TestCase):
         self.assertEqual(metadata, [])
         self.assertEqual(observed["symbol"], self.symbol.partition(".")[0])
         self.assertEqual(observed["timeout"], 5)
+
+    def test_repair_stock_profile_snapshot_backfills_board_and_financial_payload(self) -> None:
+        with session_scope(self.database_url) as session:
+            self._refresh_with_market_bars(session, self.market_bars)
+            stock = session.scalar(select(Stock).where(Stock.symbol == self.symbol))
+            assert stock is not None
+            stock.profile_payload = {
+                "industry": stock.profile_payload.get("industry"),
+                "template_key": stock.profile_payload.get("template_key"),
+                "profile_source": stock.profile_payload.get("profile_source"),
+            }
+            session.commit()
+
+        with session_scope(self.database_url) as session:
+            with patch("ashare_evidence.analysis_pipeline.resolve_stock_profile", return_value=self.profile):
+                with patch(
+                    "ashare_evidence.analysis_pipeline._fetch_financial_snapshot",
+                    return_value={
+                        "provider_name": "tushare_fina_indicator",
+                        "ann_date": "20260425",
+                        "report_period": "2026一季报",
+                    },
+                ):
+                    updated = repair_stock_profile_snapshot(session, symbol=self.symbol)
+                    session.commit()
+
+        assert updated is not None
+        self.assertEqual(updated.profile_payload["board"], "chnext")
+        self.assertEqual(updated.profile_payload["board_name"], "创业板")
+        self.assertEqual(updated.profile_payload["financial_snapshot"]["provider_name"], "tushare_fina_indicator")
 
     def test_refresh_real_analysis_ingests_latest_recommendation(self) -> None:
         with session_scope(self.database_url) as session:

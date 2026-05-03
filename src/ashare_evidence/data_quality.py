@@ -133,14 +133,69 @@ def _news_coverage(session: Session, stock_id: int, *, as_of: datetime) -> dict[
     }
 
 
-def _financial_freshness(session: Session, stock_id: int, *, as_of: datetime) -> dict[str, Any]:
-    latest = session.scalar(
+def _parse_financial_snapshot_date(raw: Any) -> date | None:
+    if raw is None:
+        return None
+    if isinstance(raw, datetime):
+        return _as_utc(raw).date()
+    if isinstance(raw, date):
+        return raw
+    value = str(raw).strip()
+    if not value or value in {"-", "--", "nan", "None", "null"}:
+        return None
+    digits = "".join(character for character in value if character.isdigit())
+    if len(digits) >= 8:
+        try:
+            return date(int(digits[0:4]), int(digits[4:6]), int(digits[6:8]))
+        except ValueError:
+            return None
+    if len(digits) == 4:
+        year = int(digits)
+        if any(token in value for token in ("一季", "1季", "Q1")):
+            return date(year, 3, 31)
+        if any(token in value for token in ("中报", "半年", "半年度", "二季", "2季", "Q2")):
+            return date(year, 6, 30)
+        if any(token in value for token in ("三季", "3季", "Q3")):
+            return date(year, 9, 30)
+        if any(token in value for token in ("年报", "年度", "Q4")):
+            return date(year, 12, 31)
+    return None
+
+
+def _profile_financial_snapshot_at(stock: Stock) -> datetime | None:
+    payload = stock.profile_payload if isinstance(stock.profile_payload, dict) else {}
+    snapshot = payload.get("financial_snapshot")
+    if not isinstance(snapshot, dict):
+        return None
+    candidates: list[date] = []
+    for key in ("latest_as_of", "as_of", "ann_date", "notice_date", "end_date", "report_period"):
+        parsed = _parse_financial_snapshot_date(snapshot.get(key))
+        if parsed is not None:
+            candidates.append(parsed)
+    history = snapshot.get("quarterly_history")
+    if isinstance(history, list):
+        for item in history[:4]:
+            if not isinstance(item, dict):
+                continue
+            for key in ("ann_date", "notice_date", "end_date", "report_period"):
+                parsed = _parse_financial_snapshot_date(item.get(key))
+                if parsed is not None:
+                    candidates.append(parsed)
+    if not candidates:
+        return None
+    latest_day = max(candidates)
+    return datetime(latest_day.year, latest_day.month, latest_day.day, tzinfo=UTC)
+
+
+def _financial_freshness(session: Session, stock: Stock, *, as_of: datetime) -> dict[str, Any]:
+    feature_latest = session.scalar(
         select(func.max(FeatureSnapshot.as_of)).where(
-            FeatureSnapshot.stock_id == stock_id,
+            FeatureSnapshot.stock_id == stock.id,
             FeatureSnapshot.feature_set_name.in_(("fundamental", "financial", "phase2_features")),
         )
     )
-    latest_at = _as_utc(latest)
+    candidates = [candidate for candidate in (_as_utc(feature_latest), _profile_financial_snapshot_at(stock)) if candidate is not None]
+    latest_at = max(candidates) if candidates else None
     if latest_at is None:
         score = 0.0
         age_days = None
@@ -201,7 +256,7 @@ def build_stock_data_quality(
     daily = _daily_completeness(daily_bars, as_of=as_of)
     price = _price_freshness(daily_bars, as_of=as_of)
     news = _news_coverage(session, stock.id, as_of=as_of)
-    financial = _financial_freshness(session, stock.id, as_of=as_of)
+    financial = _financial_freshness(session, stock, as_of=as_of)
     profile = _profile_completeness(stock, as_of=as_of)
     components = {
         "daily_completeness": daily,
