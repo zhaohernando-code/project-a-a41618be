@@ -111,6 +111,29 @@ class ImprovementSuggestionTests(unittest.TestCase):
         ids = [item["suggestion_id"] for item in suggestions]
         self.assertEqual(len(ids), len(set(ids)))
 
+    def test_data_quality_suggestions_are_grouped_by_degraded_sources(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session, symbols=("600519.SH", "300750.SZ"))
+
+        with session_scope(self.database_url) as session:
+            suggestions = collect_improvement_suggestions(session, window_days=30)
+
+        data_quality_items = [item for item in suggestions if item["source_type"] == "data_quality"]
+        self.assertEqual(len(data_quality_items), 1)
+        grouped = data_quality_items[0]
+        self.assertIsNone(grouped["symbol"])
+        self.assertTrue(grouped["source_ref"].startswith("data_quality/group/"))
+        self.assertIn("2 只股票数据质量为 warn", grouped["claim"])
+        self.assertIn("共同降级来源：financial_data_stale, profile_incomplete", grouped["claim"])
+        self.assertIn("重新运行数据质量与改进建议审计", grouped["proposed_change"])
+        self.assertEqual(grouped["raw_source"]["aggregation"], "degraded_source_group")
+        self.assertEqual(grouped["raw_source"]["symbol_count"], 2)
+        self.assertEqual(grouped["raw_source"]["symbols"], ["300750.SZ", "600519.SH"])
+        self.assertEqual(
+            sorted(grouped["evidence_refs"]),
+            ["data_quality/300750.SZ", "data_quality/600519.SH"],
+        )
+
     def test_review_summary_caps_missing_evidence_and_experiment_actions(self) -> None:
         suggestion = {
             "suggestion_id": "suggestion:test",

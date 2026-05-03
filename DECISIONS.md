@@ -1,5 +1,15 @@
 # 一个关于a股的当前数据和投资建议看板 Decisions
 
+[2026-05-03T23:02:34+08:00] Data-quality improvement suggestions must aggregate by degraded-source signature:
+
+差异复盘不再允许把同一组数据质量降级来源机械展开成多条逐股建议。若多只活跃自选股同时命中相同 `degraded_sources`，建议收集层必须先聚合成一条批量根因修复建议，并在 `raw_source.items` 与 `evidence_refs` 中保留受影响股票明细。
+
+补充说明
+- 聚合维度是排序后的 `degraded_sources` 签名，例如 `financial_data_stale + profile_incomplete`。
+- 聚合建议的 `symbol` 为空，前端按既有“全局”展示；单只股票异常仍保留个股建议。
+- 处置流程固定为：先修共同数据链路，修完后重新运行数据质量与改进建议审计；只有残留个股继续异常时，才转为逐股补齐。
+- 这条规则只改变建议审计台的任务颗粒度，不放宽数据质量评分、claim gate、买卖方向或生产权重。
+
 [2026-05-02T23:20:00+08:00] Launch gate feedback must read suggestion review snapshots, not stay hardcoded:
 
 运营门禁的状态不能硬编码。当某个门禁被标记为 warn 且提示"需要形成改进计划"时，门禁必须动态读取最新的 suggestion review snapshot，根据对应计划的状态（accepted_for_plan / completed）决定门禁的实际 status 和 current_value。硬编码 placeholder 只在尚未建立 suggestion review 管线的过渡期可接受，一旦管线就位必须替换为动态查询。

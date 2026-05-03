@@ -256,7 +256,7 @@ def _collect_validation_suggestions(session: Session) -> list[dict[str, Any]]:
 
 
 def _collect_data_quality_suggestions(session: Session) -> list[dict[str, Any]]:
-    suggestions: list[dict[str, Any]] = []
+    grouped: dict[tuple[str, ...], list[dict[str, Any]]] = {}
     for symbol in active_watchlist_symbols(session):
         stock = session.scalar(select(Stock).where(Stock.symbol == symbol))
         if stock is None:
@@ -272,17 +272,57 @@ def _collect_data_quality_suggestions(session: Session) -> list[dict[str, Any]]:
         degraded_sources = _coerce_list(quality.get("degraded_sources"))
         if not degraded_sources:
             continue
-        claim = f"{symbol} 数据质量为 {quality.get('status')}，降级来源：{', '.join(degraded_sources)}。"
+        grouped.setdefault(tuple(sorted(degraded_sources)), []).append(quality)
+
+    suggestions: list[dict[str, Any]] = []
+    status_rank = {"pass": 0, "warn": 1, "fail": 2}
+    for degraded_sources, items in sorted(grouped.items(), key=lambda entry: (-len(entry[1]), entry[0])):
+        items = sorted(items, key=lambda item: str(item.get("symbol") or ""))
+        symbols = [str(item.get("symbol") or "") for item in items if item.get("symbol")]
+        worst_status = max(
+            (str(item.get("status") or "warn") for item in items),
+            key=lambda status: status_rank.get(status, 1),
+            default="warn",
+        )
+        evidence_refs = [f"data_quality/{symbol}" for symbol in symbols]
+        if len(items) == 1:
+            symbol = symbols[0] if symbols else None
+            claim = f"{symbol} 数据质量为 {worst_status}，降级来源：{', '.join(degraded_sources)}。"
+            proposed_change = "优先补齐或突出该股票的数据覆盖缺口，避免低质量数据被误读为稳定建议。"
+            source_ref = f"data_quality/{symbol}/latest"
+            raw_source = items[0]
+        else:
+            sample = "、".join(symbols[:8])
+            suffix = "等" if len(symbols) > 8 else ""
+            claim = (
+                f"{len(items)} 只股票数据质量为 {worst_status}，"
+                f"共同降级来源：{', '.join(degraded_sources)}。受影响：{sample}{suffix}。"
+            )
+            proposed_change = (
+                "按共同降级来源先做一次批量根因修复，修复后重新运行数据质量与改进建议审计；"
+                "只有残留个股仍异常时，再进入逐股补齐。"
+            )
+            signature = "-".join(degraded_sources)
+            source_ref = f"data_quality/group/{signature}"
+            raw_source = {
+                "aggregation": "degraded_source_group",
+                "degraded_sources": list(degraded_sources),
+                "status": worst_status,
+                "symbol_count": len(items),
+                "symbols": symbols,
+                "status_counts": dict(Counter(str(item.get("status") or "warn") for item in items)),
+                "items": items,
+            }
         suggestions.append(
             _make_suggestion(
                 source_type="data_quality",
-                source_ref=f"data_quality/{symbol}/{quality.get('as_of') or 'latest'}",
-                symbol=symbol,
+                source_ref=source_ref,
+                symbol=symbol if len(items) == 1 else None,
                 category="data_quality",
                 claim=claim,
-                proposed_change="优先补齐或突出该股票的数据覆盖缺口，避免低质量数据被误读为稳定建议。",
-                evidence_refs=[f"data_quality/{symbol}"],
-                raw_source=quality,
+                proposed_change=proposed_change,
+                evidence_refs=evidence_refs,
+                raw_source=raw_source,
             )
         )
     return suggestions

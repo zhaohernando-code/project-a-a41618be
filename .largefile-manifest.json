@@ -111,10 +111,10 @@
       "reviewed_at": "2026-04-28"
     },
     "src/ashare_evidence/improvement_suggestions.py": {
-      "lines": 1014,
-      "reason": "Suggestion audit workflow: ledger extraction, dual-model review orchestration, confidence aggregation, snapshot persistence, and control-plane plan handoff. The file is large because the artifact-driven workflow is still cohesive and shares one contract surface; further split can happen later around reviewer transport and snapshot rendering.",
+      "lines": 1054,
+      "reason": "Suggestion audit workflow: ledger extraction, data-quality degraded-source grouping, dual-model review orchestration, confidence aggregation, snapshot persistence, and control-plane plan handoff. The file is large because the artifact-driven workflow is still cohesive and shares one contract surface; further split can happen later around reviewer transport and snapshot rendering.",
       "status": "accepted",
-      "reviewed_at": "2026-05-01"
+      "reviewed_at": "2026-05-03"
     },
     "tests/fixtures.py": {
       "lines": 630,
