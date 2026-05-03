@@ -104,6 +104,12 @@ body[data-theme="dark"] {
   backdrop-filter: blur(18px);
 }
 
+.panel-card .ant-card-extra {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .panel-card > .ant-card-body,
 .sub-panel-card > .ant-card-body {
   display: grid;
@@ -279,6 +285,8 @@ body[data-theme="dark"] {
 
 .inline-tags {
   row-gap: 6px;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .modal-form-stack {
@@ -797,6 +805,14 @@ body[data-theme="dark"] {
 
 .question-chip-group {
   margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.question-chip-group button {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .prompt-actions {
@@ -834,6 +850,8 @@ body[data-theme="dark"] {
 
 .portfolio-badges {
   margin-bottom: -2px;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .sub-alert {
