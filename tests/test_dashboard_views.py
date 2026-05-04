@@ -26,6 +26,7 @@ from ashare_evidence.operations import build_operations_dashboard
 from ashare_evidence.phase2 import PHASE2_WINDOW_DEFINITION, phase2_target_horizon_label
 from ashare_evidence.release_verifier import audit_user_visible_operations_text
 from ashare_evidence.research_artifact_store import artifact_root_from_database_url
+from ashare_evidence.improvement_suggestions import _snapshot_counts, _write_snapshot
 from ashare_evidence.watchlist import (
     add_watchlist_symbol,
     list_watchlist_entries,
@@ -459,6 +460,55 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("A 股规则合规", first_gate)
         self.assertEqual(launch_gates["组合回测产物绑定"]["status"], "warn")
         self.assertIn("verified=0", launch_gates["组合回测产物绑定"]["current_value"])
+
+    def test_completed_improvement_plan_does_not_pass_replay_gate_without_formal_evidence(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session)
+            root = artifact_root_from_database_url(self.database_url)
+
+        suggestions = [
+            {
+                "suggestion_id": "suggestion:coverage-plan",
+                "source_type": "launch_gate",
+                "source_ref": "launch_gate/建议命中复盘覆盖",
+                "symbol": None,
+                "category": "operations_workflow",
+                "claim": "运营门禁 建议命中复盘覆盖 当前为 warn，需要形成改进计划。",
+                "proposed_change": "真实 benchmark 与正式复盘口径完成重建后，才允许恢复该门槛。",
+                "evidence_refs": ["launch_gate/建议命中复盘覆盖"],
+                "status": "completed",
+                "created_at": "2026-05-01T04:00:00+00:00",
+                "final_confidence": "moderate",
+                "control_plane_task": {
+                    "id": "task-coverage-plan",
+                    "status": "succeeded",
+                    "model": "gpt-5.5",
+                    "project_id": "ashare-dashboard",
+                    "plan_mode": True,
+                },
+            }
+        ]
+        _write_snapshot(
+            root,
+            {
+                "artifact_type": "suggestion_review_snapshot",
+                "generated_at": "2026-05-01T04:02:00+00:00",
+                "status": "ok",
+                "window_days": 7,
+                "model_status": {"gpt": "ok", "deepseek": "ok", "overall": "ok"},
+                "summary": _snapshot_counts(suggestions),
+                "suggestions": suggestions,
+            },
+        )
+
+        with session_scope(self.database_url) as session:
+            operations = build_operations_dashboard(session)
+
+        launch_gates = {gate["gate"]: gate for gate in operations["launch_gates"]}
+        coverage_gate = launch_gates["建议命中复盘覆盖"]
+        self.assertEqual(coverage_gate["status"], "warn")
+        self.assertIn("治理计划已完成（task-coverage-plan）", coverage_gate["current_value"])
+        self.assertIn("正式复盘口径仍待验证", coverage_gate["current_value"])
 
     def test_operations_dashboard_can_embed_simulation_workspace(self) -> None:
         with session_scope(self.database_url) as session:

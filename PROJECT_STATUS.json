@@ -10,8 +10,8 @@
   },
   "status": "in_progress",
   "owner": "codex",
-  "updated_at": "2026-05-04T23:05:00+08:00",
-  "progress_summary": "P-1/P0 professionalization tranche is implemented and published, with Phase 5 still gated by real sample accumulation. Launch gate '建议命中复盘覆盖' now dynamically reads improvement plan status from suggestion review snapshots, completed suggestions are hidden from the default queue, repeated data-quality suggestions are grouped, and the improvement suggestion `重新审计` action has persistent in-panel running/success/error feedback with the shared long-running request timeout. Dark-theme modal consistency has been restored and published through the Ant Design v5 native theme chain: the root wraps the app with AntD `App` under `ConfigProvider`, desktop message/modal calls use `App.useApp()` context APIs, existing static `Modal.confirm(...)` calls have been migrated, broad Select dropdown / modal / popover dark CSS hacks are removed from the global stylesheet, and static regression coverage forbids reintroducing bare static confirms. The root cause of the repeated plan-pool modal regression was process-level: the original dark-modal fix stayed on a task branch and did not reach `main/origin/main` before later mainline publish overwrote runtime.",
+  "updated_at": "2026-05-04T23:28:00+08:00",
+  "progress_summary": "P-1/P0 professionalization tranche is implemented and published, with Phase 5 still gated by real sample accumulation. Launch gate '建议命中复盘覆盖' no longer treats an improvement suggestion's `completed` label as sufficient business evidence; it now remains `warn` until replay / benchmark / backtest evidence shows the formal review path is ready. Completed suggestions are hidden from the default queue, repeated data-quality suggestions are grouped, improvement suggestion `重新审计` has persistent in-panel feedback, and suggestion detail reads refresh linked control-plane task status from `/api/tasks/:id` so stale snapshot `blocked` states do not mislead acceptance. Dark-theme modal consistency has been restored and published through the Ant Design v5 native theme chain: the root wraps the app with AntD `App` under `ConfigProvider`, desktop message/modal calls use `App.useApp()` context APIs, existing static `Modal.confirm(...)` calls have been migrated, broad Select dropdown / modal / popover dark CSS hacks are removed from the global stylesheet, and static regression coverage forbids reintroducing bare static confirms. The root cause of the repeated plan-pool modal regression was process-level: the original dark-modal fix stayed on a task branch and did not reach `main/origin/main` before later mainline publish overwrote runtime.",
   "blockers": [
     "Full browser-side member acceptance is still not closed. The canonical root session clearly shows the account selector and lists real member spaces (`amoeba`, `member-a`), but Safari automation still did not reliably complete the dropdown selection interaction. The served member blank-state is therefore verified through real canonical edge/API responses with a signed root session plus `X-Ashare-Act-As-Login`, rather than an end-to-end browser click path.",
     "Validation manifests and portfolio backtests have now been rebuilt on the real database under the expanding-watchlist join-date-forward benchmark contract, but replay artifacts still cannot materialize on current real data because none of the active-watchlist recommendations yet have a full 20-trading-day forward review window. The replay builder bug that previously hard-coded `records[1]` is fixed, so this is now a data-window blocker rather than a rebuild-path blocker.",
@@ -81,7 +81,8 @@
     "improvement_suggestion_control_plane_plan_pool": "published_runtime_verified",
     "task_moq19ij2_data_quality_followup": "in_progress",
     "improvement_suggestion_rerun_status_feedback": "published_runtime_verified",
-    "dark_theme_modal_context_consistency": "published_runtime_verified"
+    "dark_theme_modal_context_consistency": "published_runtime_verified",
+    "improvement_suggestion_completion_truth_gate": "in_progress"
   },
   "latest_findings": [
     {
