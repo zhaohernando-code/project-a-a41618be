@@ -7,6 +7,9 @@
 - **短投试验田必须保持旁路隔离**：`shortpick_lab` 的 run/round/candidate/consensus/validation 只能进入独立表和独立 artifact，不能回写 `Recommendation`、`ModelResult`、watchlist、候选池或 simulation auto-model。后续任何把短投结果展示到单票/候选/模拟盘主链路的改动，都需要先补 `DECISIONS.md`。
 - **原生联网实验不要被统一搜索器提前收敛**：本课题的主价值是观察弱引导、原生联网、全市场自由发现是否带来结构化系统之外的增量视角。系统可以记录 sources 和 raw output，但 v1 不替模型规定关键词或材料集合。
 - **收敛不是 verified**：多模型/多轮一致只能提升研究池优先级。前端和 API 不得把 `high_convergence` 直接翻译成 `verified`、买入建议或主评分置信度；后验验证窗口完成前必须保持“待验证/研究优先级”语言。
+- **短投试验田发布验收记录**：实现提交 `dc249b6b7bffa3f33ead2a80cd0c1afd3687426c` 已合入 `main` 并发布到 runtime，release manifest 为 `output/releases/20260504T200424Z-dc249b6b7bff/manifest.json`，deploy verifier 为 `19 passed, 0 failed`。`GET /shortpick-lab/runs?limit=1` 返回空列表属预期，因为本轮未触发真实 GPT/DeepSeek 实验；`GET /dashboard/candidates` 仍返回主候选池原数据，未被短投结果污染。
+- **短投试验田浏览器验收记录**：Safari 已验证 localhost `http://127.0.0.1:5173/` 与 canonical `https://hernando-zhao.cn/projects/ashare-dashboard/` 都显示一级入口 `试验田`，进入后可见 `短投推荐试验田`、独立研究课题/不作为交易建议/不进入主推荐评分边界文案、刷新/触发/补跑复盘控件和空批次状态。Playwright CLI 本轮因 daemon runtime 的 `GlobalRequest` 类型错误无法启动，改用 Safari 验收；结束后已运行 `scripts/cleanup-browser-automation.sh`。
+- **发布脚本刷新分支仍有历史缺口**：首次发布期间 post-deploy refresh 打印 `scripts/publish-local-runtime.sh: line 204: PYTHON_BIN: unbound variable`，但构建同步、backend/frontend health、canonical/local parity 和 deploy verifier 均已通过。后续若只需要同步 docs/status 提交，可用 `ASHARE_PUBLISH_REFRESH_MODE=skip` 避开刷新分支；单独修发布脚本时应补 `PYTHON_BIN` 初始化。
 
 ## 2026-05-04
 
