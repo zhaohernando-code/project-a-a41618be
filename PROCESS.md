@@ -5,6 +5,7 @@
 ## 2026-05-03
 
 - **数据质量 profile 完整性要复用全局板块规则**：`profile_incomplete` 不应因为历史 `profile_payload` 尚未落 `board` 字段而重复报警；只要 `board_rule()` 能根据 symbol/profile 给出已验证板块，就应作为质量检查的全局兜底。财报 freshness 仍必须来自真实财报快照或 feature snapshot，不能用调低阈值消除 `financial_data_stale`。
+- **发布 parity 不应比较盘中同步计数文案**：`intraday_source_status.message` 会包含本地/canonical 各自触发同步后“新增或更新 N 根 K 线”的实时计数，属于运行时噪声。release verifier 应比较 provider/status/symbol/timeframe 等稳定结构，不应用该文案阻断无关代码发布。
 - **收尾不能停在任务分支提交**：这轮漏项的根因不是发布或验收没做，而是 closeout 规范只盯住了“commit / publish / browser verify”，没有把“合回 `main` 并回到干净工作树”写成硬门禁。后续凡是用户语义接近“提交、收尾、完成”的场景，都要把最终 git 状态当成验收项：任务分支提交后，默认继续 `merge -> checkout main -> 确认 clean`；如果因 PR 流程或用户要求故意不合入，必须在回复中明确说“已提交但未合入”。
 - **同源数据质量建议必须先聚合再审计**：`financial_data_stale`、`profile_incomplete` 这类公共数据链路缺口会同时影响多只股票，差异复盘不应把它们铺成一串逐股“数据质量为 warn”建议。后续建议收集应按 `degraded_sources` 签名聚合：先生成一条批量根因修复建议，修复后重新运行数据质量与改进建议审计，再把残留异常转为逐股处理。
 - **旧审计快照也要读时聚合**：完整 `run_improvement_suggestion_review` 会触发双模型 reviewer，真实 runtime 上可能长时间阻塞。若只是为了消除旧 snapshot 中同源数据质量建议的重复展示，应在 `suggestion_details/summary` 读取快照时做投影聚合，而不是依赖一次新的完整审计先完成。

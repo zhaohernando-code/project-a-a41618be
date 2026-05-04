@@ -311,6 +311,7 @@ def _should_drop_contextual_fingerprint_field(
             and path[-1] == "launch_gates"
             and parent.get("gate") in NOISY_LAUNCH_GATE_CURRENT_VALUE_LABELS
         )
+        or (key == "message" and path and path[-1] == "intraday_source_status")
         or (key in {"observed", "status"} and path and path[-1] == "performance_thresholds")
         or (key == "warning_gate_count" and path and path[-1] == "launch_readiness")
     )

@@ -75,6 +75,7 @@ class ReleaseVerifierTests(unittest.TestCase):
                     "data_latency_seconds": 32889,
                     "intraday_source_status": {
                         "data_latency_seconds": 32889,
+                        "message": "已同步 4 只标的的 5 分钟行情，新增或更新 8 根 K 线。",
                         "status": "stale",
                     },
                 }
@@ -86,6 +87,7 @@ class ReleaseVerifierTests(unittest.TestCase):
                     "data_latency_seconds": 32890,
                     "intraday_source_status": {
                         "data_latency_seconds": 32890,
+                        "message": "已同步 4 只标的的 5 分钟行情，新增或更新 6 根 K 线。",
                         "status": "stale",
                     },
                 }
