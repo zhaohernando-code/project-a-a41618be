@@ -1,97 +1,97 @@
 {
   "api_fingerprints": {
     "/dashboard/candidates": {
-      "canonical_fingerprint": "6b83b986cb71490011417c306e2c99163c95641401f9d3f956dc4f6a309ed808",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-dashboard-candidates.json",
+      "canonical_fingerprint": "5bc3ff868c259f394287c159d38b8e5ec464d66d97642cb596ad09766c40035a",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-dashboard-candidates.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/dashboard/candidates",
-      "local_fingerprint": "6b83b986cb71490011417c306e2c99163c95641401f9d3f956dc4f6a309ed808",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-dashboard-candidates.json",
+      "local_fingerprint": "5bc3ff868c259f394287c159d38b8e5ec464d66d97642cb596ad09766c40035a",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-dashboard-candidates.json",
       "local_url": "http://127.0.0.1:8000/dashboard/candidates",
       "match": true,
-      "normalized_canonical_size": 12760,
-      "normalized_local_size": 12760
+      "normalized_canonical_size": 12818,
+      "normalized_local_size": 12818
     },
     "/dashboard/operations": {
-      "canonical_fingerprint": "c89044dcb0ce0223332c3329d91896a96ee06c3dd9b2feba791a499087d14214",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-dashboard-operations.json",
+      "canonical_fingerprint": "b616560296ff4714ef026f6a8440085b8a3360998169fb9a255c671c2f1b73ac",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-dashboard-operations.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/dashboard/operations",
-      "local_fingerprint": "c89044dcb0ce0223332c3329d91896a96ee06c3dd9b2feba791a499087d14214",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-dashboard-operations.json",
+      "local_fingerprint": "b616560296ff4714ef026f6a8440085b8a3360998169fb9a255c671c2f1b73ac",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-dashboard-operations.json",
       "local_url": "http://127.0.0.1:8000/dashboard/operations",
       "match": true,
-      "normalized_canonical_size": 720749,
-      "normalized_local_size": 720749
+      "normalized_canonical_size": 720735,
+      "normalized_local_size": 720735
     },
     "/settings/runtime": {
       "canonical_fingerprint": "c90d4a290fd4585bc024f54cd385306c419ec6401932be62bd34aac9a4289d53",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-settings-runtime.json",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-settings-runtime.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/settings/runtime",
       "local_fingerprint": "c90d4a290fd4585bc024f54cd385306c419ec6401932be62bd34aac9a4289d53",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-settings-runtime.json",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-settings-runtime.json",
       "local_url": "http://127.0.0.1:8000/settings/runtime",
       "match": true,
       "normalized_canonical_size": 3461,
       "normalized_local_size": 3461
     }
   },
-  "artifact_root": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e",
+  "artifact_root": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81",
   "artifacts": {
-    "canonical_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-dashboard-candidates.json",
-    "canonical_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-dashboard-operations.json",
-    "canonical_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-index.html",
-    "canonical_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/canonical-settings-runtime.json",
-    "local_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-dashboard-candidates.json",
-    "local_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-dashboard-operations.json",
-    "local_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/local-settings-runtime.json",
-    "repo_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/repo-index.html",
-    "runtime_dist_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/runtime-dist-index.html",
-    "runtime_served_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/runtime-served-index.html"
+    "canonical_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-dashboard-candidates.json",
+    "canonical_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-dashboard-operations.json",
+    "canonical_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-index.html",
+    "canonical_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/canonical-settings-runtime.json",
+    "local_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-dashboard-candidates.json",
+    "local_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-dashboard-operations.json",
+    "local_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/local-settings-runtime.json",
+    "repo_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/repo-index.html",
+    "runtime_dist_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/runtime-dist-index.html",
+    "runtime_served_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/runtime-served-index.html"
   },
   "asset_sets": {
     "all_match": true,
     "canonical_served": {
       "asset_urls": {
-        "assets/index-2a6248ca.css": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-2a6248ca.css",
-        "assets/index-cbdd3a14.js": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-cbdd3a14.js"
+        "assets/index-08378f04.js": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-08378f04.js",
+        "assets/index-ede6f9f1.css": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-ede6f9f1.css"
       },
       "assets": {
-        "assets/index-2a6248ca.css": "2a6248ca167a3e4c7ff8908e1b155eeed56c0172926b92dc208a01c5683e68e0",
-        "assets/index-cbdd3a14.js": "2596057f545e279f27021e3834aa3c6e3e6b0aee527423cefe4ba75ae4d7efc5"
+        "assets/index-08378f04.js": "c8697705a0fd703fa202edbb3d12f8a943a81aa507319f764c028b4a892c18fe",
+        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
       },
       "login_url": "https://hernando-zhao.cn/auth/login",
       "page_url": "https://hernando-zhao.cn/projects/ashare-dashboard/"
     },
     "repo_build": {
       "assets": {
-        "assets/index-2a6248ca.css": "2a6248ca167a3e4c7ff8908e1b155eeed56c0172926b92dc208a01c5683e68e0",
-        "assets/index-cbdd3a14.js": "2596057f545e279f27021e3834aa3c6e3e6b0aee527423cefe4ba75ae4d7efc5"
+        "assets/index-08378f04.js": "c8697705a0fd703fa202edbb3d12f8a943a81aa507319f764c028b4a892c18fe",
+        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
       },
       "index_html_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/frontend/dist/index.html"
     },
     "runtime_dist": {
       "assets": {
-        "assets/index-2a6248ca.css": "2a6248ca167a3e4c7ff8908e1b155eeed56c0172926b92dc208a01c5683e68e0",
-        "assets/index-cbdd3a14.js": "2596057f545e279f27021e3834aa3c6e3e6b0aee527423cefe4ba75ae4d7efc5"
+        "assets/index-08378f04.js": "c8697705a0fd703fa202edbb3d12f8a943a81aa507319f764c028b4a892c18fe",
+        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
       },
       "index_html_path": "/Users/hernando_zhao/codex/runtime/projects/ashare-dashboard/frontend/dist/index.html"
     },
     "runtime_served": {
       "asset_urls": {
-        "assets/index-2a6248ca.css": "http://127.0.0.1:5173/assets/index-2a6248ca.css",
-        "assets/index-cbdd3a14.js": "http://127.0.0.1:5173/assets/index-cbdd3a14.js"
+        "assets/index-08378f04.js": "http://127.0.0.1:5173/assets/index-08378f04.js",
+        "assets/index-ede6f9f1.css": "http://127.0.0.1:5173/assets/index-ede6f9f1.css"
       },
       "assets": {
-        "assets/index-2a6248ca.css": "2a6248ca167a3e4c7ff8908e1b155eeed56c0172926b92dc208a01c5683e68e0",
-        "assets/index-cbdd3a14.js": "2596057f545e279f27021e3834aa3c6e3e6b0aee527423cefe4ba75ae4d7efc5"
+        "assets/index-08378f04.js": "c8697705a0fd703fa202edbb3d12f8a943a81aa507319f764c028b4a892c18fe",
+        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
       },
       "page_url": "http://127.0.0.1:5173/"
     }
   },
   "canonical_base_url": "https://hernando-zhao.cn/projects/ashare-dashboard/",
-  "commit_sha": "57695f95476e18f0b2107bbaac617709d957d4dc",
+  "commit_sha": "5ac9c6347c8146e8e354a4b267889a81067c98ef",
   "local_api_base_url": "http://127.0.0.1:8000/",
   "local_frontend_url": "http://127.0.0.1:5173/",
-  "manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/manifest.json",
+  "manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/manifest.json",
   "operations_text_audit": {
     "canonical": {
       "banned_hits": [],
@@ -107,7 +107,7 @@
         "market_data_stale",
         "用于汇总价格、事件与降级状态的融合层"
       ],
-      "combined_text": "002028.SZ 持仓贡献，包含已实现与未实现盈亏。\n002270.SZ 持仓贡献，包含已实现与未实现盈亏。\n30 分钟定时决策\n40d 在当前 scope 内对所有纳入记录都保持 leader，可继续评估是否满足主 horizon 审批条件。\n600522.SH 持仓贡献，包含已实现与未实现盈亏。\n600589.SH 持仓贡献，包含已实现与未实现盈亏。\nA 股规则合规\nCSI 指数日线尚未完整入库；研究结论不得只依赖旧的观察池等权 proxy。\nT+1 卖出约束\nsimulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（mean_rebalance_interval_days_floor, rebalance_date_count, mean_active_position_count, mean_invested_ratio），baseline 继续保持 research_candidate。\n中天科技\n中等\n中证1000\n中证500\n主板\n买入不计印花税、卖出单边计税。\n买入与常规卖出按 100 股整数倍成交。\n交易佣金\n仓位\n信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。\n共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。\n分离式模拟交易\n刷新与性能预算\n包含组合收益、归因、回撤、复盘和准入治理聚合。\n包含行情、新闻、证据 trace 和研究追问包拼装。\n华明装备\n华明装备 按最新价 24.47 卖出 100 股。理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n华明装备 按等权组合研究策略给出卖出 100 股，目标权重 20%，当前权重 20%。主要理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n单票权重上限\n单票权重上限 20%\n单票权重上限 35%\n卖出侧单边印花税成本。\n卖出发生在最近一次买入的下一交易日或之后。\n印花税\n印花税方向\n回撤保护\n回撤监控\n基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。\n基本面风险：利润增速未同步营收，盈利质量存疑\n基本面风险：现金流质量-0.70，经营现金流严重恶化\n基本面风险：现金流质量评分-0.50，利润含金量低\n基本面风险：现金流质量评分-0.70，经营性现金严重赤字，利润含金量不足\n基本面风险：盈利能力极弱，存在利润大幅波动或亏损风险\n基本面风险：盈利能力评分0.15，ROE或净利润存在坍塌风险\n基本面风险：盈利能力评分0.15，利润创造能力极弱\n基本面风险：盈利能力评分仅0.15，股东回报极度薄弱\n基本面风险：经营现金流显著弱于净利润，造血能力不足\n基本面风险：营收增速4.07%明显滞涨，市场份额可能流失\n基本面风险：营收增速缓慢，成长性不足\n大位科技\n大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖\n建议命中复盘覆盖\n当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。\n当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1102；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 22 个组合回测记录、22 个记录清单绑定，其中 0 个仍在持续补样本。\n当前最大回撤 -0.5%。\n当前最大回撤 -1.9%。\n当前最大回撤 -2.6%。\n当前最大回撤 0.0%。\n当前未获取新的 5 分钟行情，继续使用本地已缓存数据。\n当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。\n当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。\n当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。\n思源电气\n所有成交双边佣金汇总。\n手动仓上限 35%。\n手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。\n持仓数\n控制台首屏避免过重。\n收益率\n整手约束\n方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。\n最大回撤\n最新价即时成交\n最近买入日为 2026-04-30，当前卖出仍落在 T+1 禁止窗口。\n样本不足，不能输出精确因子可信度或权重结论。\n模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。\n模型给出新建议\n模型轨道\n模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。\n模型轨道已成交\n模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。\n沪深300\n涨跌停边界\n用户轨道\n用户轨道已成交\n目标是 watchlist 小样本内测下的单次构建耗时。\n短期量价驱动偏多，但验证指标RankIC均值为负且置信度回落，方向信号与历史有效性相矛盾，无法形成明确涨跌判断。\n研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。\n第 63 步刷新\n第 64 步刷新\n第 65 步刷新\n第 66 步刷新\n第 67 步刷新\n第 68 步刷新\n第 69 步刷新\n第 70 步刷新\n第 71 步刷新\n第 72 步刷新\n第 73 步刷新\n第 74 步刷新\n第 75 步刷新\n等权组合研究策略\n系统给出“偏积极”方向，但多个验证指标存在严重冲突：RankIC均值为-0.146（因子排序与未来超额负相关），人工研究状态为failed/manual，置信度较前次回落6%。核心驱动虽显示近期价格强势和量能放大，但模型整体有效性存疑，无法支持后续将上涨的结论。\n组合分析页在小范围内测内仍以单次加载为主。\n组合回测产物绑定\n组合现金未跌破 0。\n继续观察阶段，标的没有走出显著超额波动。 当前复盘看，提示力度仍不够。\n自动执行仅作用于 Web 模拟盘，不会触发真实下单。\n自动组合单票权重上限 20%。\n若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。\n访问控制\n证据卡片较多时仍要保持可接受的响应大小。\n资金不穿仓\n超额收益\n迁移期纸面组合治理\n运行中\n限价单价格位于对应板块的涨跌停约束范围内。\n风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。\n风险公告：大位科技的年度董事会决议显示出公司深陷亏损（未分配利润-26亿），既无法分红又面临股权激励考核失败，同时启动了小额快速融资预案，基本面及短期信心承压。\n风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。\n风险提示\n风险提示后，标的至少出现了跑输基准或明显回撤。\n验证指标 RankIC 均值为 -0.146478，与当前偏积极推荐形成直接冲突；尽管正超额占比达 76.7%，但负 RankIC 表明信号的前瞻排序方向与真实超额收益负相关，趋势特征与历史验证结果不一致，无法支持偏积极结论。",
+      "combined_text": "002028.SZ 持仓贡献，包含已实现与未实现盈亏。\n002270.SZ 持仓贡献，包含已实现与未实现盈亏。\n30 分钟定时决策\n40d 在当前 scope 内对所有纳入记录都保持 leader，可继续评估是否满足主 horizon 审批条件。\n600522.SH 持仓贡献，包含已实现与未实现盈亏。\n600589.SH 持仓贡献，包含已实现与未实现盈亏。\nA 股规则合规\nCSI 指数日线尚未完整入库；研究结论不得只依赖旧的观察池等权 proxy。\nT+1 卖出约束\nsimulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（mean_rebalance_interval_days_floor, rebalance_date_count, mean_active_position_count, mean_invested_ratio），baseline 继续保持 research_candidate。\n中天科技\n中等\n中证1000\n中证500\n中高\n主板\n买入不计印花税、卖出单边计税。\n买入与常规卖出按 100 股整数倍成交。\n交易佣金\n仓位\n价格已明显跌离近 20 日中枢，趋势延续概率下降。\n信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。\n共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。\n分离式模拟交易\n刷新与性能预算\n包含组合收益、归因、回撤、复盘和准入治理聚合。\n包含行情、新闻、证据 trace 和研究追问包拼装。\n华明装备\n华明装备 按最新价 24.47 卖出 100 股。理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n华明装备 按等权组合研究策略给出卖出 100 股，目标权重 20%，当前权重 20%。主要理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n单票权重上限\n单票权重上限 20%\n单票权重上限 35%\n卖出侧单边印花税成本。\n卖出发生在最近一次买入的下一交易日或之后。\n印花税\n印花税方向\n回撤保护\n回撤监控\n基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。\n基本面风险：可能因费用激增或毛利率下降而侵蚀利润\n基本面风险：现金流质量极差(-0.70)，经营造血能力严重不足\n基本面风险：现金流质量评分-0.50，利润含金量低\n基本面风险：盈利能力评分仅0.15，利润率过低，盈利基础脆弱\n基本面风险：盈利能力评分仅0.15，股东回报极度薄弱\n基本面风险：缺少利润与现金流数据，无法确认增长质量\n基本面风险：营收增速4.07%明显滞涨，市场份额可能流失\n大位科技\n大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖\n已同步 4 只标的的 5 分钟行情，新增或更新 8 根 K 线。\n建议命中复盘覆盖\n当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。\n当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1102；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 22 个组合回测记录、22 个记录清单绑定，其中 0 个仍在持续补样本。\n当前最大回撤 -0.5%。\n当前最大回撤 -1.9%。\n当前最大回撤 -2.6%。\n当前最大回撤 0.0%。\n当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。\n当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。\n当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。\n思源电气\n所有成交双边佣金汇总。\n手动仓上限 35%。\n手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。\n持仓数\n控制台首屏避免过重。\n收益率\n收盘价偏离近 40 日高点较大，追价性价比下降。\n整手约束\n方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。\n最大回撤\n最新价即时成交\n最近买入日为 2026-04-30，当前卖出仍落在 T+1 禁止窗口。\n样本不足，不能输出精确因子可信度或权重结论。\n模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。\n模型给出新建议\n模型轨道\n模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。\n模型轨道已成交\n模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。\n沪深300\n涨跌停边界\n用户轨道\n用户轨道已成交\n目标是 watchlist 小样本内测下的单次构建耗时。\n短期量价驱动偏多，但验证指标RankIC均值为负且置信度回落，方向信号与历史有效性相矛盾，无法形成明确涨跌判断。\n研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。\n第 63 步刷新\n第 64 步刷新\n第 65 步刷新\n第 66 步刷新\n第 67 步刷新\n第 68 步刷新\n第 69 步刷新\n第 70 步刷新\n第 71 步刷新\n第 72 步刷新\n第 73 步刷新\n第 74 步刷新\n第 75 步刷新\n等权组合研究策略\n系统给出“偏积极”方向，但多个验证指标存在严重冲突：RankIC均值为-0.146（因子排序与未来超额负相关），人工研究状态为failed/manual，置信度较前次回落6%。核心驱动虽显示近期价格强势和量能放大，但模型整体有效性存疑，无法支持后续将上涨的结论。\n组合分析页在小范围内测内仍以单次加载为主。\n组合回测产物绑定\n组合现金未跌破 0。\n继续观察阶段，标的没有走出显著超额波动。 当前复盘看，提示力度仍不够。\n自动执行仅作用于 Web 模拟盘，不会触发真实下单。\n自动组合单票权重上限 20%。\n若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。\n访问控制\n证据卡片较多时仍要保持可接受的响应大小。\n资金不穿仓\n超额收益\n迁移期纸面组合治理\n运行中\n限价单价格位于对应板块的涨跌停约束范围内。\n风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。\n风险公告：大位科技担保总额已达净资产的2.79倍，主要子公司严重亏损且高负债，尽管无逾期记录，但极限情形下代偿压力可能清空净资产，属重大或有风险。\n风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。\n风险提示\n风险提示后，标的至少出现了跑输基准或明显回撤。\n验证指标 RankIC 均值为 -0.146478，与当前偏积极推荐形成直接冲突；尽管正超额占比达 76.7%，但负 RankIC 表明信号的前瞻排序方向与真实超额收益负相关，趋势特征与历史验证结果不一致，无法支持偏积极结论。",
       "fragments": [
         "002028.SZ 持仓贡献，包含已实现与未实现盈亏。",
         "002270.SZ 持仓贡献，包含已实现与未实现盈亏。",
@@ -123,11 +123,13 @@
         "中等",
         "中证1000",
         "中证500",
+        "中高",
         "主板",
         "买入不计印花税、卖出单边计税。",
         "买入与常规卖出按 100 股整数倍成交。",
         "交易佣金",
         "仓位",
+        "价格已明显跌离近 20 日中枢，趋势延续概率下降。",
         "信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。",
         "共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。",
         "分离式模拟交易",
@@ -147,19 +149,16 @@
         "回撤保护",
         "回撤监控",
         "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
-        "基本面风险：利润增速未同步营收，盈利质量存疑",
-        "基本面风险：现金流质量-0.70，经营现金流严重恶化",
+        "基本面风险：可能因费用激增或毛利率下降而侵蚀利润",
+        "基本面风险：现金流质量极差(-0.70)，经营造血能力严重不足",
         "基本面风险：现金流质量评分-0.50，利润含金量低",
-        "基本面风险：现金流质量评分-0.70，经营性现金严重赤字，利润含金量不足",
-        "基本面风险：盈利能力极弱，存在利润大幅波动或亏损风险",
-        "基本面风险：盈利能力评分0.15，ROE或净利润存在坍塌风险",
-        "基本面风险：盈利能力评分0.15，利润创造能力极弱",
+        "基本面风险：盈利能力评分仅0.15，利润率过低，盈利基础脆弱",
         "基本面风险：盈利能力评分仅0.15，股东回报极度薄弱",
-        "基本面风险：经营现金流显著弱于净利润，造血能力不足",
+        "基本面风险：缺少利润与现金流数据，无法确认增长质量",
         "基本面风险：营收增速4.07%明显滞涨，市场份额可能流失",
-        "基本面风险：营收增速缓慢，成长性不足",
         "大位科技",
         "大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖",
+        "已同步 4 只标的的 5 分钟行情，新增或更新 8 根 K 线。",
         "建议命中复盘覆盖",
         "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。",
         "当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。",
@@ -169,7 +168,6 @@
         "当前最大回撤 -1.9%。",
         "当前最大回撤 -2.6%。",
         "当前最大回撤 0.0%。",
-        "当前未获取新的 5 分钟行情，继续使用本地已缓存数据。",
         "当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。",
         "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
         "当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。",
@@ -180,6 +178,7 @@
         "持仓数",
         "控制台首屏避免过重。",
         "收益率",
+        "收盘价偏离近 40 日高点较大，追价性价比下降。",
         "整手约束",
         "方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。",
         "最大回撤",
@@ -229,7 +228,7 @@
         "运行中",
         "限价单价格位于对应板块的涨跌停约束范围内。",
         "风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。",
-        "风险公告：大位科技的年度董事会决议显示出公司深陷亏损（未分配利润-26亿），既无法分红又面临股权激励考核失败，同时启动了小额快速融资预案，基本面及短期信心承压。",
+        "风险公告：大位科技担保总额已达净资产的2.79倍，主要子公司严重亏损且高负债，尽管无逾期记录，但极限情形下代偿压力可能清空净资产，属重大或有风险。",
         "风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。",
         "风险提示",
         "风险提示后，标的至少出现了跑输基准或明显回撤。",
@@ -241,7 +240,7 @@
         "用户轨道",
         "模型轨道"
       ],
-      "text_fragment_count": 125
+      "text_fragment_count": 124
     },
     "local": {
       "banned_hits": [],
@@ -257,7 +256,7 @@
         "market_data_stale",
         "用于汇总价格、事件与降级状态的融合层"
       ],
-      "combined_text": "002028.SZ 持仓贡献，包含已实现与未实现盈亏。\n002270.SZ 持仓贡献，包含已实现与未实现盈亏。\n30 分钟定时决策\n40d 在当前 scope 内对所有纳入记录都保持 leader，可继续评估是否满足主 horizon 审批条件。\n600522.SH 持仓贡献，包含已实现与未实现盈亏。\n600589.SH 持仓贡献，包含已实现与未实现盈亏。\nA 股规则合规\nCSI 指数日线尚未完整入库；研究结论不得只依赖旧的观察池等权 proxy。\nT+1 卖出约束\nsimulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（mean_rebalance_interval_days_floor, rebalance_date_count, mean_active_position_count, mean_invested_ratio），baseline 继续保持 research_candidate。\n中天科技\n中等\n中证1000\n中证500\n主板\n买入不计印花税、卖出单边计税。\n买入与常规卖出按 100 股整数倍成交。\n交易佣金\n仓位\n信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。\n共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。\n分离式模拟交易\n刷新与性能预算\n包含组合收益、归因、回撤、复盘和准入治理聚合。\n包含行情、新闻、证据 trace 和研究追问包拼装。\n华明装备\n华明装备 按最新价 24.47 卖出 100 股。理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n华明装备 按等权组合研究策略给出卖出 100 股，目标权重 20%，当前权重 20%。主要理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n单票权重上限\n单票权重上限 20%\n单票权重上限 35%\n卖出侧单边印花税成本。\n卖出发生在最近一次买入的下一交易日或之后。\n印花税\n印花税方向\n回撤保护\n回撤监控\n基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。\n基本面风险：利润增速未同步营收，盈利质量存疑\n基本面风险：现金流质量-0.70，经营现金流严重恶化\n基本面风险：现金流质量评分-0.50，利润含金量低\n基本面风险：现金流质量评分-0.70，经营性现金严重赤字，利润含金量不足\n基本面风险：盈利能力极弱，存在利润大幅波动或亏损风险\n基本面风险：盈利能力评分0.15，ROE或净利润存在坍塌风险\n基本面风险：盈利能力评分0.15，利润创造能力极弱\n基本面风险：盈利能力评分仅0.15，股东回报极度薄弱\n基本面风险：经营现金流显著弱于净利润，造血能力不足\n基本面风险：营收增速4.07%明显滞涨，市场份额可能流失\n基本面风险：营收增速缓慢，成长性不足\n大位科技\n大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖\n建议命中复盘覆盖\n当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。\n当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1102；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 22 个组合回测记录、22 个记录清单绑定，其中 0 个仍在持续补样本。\n当前最大回撤 -0.5%。\n当前最大回撤 -1.9%。\n当前最大回撤 -2.6%。\n当前最大回撤 0.0%。\n当前未获取新的 5 分钟行情，继续使用本地已缓存数据。\n当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。\n当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。\n当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。\n思源电气\n所有成交双边佣金汇总。\n手动仓上限 35%。\n手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。\n持仓数\n控制台首屏避免过重。\n收益率\n整手约束\n方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。\n最大回撤\n最新价即时成交\n最近买入日为 2026-04-30，当前卖出仍落在 T+1 禁止窗口。\n样本不足，不能输出精确因子可信度或权重结论。\n模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。\n模型给出新建议\n模型轨道\n模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。\n模型轨道已成交\n模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。\n沪深300\n涨跌停边界\n用户轨道\n用户轨道已成交\n目标是 watchlist 小样本内测下的单次构建耗时。\n短期量价驱动偏多，但验证指标RankIC均值为负且置信度回落，方向信号与历史有效性相矛盾，无法形成明确涨跌判断。\n研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。\n第 63 步刷新\n第 64 步刷新\n第 65 步刷新\n第 66 步刷新\n第 67 步刷新\n第 68 步刷新\n第 69 步刷新\n第 70 步刷新\n第 71 步刷新\n第 72 步刷新\n第 73 步刷新\n第 74 步刷新\n第 75 步刷新\n等权组合研究策略\n系统给出“偏积极”方向，但多个验证指标存在严重冲突：RankIC均值为-0.146（因子排序与未来超额负相关），人工研究状态为failed/manual，置信度较前次回落6%。核心驱动虽显示近期价格强势和量能放大，但模型整体有效性存疑，无法支持后续将上涨的结论。\n组合分析页在小范围内测内仍以单次加载为主。\n组合回测产物绑定\n组合现金未跌破 0。\n继续观察阶段，标的没有走出显著超额波动。 当前复盘看，提示力度仍不够。\n自动执行仅作用于 Web 模拟盘，不会触发真实下单。\n自动组合单票权重上限 20%。\n若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。\n访问控制\n证据卡片较多时仍要保持可接受的响应大小。\n资金不穿仓\n超额收益\n迁移期纸面组合治理\n运行中\n限价单价格位于对应板块的涨跌停约束范围内。\n风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。\n风险公告：大位科技的年度董事会决议显示出公司深陷亏损（未分配利润-26亿），既无法分红又面临股权激励考核失败，同时启动了小额快速融资预案，基本面及短期信心承压。\n风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。\n风险提示\n风险提示后，标的至少出现了跑输基准或明显回撤。\n验证指标 RankIC 均值为 -0.146478，与当前偏积极推荐形成直接冲突；尽管正超额占比达 76.7%，但负 RankIC 表明信号的前瞻排序方向与真实超额收益负相关，趋势特征与历史验证结果不一致，无法支持偏积极结论。",
+      "combined_text": "002028.SZ 持仓贡献，包含已实现与未实现盈亏。\n002270.SZ 持仓贡献，包含已实现与未实现盈亏。\n30 分钟定时决策\n40d 在当前 scope 内对所有纳入记录都保持 leader，可继续评估是否满足主 horizon 审批条件。\n600522.SH 持仓贡献，包含已实现与未实现盈亏。\n600589.SH 持仓贡献，包含已实现与未实现盈亏。\nA 股规则合规\nCSI 指数日线尚未完整入库；研究结论不得只依赖旧的观察池等权 proxy。\nT+1 卖出约束\nsimulation-only 的 auto-model 组合已形成 turnover / 成本 / 持仓稳定性摘要，但当前 draft promotion gate 仍未通过（mean_rebalance_interval_days_floor, rebalance_date_count, mean_active_position_count, mean_invested_ratio），baseline 继续保持 research_candidate。\n中天科技\n中等\n中证1000\n中证500\n中高\n主板\n买入不计印花税、卖出单边计税。\n买入与常规卖出按 100 股整数倍成交。\n交易佣金\n仓位\n价格已明显跌离近 20 日中枢，趋势延续概率下降。\n信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。\n共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。\n分离式模拟交易\n刷新与性能预算\n包含组合收益、归因、回撤、复盘和准入治理聚合。\n包含行情、新闻、证据 trace 和研究追问包拼装。\n华明装备\n华明装备 按最新价 24.47 卖出 100 股。理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n华明装备 按等权组合研究策略给出卖出 100 股，目标权重 20%，当前权重 20%。主要理由：近 5 日量能相对 20 日均值抬升 0.94σ。\n单票权重上限\n单票权重上限 20%\n单票权重上限 35%\n卖出侧单边印花税成本。\n卖出发生在最近一次买入的下一交易日或之后。\n印花税\n印花税方向\n回撤保护\n回撤监控\n基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。\n基本面风险：可能因费用激增或毛利率下降而侵蚀利润\n基本面风险：现金流质量极差(-0.70)，经营造血能力严重不足\n基本面风险：现金流质量评分-0.50，利润含金量低\n基本面风险：盈利能力评分仅0.15，利润率过低，盈利基础脆弱\n基本面风险：盈利能力评分仅0.15，股东回报极度薄弱\n基本面风险：缺少利润与现金流数据，无法确认增长质量\n基本面风险：营收增速4.07%明显滞涨，市场份额可能流失\n大位科技\n大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖\n已同步 4 只标的的 5 分钟行情，新增或更新 8 根 K 线。\n建议命中复盘覆盖\n当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。\n当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。\n当前基准与超额收益已切换到观察池真实价格构造的等权对照组合，但复盘记录与组合回测仍在持续补样本和校准，暂不作为正式量化验证结论。 当前已有 4 条建议绑定记录清单，4 条建议附带验证指标，累计样本 1102；复盘链路已有 0 条复盘记录、0 条记录清单绑定，其中 4 条尚未完成正式验证；组合层已有 22 个组合回测记录、22 个记录清单绑定，其中 0 个仍在持续补样本。\n当前最大回撤 -0.5%。\n当前最大回撤 -1.9%。\n当前最大回撤 -2.6%。\n当前最大回撤 0.0%。\n当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。\n当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。\n当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。\n思源电气\n所有成交双边佣金汇总。\n手动仓上限 35%。\n手动轨道继续由研究员逐笔确认；模型轨道仍是人工复核预览，不自动成交。\n持仓数\n控制台首屏避免过重。\n收益率\n收盘价偏离近 40 日高点较大，追价性价比下降。\n整手约束\n方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。\n最大回撤\n最新价即时成交\n最近买入日为 2026-04-30，当前卖出仍落在 T+1 禁止窗口。\n样本不足，不能输出精确因子可信度或权重结论。\n模型按目标权重自动调仓、独立资金池运行，适合验证组合纪律与执行损耗。\n模型给出新建议\n模型轨道\n模型轨道已在模拟盘内启用等权组合研究策略，自动成交仅用于模拟复盘，不扩展到真实交易。\n模型轨道已成交\n模型轨道最多持有 5 只，允许留现金，100 股整手成交，且只在模拟盘自动执行。\n沪深300\n涨跌停边界\n用户轨道\n用户轨道已成交\n目标是 watchlist 小样本内测下的单次构建耗时。\n短期量价驱动偏多，但验证指标RankIC均值为负且置信度回落，方向信号与历史有效性相矛盾，无法形成明确涨跌判断。\n研究员逐笔确认、单独记账，适合复盘“人是否正确理解建议”。\n第 63 步刷新\n第 64 步刷新\n第 65 步刷新\n第 66 步刷新\n第 67 步刷新\n第 68 步刷新\n第 69 步刷新\n第 70 步刷新\n第 71 步刷新\n第 72 步刷新\n第 73 步刷新\n第 74 步刷新\n第 75 步刷新\n等权组合研究策略\n系统给出“偏积极”方向，但多个验证指标存在严重冲突：RankIC均值为-0.146（因子排序与未来超额负相关），人工研究状态为failed/manual，置信度较前次回落6%。核心驱动虽显示近期价格强势和量能放大，但模型整体有效性存疑，无法支持后续将上涨的结论。\n组合分析页在小范围内测内仍以单次加载为主。\n组合回测产物绑定\n组合现金未跌破 0。\n继续观察阶段，标的没有走出显著超额波动。 当前复盘看，提示力度仍不够。\n自动执行仅作用于 Web 模拟盘，不会触发真实下单。\n自动组合单票权重上限 20%。\n若 7 日内出现负向公告或行业监管扰动，新闻因子会优先转负。\n访问控制\n证据卡片较多时仍要保持可接受的响应大小。\n资金不穿仓\n超额收益\n迁移期纸面组合治理\n运行中\n限价单价格位于对应板块的涨跌停约束范围内。\n风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。\n风险公告：大位科技担保总额已达净资产的2.79倍，主要子公司严重亏损且高负债，尽管无逾期记录，但极限情形下代偿压力可能清空净资产，属重大或有风险。\n风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。\n风险提示\n风险提示后，标的至少出现了跑输基准或明显回撤。\n验证指标 RankIC 均值为 -0.146478，与当前偏积极推荐形成直接冲突；尽管正超额占比达 76.7%，但负 RankIC 表明信号的前瞻排序方向与真实超额收益负相关，趋势特征与历史验证结果不一致，无法支持偏积极结论。",
       "fragments": [
         "002028.SZ 持仓贡献，包含已实现与未实现盈亏。",
         "002270.SZ 持仓贡献，包含已实现与未实现盈亏。",
@@ -273,11 +272,13 @@
         "中等",
         "中证1000",
         "中证500",
+        "中高",
         "主板",
         "买入不计印花税、卖出单边计税。",
         "买入与常规卖出按 100 股整数倍成交。",
         "交易佣金",
         "仓位",
+        "价格已明显跌离近 20 日中枢，趋势延续概率下降。",
         "信号受益于近期强趋势和量能放大，但验证指标中正超额占比(0.767)与RankIC均值(-0.146)存在方向正确与排序能力的冲突，同时整体置信度回落6%，证据混合，不足以单边支撑偏积极结论。",
         "共享时间线已推进一个刷新步，模型建议与用户轨道对比已重新计算。",
         "分离式模拟交易",
@@ -297,19 +298,16 @@
         "回撤保护",
         "回撤监控",
         "基于已给证据，当前对大位科技（600589.SH）的后续看法仍应偏谨慎：事实层面存在正向事件证据，但同时有未弥补亏损达到实收股本三分之一的潜在反向事件，且价格与事件信号冲突；推断层面，当前更适合降仓或等待反向确认，而不适合单独依赖新闻因子上调建议强度。",
-        "基本面风险：利润增速未同步营收，盈利质量存疑",
-        "基本面风险：现金流质量-0.70，经营现金流严重恶化",
+        "基本面风险：可能因费用激增或毛利率下降而侵蚀利润",
+        "基本面风险：现金流质量极差(-0.70)，经营造血能力严重不足",
         "基本面风险：现金流质量评分-0.50，利润含金量低",
-        "基本面风险：现金流质量评分-0.70，经营性现金严重赤字，利润含金量不足",
-        "基本面风险：盈利能力极弱，存在利润大幅波动或亏损风险",
-        "基本面风险：盈利能力评分0.15，ROE或净利润存在坍塌风险",
-        "基本面风险：盈利能力评分0.15，利润创造能力极弱",
+        "基本面风险：盈利能力评分仅0.15，利润率过低，盈利基础脆弱",
         "基本面风险：盈利能力评分仅0.15，股东回报极度薄弱",
-        "基本面风险：经营现金流显著弱于净利润，造血能力不足",
+        "基本面风险：缺少利润与现金流数据，无法确认增长质量",
         "基本面风险：营收增速4.07%明显滞涨，市场份额可能流失",
-        "基本面风险：营收增速缓慢，成长性不足",
         "大位科技",
         "大位科技 按最新价 10.00 买入 2000 股。理由：当前开始回暖",
+        "已同步 4 只标的的 5 分钟行情，新增或更新 8 根 K 线。",
         "建议命中复盘覆盖",
         "当前 contract 仅可作为 paper track / research candidate 治理基线，不得视为正式组合策略。",
         "当前上线门禁仍有待校准的数据口径，研究验证完成前仅用于受控内测。",
@@ -319,7 +317,6 @@
         "当前最大回撤 -1.9%。",
         "当前最大回撤 -2.6%。",
         "当前最大回撤 0.0%。",
-        "当前未获取新的 5 分钟行情，继续使用本地已缓存数据。",
         "当前没有可用持仓市值，临时展示候选池行业分布；不作为组合暴露结论。",
         "当前组合动作已绑定 A 股约束、真实价格和观察池等权 proxy，但自动调仓与正式晋级门槛仍待后续 phase 批准。",
         "当前证据整体支持“继续观察”的建议：短期上涨占比尚可，新闻事件提供正向支撑，但价格已明显跌离20日中枢，波动率攀升且负向公告/监管扰动风险未消，历史 RankIC 为负值，模型效果不稳定，尚无法形成可执行的买入结论。",
@@ -330,6 +327,7 @@
         "持仓数",
         "控制台首屏避免过重。",
         "收益率",
+        "收盘价偏离近 40 日高点较大，追价性价比下降。",
         "整手约束",
         "方向偏多后，标的至少没有显著跑输基准。 当前复盘看，提示力度仍不够。",
         "最大回撤",
@@ -379,7 +377,7 @@
         "运行中",
         "限价单价格位于对应板块的涨跌停约束范围内。",
         "风险公告：大位科技2025年累计未分配利润-26亿元，不分配利润、未弥补亏损超股本1/3、股权激励因营收仅增7.59%而回购注销，同时拟授权简易程序融资3亿元，整体显示财务承压与治理规范并存，短期偏负面。",
-        "风险公告：大位科技的年度董事会决议显示出公司深陷亏损（未分配利润-26亿），既无法分红又面临股权激励考核失败，同时启动了小额快速融资预案，基本面及短期信心承压。",
+        "风险公告：大位科技担保总额已达净资产的2.79倍，主要子公司严重亏损且高负债，尽管无逾期记录，但极限情形下代偿压力可能清空净资产，属重大或有风险。",
         "风险公告：大位科技累计对外担保已达净资产的279%，本次为全资亏损子公司提供无反担保连带责任保证，进一步推高或有负债风险，虽属年度预计额度内正常执行，但子公司的高负债与亏损状况使整体财务稳健性承压。",
         "风险提示",
         "风险提示后，标的至少出现了跑输基准或明显回撤。",
@@ -391,16 +389,16 @@
         "用户轨道",
         "模型轨道"
       ],
-      "text_fragment_count": 125
+      "text_fragment_count": 124
     },
     "match": true
   },
-  "release_id": "20260502T161929Z-57695f95476e",
-  "released_at": "2026-05-02T16:19:29.068156+00:00",
+  "release_id": "20260504T135238Z-5ac9c6347c81",
+  "released_at": "2026-05-04T13:52:38.508239+00:00",
   "repo_root": "/Users/hernando_zhao/codex/projects/stock_dashboard",
   "rollback": {
-    "previous_successful_commit_sha": "6f245ee3b6f36f9dfc7eac2f7c76f9357b35054e",
-    "previous_successful_manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T152122Z-6f245ee3b6f3/manifest.json"
+    "previous_successful_commit_sha": "57695f95476e18f0b2107bbaac617709d957d4dc",
+    "previous_successful_manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260502T161929Z-57695f95476e/manifest.json"
   },
   "runtime_root": "/Users/hernando_zhao/codex/runtime/projects/ashare-dashboard",
   "status": "passed"
