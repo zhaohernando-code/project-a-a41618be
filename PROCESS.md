@@ -6,6 +6,7 @@
 
 - **已完成不能替代业务证据**：改进建议状态 `completed` 只能说明对应计划/任务已收口，不能直接让业务 gate 变为 `pass`。像“建议命中复盘覆盖”这类门禁必须重新读取真实 replay / benchmark / backtest 证据；若复盘记录、正式验证或组合补样本仍不足，即使计划任务完成也只能展示“治理计划已完成，但正式复盘口径仍待验证”的 `warn`。
 - **看板不能展示过期中台任务快照**：股票看板读取改进建议时，需要用 `control_plane_task.id` 反查中台 `/api/tasks/:id` 的实时状态，并把 `publishVerified` / `workflowGates` 等状态投影到页面。控制面不可达时才保留 snapshot 状态并标记 `任务状态未实时同步`，避免本地建议文件里的旧 `blocked` 误导验收。
+- **完成真值 gate 发布记录**：修复提交已合入 `main` 并发布为 `ba644dbc5f67d2606974ce7c8ed902080f427dfd`，release manifest 为 `output/releases/20260504T152200Z-ba644dbc5f67/manifest.json`，deploy verifier 为 `19 passed, 0 failed`。运行时 API 显示“建议命中复盘覆盖”为 `warn`，文案为“治理计划已完成，但正式复盘口径仍待验证”；4 只股票数据质量仍为 `pass`，`financial_data_stale` / `profile_incomplete` 未再出现。
 - **长耗时按钮必须有面板内持续状态**：`重新审计` 这类会触发双模型和后端生成的动作不能只等接口返回后弹 message；点击后必须立即在当前工作面板显示 `进行中` 状态，并让按钮进入 loading/disabled。成功或失败也要保留在面板内，避免用户无法判断任务是否已经启动。
 - **重新审计不能复用短请求超时**：改进建议审计实际会调用 reviewer，前端请求策略必须使用通用长耗时 timeout，而不是运营面板详情加载的短 timeout；否则用户会看到“进行中”后很快失败，真实审计仍可能在后端继续跑。
 - **AntD 弹框必须走主题上下文，不用静态 confirm 兜底**：`Modal.confirm(...)` 这类静态 API 会绕开当前 React 树里的 `ConfigProvider + darkAlgorithm`，在夜间模式下容易让弹框、Select dropdown、按钮和说明文字落到不一致的 token 环境。桌面入口应统一使用 AntD `App` provider，并通过 `App.useApp()` 下发 `message` / `modal`；新增确认弹框禁止再写裸静态 `Modal.confirm(...)`。
