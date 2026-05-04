@@ -2,10 +2,10 @@
   "api_fingerprints": {
     "/dashboard/candidates": {
       "canonical_fingerprint": "5bc3ff868c259f394287c159d38b8e5ec464d66d97642cb596ad09766c40035a",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-dashboard-candidates.json",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-dashboard-candidates.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/dashboard/candidates",
       "local_fingerprint": "5bc3ff868c259f394287c159d38b8e5ec464d66d97642cb596ad09766c40035a",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-dashboard-candidates.json",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-dashboard-candidates.json",
       "local_url": "http://127.0.0.1:8000/dashboard/candidates",
       "match": true,
       "normalized_canonical_size": 12818,
@@ -13,10 +13,10 @@
     },
     "/dashboard/operations": {
       "canonical_fingerprint": "b616560296ff4714ef026f6a8440085b8a3360998169fb9a255c671c2f1b73ac",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-dashboard-operations.json",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-dashboard-operations.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/dashboard/operations",
       "local_fingerprint": "b616560296ff4714ef026f6a8440085b8a3360998169fb9a255c671c2f1b73ac",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-dashboard-operations.json",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-dashboard-operations.json",
       "local_url": "http://127.0.0.1:8000/dashboard/operations",
       "match": true,
       "normalized_canonical_size": 720735,
@@ -24,74 +24,74 @@
     },
     "/settings/runtime": {
       "canonical_fingerprint": "c90d4a290fd4585bc024f54cd385306c419ec6401932be62bd34aac9a4289d53",
-      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-settings-runtime.json",
+      "canonical_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-settings-runtime.json",
       "canonical_url": "https://hernando-zhao.cn/projects/ashare-dashboard/api/settings/runtime",
       "local_fingerprint": "c90d4a290fd4585bc024f54cd385306c419ec6401932be62bd34aac9a4289d53",
-      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-settings-runtime.json",
+      "local_snapshot_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-settings-runtime.json",
       "local_url": "http://127.0.0.1:8000/settings/runtime",
       "match": true,
       "normalized_canonical_size": 3461,
       "normalized_local_size": 3461
     }
   },
-  "artifact_root": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6",
+  "artifact_root": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0",
   "artifacts": {
-    "canonical_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-dashboard-candidates.json",
-    "canonical_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-dashboard-operations.json",
-    "canonical_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-index.html",
-    "canonical_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/canonical-settings-runtime.json",
-    "local_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-dashboard-candidates.json",
-    "local_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-dashboard-operations.json",
-    "local_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/local-settings-runtime.json",
-    "repo_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/repo-index.html",
-    "runtime_dist_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/runtime-dist-index.html",
-    "runtime_served_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/runtime-served-index.html"
+    "canonical_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-dashboard-candidates.json",
+    "canonical_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-dashboard-operations.json",
+    "canonical_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-index.html",
+    "canonical_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/canonical-settings-runtime.json",
+    "local_dashboard-candidates": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-dashboard-candidates.json",
+    "local_dashboard-operations": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-dashboard-operations.json",
+    "local_settings-runtime": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/local-settings-runtime.json",
+    "repo_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/repo-index.html",
+    "runtime_dist_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/runtime-dist-index.html",
+    "runtime_served_index_html": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/runtime-served-index.html"
   },
   "asset_sets": {
     "all_match": true,
     "canonical_served": {
       "asset_urls": {
-        "assets/index-0d20dda1.js": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-0d20dda1.js",
-        "assets/index-ede6f9f1.css": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-ede6f9f1.css"
+        "assets/index-3f6cbae3.css": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-3f6cbae3.css",
+        "assets/index-62a0fe69.js": "https://hernando-zhao.cn/projects/ashare-dashboard/assets/index-62a0fe69.js"
       },
       "assets": {
-        "assets/index-0d20dda1.js": "3eb4e9757f470aff3235acad5cdab461532c3d6aad7ed584bd87340b815e9a36",
-        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
+        "assets/index-3f6cbae3.css": "3f6cbae3e566cd28214f92b0a09fb0ccaa2c4006bd8ee47a095f8a6c983a46cc",
+        "assets/index-62a0fe69.js": "18d10c4f1ea9720b6e4ca1bae1f78c0935d5605624def7de797288305a2f8a95"
       },
       "login_url": "https://hernando-zhao.cn/auth/login",
       "page_url": "https://hernando-zhao.cn/projects/ashare-dashboard/"
     },
     "repo_build": {
       "assets": {
-        "assets/index-0d20dda1.js": "3eb4e9757f470aff3235acad5cdab461532c3d6aad7ed584bd87340b815e9a36",
-        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
+        "assets/index-3f6cbae3.css": "3f6cbae3e566cd28214f92b0a09fb0ccaa2c4006bd8ee47a095f8a6c983a46cc",
+        "assets/index-62a0fe69.js": "18d10c4f1ea9720b6e4ca1bae1f78c0935d5605624def7de797288305a2f8a95"
       },
       "index_html_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/frontend/dist/index.html"
     },
     "runtime_dist": {
       "assets": {
-        "assets/index-0d20dda1.js": "3eb4e9757f470aff3235acad5cdab461532c3d6aad7ed584bd87340b815e9a36",
-        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
+        "assets/index-3f6cbae3.css": "3f6cbae3e566cd28214f92b0a09fb0ccaa2c4006bd8ee47a095f8a6c983a46cc",
+        "assets/index-62a0fe69.js": "18d10c4f1ea9720b6e4ca1bae1f78c0935d5605624def7de797288305a2f8a95"
       },
       "index_html_path": "/Users/hernando_zhao/codex/runtime/projects/ashare-dashboard/frontend/dist/index.html"
     },
     "runtime_served": {
       "asset_urls": {
-        "assets/index-0d20dda1.js": "http://127.0.0.1:5173/assets/index-0d20dda1.js",
-        "assets/index-ede6f9f1.css": "http://127.0.0.1:5173/assets/index-ede6f9f1.css"
+        "assets/index-3f6cbae3.css": "http://127.0.0.1:5173/assets/index-3f6cbae3.css",
+        "assets/index-62a0fe69.js": "http://127.0.0.1:5173/assets/index-62a0fe69.js"
       },
       "assets": {
-        "assets/index-0d20dda1.js": "3eb4e9757f470aff3235acad5cdab461532c3d6aad7ed584bd87340b815e9a36",
-        "assets/index-ede6f9f1.css": "ede6f9f12d95bb83caeb91027a8fc51f72cc276f16441f0c4ac150d731c04d36"
+        "assets/index-3f6cbae3.css": "3f6cbae3e566cd28214f92b0a09fb0ccaa2c4006bd8ee47a095f8a6c983a46cc",
+        "assets/index-62a0fe69.js": "18d10c4f1ea9720b6e4ca1bae1f78c0935d5605624def7de797288305a2f8a95"
       },
       "page_url": "http://127.0.0.1:5173/"
     }
   },
   "canonical_base_url": "https://hernando-zhao.cn/projects/ashare-dashboard/",
-  "commit_sha": "acfc92e5c9e61c2d6e50ff816b20b98769346e9a",
+  "commit_sha": "ec81aa819fe0200a41de2225ce5832b3a1932a73",
   "local_api_base_url": "http://127.0.0.1:8000/",
   "local_frontend_url": "http://127.0.0.1:5173/",
-  "manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/manifest.json",
+  "manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T145606Z-ec81aa819fe0/manifest.json",
   "operations_text_audit": {
     "canonical": {
       "banned_hits": [],
@@ -393,12 +393,12 @@
     },
     "match": true
   },
-  "release_id": "20260504T140209Z-acfc92e5c9e6",
-  "released_at": "2026-05-04T14:02:09.838504+00:00",
+  "release_id": "20260504T145606Z-ec81aa819fe0",
+  "released_at": "2026-05-04T14:56:06.545568+00:00",
   "repo_root": "/Users/hernando_zhao/codex/projects/stock_dashboard",
   "rollback": {
-    "previous_successful_commit_sha": "5ac9c6347c8146e8e354a4b267889a81067c98ef",
-    "previous_successful_manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T135238Z-5ac9c6347c81/manifest.json"
+    "previous_successful_commit_sha": "acfc92e5c9e61c2d6e50ff816b20b98769346e9a",
+    "previous_successful_manifest_path": "/Users/hernando_zhao/codex/projects/stock_dashboard/output/releases/20260504T140209Z-acfc92e5c9e6/manifest.json"
   },
   "runtime_root": "/Users/hernando_zhao/codex/runtime/projects/ashare-dashboard",
   "status": "passed"
