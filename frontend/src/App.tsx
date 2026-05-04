@@ -2,6 +2,7 @@ import {
   BarChartOutlined,
   DatabaseOutlined,
   DeleteOutlined,
+  ExperimentOutlined,
   LineChartOutlined,
   MoonOutlined,
   PlusOutlined,
@@ -81,6 +82,7 @@ import { NavSparkline } from "./components/NavSparkline";
 import { TrackHoldingsTable } from "./components/TrackHoldingsTable";
 import { SimulationTrackCard } from "./components/SimulationTrackCard";
 import { CompactAnalysisReport } from "./components/CompactAnalysisReport";
+import { ShortpickLabView } from "./components/ShortpickLabView";
 import { PortfolioWorkspace } from "./components/PortfolioWorkspace";
 import { buildSettingsTabs } from "./components/SettingsView";
 import { buildCandidateColumns } from "./components/CandidateColumns";
@@ -98,7 +100,7 @@ import { buildPendingDetailMessage, canCompleteManualResearch, canExecuteManualR
 import { directionLabels, factorLabels, manualResearchVerdictOptions } from "./utils/constants";
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
-type ViewMode = "candidates" | "stock" | "operations" | "settings";
+type ViewMode = "candidates" | "stock" | "operations" | "shortpick" | "settings";
 type ThemeMode = "light" | "dark";
 type ImprovementSuggestionReviewNotice = {
   status: "idle" | "running" | "success" | "error";
@@ -259,6 +261,12 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
       label: "运营复盘",
       description: "检查组合表现、规则审计和命中复盘。",
       icon: <BarChartOutlined />,
+    },
+    {
+      key: "shortpick",
+      label: "试验田",
+      description: "查看大模型原生联网短投推荐和后验复盘。",
+      icon: <ExperimentOutlined />,
     },
     {
       key: "settings",
@@ -2641,6 +2649,10 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                 ) : null}
               </div>
             )
+          ) : null}
+
+          {!loadingShell && view === "shortpick" ? (
+            <ShortpickLabView canTrigger={isRootUser} />
           ) : null}
 
           {!loadingShell && view === "settings" ? (

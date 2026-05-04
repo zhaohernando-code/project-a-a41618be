@@ -41,6 +41,12 @@ run_phase5_daily_refresh() {
     "$@"
 }
 
+run_shortpick_lab() {
+  "$PYTHON_BIN" -m ashare_evidence.cli shortpick-lab-run \
+    --database-url "$ASHARE_DATABASE_URL" \
+    --rounds-per-model "${ASHARE_SHORTPICK_ROUNDS_PER_MODEL:-5}"
+}
+
 within_market_hours() {
   [[ "$NOW_HHMM" > "09:30" && "$NOW_HHMM" < "11:31" ]] || [[ "$NOW_HHMM" > "13:00" && "$NOW_HHMM" < "15:01" ]]
 }
@@ -97,6 +103,9 @@ fi
 case "$NOW_HHMM" in
   "08:10"|"16:20"|"19:20"|"21:15")
     run_phase5_daily_refresh --analysis-only
+    if [[ "$NOW_HHMM" == "21:15" && "${ASHARE_ENABLE_SHORTPICK_LAB:-0}" == "1" ]]; then
+      run_shortpick_lab
+    fi
     ;;
   *)
     if within_market_hours; then

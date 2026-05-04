@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import json
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,7 @@ from ashare_evidence.research_artifact_store import (
     write_phase5_producer_contract_study_artifact,
 )
 from ashare_evidence.services import get_latest_recommendation_summary, get_recommendation_trace
+from ashare_evidence.shortpick_lab import run_shortpick_experiment, validate_shortpick_run
 from ashare_evidence.simulation import restart_simulation_session, step_simulation_session
 from ashare_evidence.watchlist import active_watchlist_symbols, refresh_watchlist_symbol
 
@@ -324,6 +326,22 @@ def build_parser() -> argparse.ArgumentParser:
     suggestion_review.add_argument("--database-url", default=None)
     suggestion_review.add_argument("--window-days", type=int, default=7)
 
+    shortpick_run = subparsers.add_parser(
+        "shortpick-lab-run",
+        help="Run the isolated native-web short-pick research lab experiment.",
+    )
+    shortpick_run.add_argument("--database-url", default=None)
+    shortpick_run.add_argument("--run-date", default=None)
+    shortpick_run.add_argument("--rounds-per-model", type=int, default=5)
+
+    shortpick_validate = subparsers.add_parser(
+        "shortpick-lab-validate",
+        help="Refresh post-pick validation snapshots for one short-pick lab run.",
+    )
+    shortpick_validate.add_argument("--database-url", default=None)
+    shortpick_validate.add_argument("--run-id", type=int, required=True)
+    shortpick_validate.add_argument("--horizon", type=int, action="append", default=None)
+
     phase5_daily = subparsers.add_parser(
         "phase5-daily-refresh",
         help="Run the daily Phase 5 refresh workflow: refresh runtime data, then write latest/history horizon-study snapshots.",
@@ -453,6 +471,24 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "review-improvement-suggestions":
         with session_scope(args.database_url) as session:
             payload = run_improvement_suggestion_review(session, window_days=args.window_days)
+        _print_json(payload)
+        return 0
+
+    if args.command == "shortpick-lab-run":
+        with session_scope(args.database_url) as session:
+            payload = run_shortpick_experiment(
+                session,
+                run_date=None if args.run_date is None else date.fromisoformat(args.run_date),
+                rounds_per_model=args.rounds_per_model,
+                triggered_by="scheduled_cli",
+                trigger_source="scheduled_cli",
+            )
+        _print_json(payload)
+        return 0
+
+    if args.command == "shortpick-lab-validate":
+        with session_scope(args.database_url) as session:
+            payload = validate_shortpick_run(session, args.run_id, horizons=args.horizon)
         _print_json(payload)
         return 0
 

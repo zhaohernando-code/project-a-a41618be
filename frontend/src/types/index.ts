@@ -6,4 +6,5 @@ export * from "./settings";
 export * from "./watchlist";
 export * from "./simulation";
 export * from "./research";
+export * from "./shortpick";
 export * from "./operations";

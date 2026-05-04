@@ -1,5 +1,15 @@
 # 一个关于a股的当前数据和投资建议看板 Decisions
 
+[2026-05-05T04:05:00+08:00] Short Pick Lab is an isolated native-web research lab, not a quant pool input:
+
+短投推荐试验田正式定义为独立研究课题：GPT/Codex 与 DeepSeek 在隔离执行环境中使用各自原生联网/搜索能力，从全 A 股自由发现 1-10 个交易日短线候选；系统只负责调度、留痕、解析、混合收敛聚合和后验行情验证。
+
+补充说明
+- `shortpick_lab` 不写入 `Recommendation`、`ModelResult`、自选池、候选池、模拟盘自动调仓或生产权重；它只写自己的 run / round / candidate / consensus / validation 表和 `shortpick_lab` artifact。
+- 主实验采用 `native_web_open_discovery_v1`，不统一搜索源、不统一关键词。统一搜索器只允许作为未来对照组，不能替代主实验的原生发散空间。
+- 收敛度只代表研究优先级，不代表交易建议或已验证可信度。前端必须同时展示“独立研究课题，不进入主推荐评分”“模型一致性只代表研究优先级，不代表交易建议”“后验验证完成前不得显示为已验证能力”。
+- root/operator 可以触发实验和查看 raw output；member 如能看到该页，只能看到脱敏研究结果，不能触发实验或查看执行错误/raw answer。
+
 [2026-05-03T23:02:34+08:00] Data-quality improvement suggestions must aggregate by degraded-source signature:
 
 差异复盘不再允许把同一组数据质量降级来源机械展开成多条逐股建议。若多只活跃自选股同时命中相同 `degraded_sources`，建议收集层必须先聚合成一条批量根因修复建议，并在 `raw_source.items` 与 `evidence_refs` 中保留受影响股票明细。

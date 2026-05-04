@@ -205,7 +205,7 @@ body[data-theme="dark"] {
 
 .workspace-nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin: 18px 0 20px;
 }
@@ -263,6 +263,76 @@ body[data-theme="dark"] {
   font-size: 13px;
   line-height: 1.55;
   color: var(--text-muted);
+}
+
+.shortpick-lab,
+.shortpick-lab .ant-card-body {
+  display: grid;
+  gap: 16px;
+}
+
+.shortpick-lab-header .ant-card-body {
+  gap: 12px;
+}
+
+.shortpick-lab-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.shortpick-lab-title h3.ant-typography {
+  margin: 2px 0 8px;
+  color: var(--brand-strong);
+}
+
+.shortpick-metrics {
+  margin: 0;
+}
+
+.shortpick-metric {
+  display: grid;
+  gap: 5px;
+  min-height: 112px;
+  padding: 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+}
+
+.shortpick-metric span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.shortpick-metric strong {
+  font-size: 24px;
+  color: var(--brand-strong);
+}
+
+.shortpick-consensus-desc {
+  margin-top: 14px;
+}
+
+.shortpick-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.8fr) minmax(280px, 1fr);
+  gap: 18px;
+}
+
+.shortpick-raw-collapse {
+  margin-top: 12px;
+}
+
+.shortpick-raw-answer {
+  max-height: 320px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-main);
 }
 
 .status-alert {
@@ -1039,6 +1109,10 @@ body[data-theme="dark"] .chart-shell,
   .workspace-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .shortpick-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1078,6 +1152,10 @@ body[data-theme="dark"] .chart-shell,
 
   .workspace-nav-copy span {
     font-size: 12px;
+  }
+
+  .shortpick-lab-title {
+    display: grid;
   }
 
   .chart-shell,

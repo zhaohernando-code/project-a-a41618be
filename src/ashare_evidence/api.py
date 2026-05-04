@@ -70,6 +70,12 @@ from ashare_evidence.schemas import (
     RecommendationTraceResponse,
     RuntimeOverviewResponse,
     RuntimeSettingsResponse,
+    ShortpickCandidateListResponse,
+    ShortpickCandidateView,
+    ShortpickRunCreateRequest,
+    ShortpickRunListResponse,
+    ShortpickRunValidateRequest,
+    ShortpickRunView,
     SimulationConfigRequest,
     SimulationControlActionResponse,
     SimulationEndRequest,
@@ -81,6 +87,14 @@ from ashare_evidence.schemas import (
     WatchlistResponse,
 )
 from ashare_evidence.services import get_latest_recommendation_summary, get_recommendation_trace
+from ashare_evidence.shortpick_lab import (
+    get_shortpick_candidate,
+    get_shortpick_run,
+    list_shortpick_candidates,
+    list_shortpick_runs,
+    run_shortpick_experiment,
+    validate_shortpick_run,
+)
 from ashare_evidence.simulation import (
     end_simulation_session,
     get_simulation_workspace,
@@ -479,6 +493,93 @@ def create_app(
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        session.commit()
+        return result
+
+    @app.get("/shortpick-lab/runs", response_model=ShortpickRunListResponse)
+    def shortpick_run_list(
+        limit: int = Query(default=20, ge=1, le=100),
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        return list_shortpick_runs(session, limit=limit, include_raw=access.actor_role == "root")
+
+    @app.get("/shortpick-lab/runs/{run_id}", response_model=ShortpickRunView)
+    def shortpick_run_detail(
+        run_id: int,
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        try:
+            return get_shortpick_run(session, run_id, include_raw=access.actor_role == "root")
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/shortpick-lab/candidates", response_model=ShortpickCandidateListResponse)
+    def shortpick_candidate_list(
+        run_id: int | None = Query(default=None),
+        model: str | None = Query(default=None),
+        priority: str | None = Query(default=None),
+        validation_status: str | None = Query(default=None),
+        limit: int = Query(default=100, ge=1, le=500),
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        return list_shortpick_candidates(
+            session,
+            run_id=run_id,
+            model=model,
+            priority=priority,
+            validation_status=validation_status,
+            limit=limit,
+            include_raw=access.actor_role == "root",
+        )
+
+    @app.get("/shortpick-lab/candidates/{candidate_id}", response_model=ShortpickCandidateView)
+    def shortpick_candidate_detail(
+        candidate_id: int,
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        try:
+            return get_shortpick_candidate(session, candidate_id, include_raw=access.actor_role == "root")
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/shortpick-lab/runs", response_model=ShortpickRunView)
+    def shortpick_run_create(
+        payload: ShortpickRunCreateRequest,
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        try:
+            result = run_shortpick_experiment(
+                session,
+                run_date=payload.run_date,
+                rounds_per_model=payload.rounds_per_model,
+                triggered_by=access.actor_login,
+                trigger_source="manual_api",
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        session.commit()
+        return result
+
+    @app.post("/shortpick-lab/runs/{run_id}/validate")
+    def shortpick_run_validate(
+        run_id: int,
+        payload: ShortpickRunValidateRequest,
+        access: StockAccessContext = Depends(require_stock_access),
+        session: Session = Depends(get_session),
+    ) -> dict[str, object]:
+        require_stock_root(access)
+        try:
+            result = validate_shortpick_run(session, run_id, horizons=payload.horizons)
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         session.commit()

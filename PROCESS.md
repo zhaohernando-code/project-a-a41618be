@@ -2,6 +2,12 @@
 
 反回归笔记和可复用经验。状态快照见 PROJECT_STATUS.json。
 
+## 2026-05-05
+
+- **短投试验田必须保持旁路隔离**：`shortpick_lab` 的 run/round/candidate/consensus/validation 只能进入独立表和独立 artifact，不能回写 `Recommendation`、`ModelResult`、watchlist、候选池或 simulation auto-model。后续任何把短投结果展示到单票/候选/模拟盘主链路的改动，都需要先补 `DECISIONS.md`。
+- **原生联网实验不要被统一搜索器提前收敛**：本课题的主价值是观察弱引导、原生联网、全市场自由发现是否带来结构化系统之外的增量视角。系统可以记录 sources 和 raw output，但 v1 不替模型规定关键词或材料集合。
+- **收敛不是 verified**：多模型/多轮一致只能提升研究池优先级。前端和 API 不得把 `high_convergence` 直接翻译成 `verified`、买入建议或主评分置信度；后验验证窗口完成前必须保持“待验证/研究优先级”语言。
+
 ## 2026-05-04
 
 - **已完成不能替代业务证据**：改进建议状态 `completed` 只能说明对应计划/任务已收口，不能直接让业务 gate 变为 `pass`。像“建议命中复盘覆盖”这类门禁必须重新读取真实 replay / benchmark / backtest 证据；若复盘记录、正式验证或组合补样本仍不足，即使计划任务完成也只能展示“治理计划已完成，但正式复盘口径仍待验证”的 `warn`。

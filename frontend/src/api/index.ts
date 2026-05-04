@@ -28,6 +28,14 @@ import {
   completeManualResearchRequest, failManualResearchRequest,
   retryManualResearchRequest, runFollowUpAnalysis,
 } from "./manual-research";
+import {
+  createShortpickRun,
+  getShortpickCandidate,
+  getShortpickCandidates,
+  getShortpickRun,
+  getShortpickRuns,
+  validateShortpickRun,
+} from "./shortpick";
 
 export const api = {
   getApiBase,
@@ -81,4 +89,10 @@ export const api = {
   failManualResearchRequest,
   retryManualResearchRequest,
   runFollowUpAnalysis,
+  getShortpickRuns,
+  getShortpickRun,
+  createShortpickRun,
+  validateShortpickRun,
+  getShortpickCandidates,
+  getShortpickCandidate,
 };

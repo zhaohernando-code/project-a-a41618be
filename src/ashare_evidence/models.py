@@ -524,6 +524,117 @@ class ModelApiKey(TimestampedMixin, Base):
     manual_research_requests: Mapped[list[ManualResearchRequest]] = relationship(back_populates="model_api_key")
 
 
+class ShortpickExperimentRun(TimestampedMixin, Base):
+    __tablename__ = "shortpick_experiment_runs"
+    __table_args__ = (UniqueConstraint("run_key", name="uq_shortpick_experiment_run_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    run_date: Mapped[date] = mapped_column(Date(), nullable=False, index=True)
+    prompt_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    information_mode: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    trigger_source: Mapped[str] = mapped_column(String(64), nullable=False)
+    triggered_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    failed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    model_config: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    summary_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class ShortpickModelRound(TimestampedMixin, Base):
+    __tablename__ = "shortpick_model_rounds"
+    __table_args__ = (
+        UniqueConstraint("round_key", name="uq_shortpick_model_round_key"),
+        UniqueConstraint("run_id", "provider_name", "model_name", "round_index", name="uq_shortpick_round_run_model_index"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("shortpick_experiment_runs.id"), nullable=False, index=True)
+    round_key: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    provider_name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    model_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    executor_kind: Mapped[str] = mapped_column(String(64), nullable=False)
+    round_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    raw_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parsed_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    sources_payload: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
+    artifact_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ShortpickCandidate(TimestampedMixin, Base):
+    __tablename__ = "shortpick_candidates"
+    __table_args__ = (UniqueConstraint("candidate_key", name="uq_shortpick_candidate_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("shortpick_experiment_runs.id"), nullable=False, index=True)
+    round_id: Mapped[int | None] = mapped_column(ForeignKey("shortpick_model_rounds.id"), nullable=True, index=True)
+    candidate_key: Mapped[str] = mapped_column(String(180), nullable=False, index=True)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
+    normalized_theme: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    horizon_trading_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    thesis: Mapped[str | None] = mapped_column(Text, nullable=True)
+    catalysts: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    invalidation: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    risks: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    sources_payload: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
+    novelty_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    limitations: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    convergence_group: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    research_priority: Mapped[str] = mapped_column(String(32), default="pending_consensus", nullable=False, index=True)
+    parse_status: Mapped[str] = mapped_column(String(24), default="parsed", nullable=False, index=True)
+    is_system_external: Mapped[bool] = mapped_column(default=True, nullable=False, index=True)
+    candidate_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class ShortpickConsensusSnapshot(TimestampedMixin, Base):
+    __tablename__ = "shortpick_consensus_snapshots"
+    __table_args__ = (UniqueConstraint("snapshot_key", name="uq_shortpick_consensus_snapshot_key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("shortpick_experiment_runs.id"), nullable=False, index=True)
+    snapshot_key: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    artifact_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    stock_convergence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    theme_convergence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    source_diversity: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    model_independence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    novelty_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    research_priority: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    summary_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class ShortpickValidationSnapshot(TimestampedMixin, Base):
+    __tablename__ = "shortpick_validation_snapshots"
+    __table_args__ = (
+        UniqueConstraint("candidate_id", "horizon_days", name="uq_shortpick_validation_candidate_horizon"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(ForeignKey("shortpick_candidates.id"), nullable=False, index=True)
+    horizon_days: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    entry_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    exit_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    entry_close: Mapped[float | None] = mapped_column(Float, nullable=True)
+    exit_close: Mapped[float | None] = mapped_column(Float, nullable=True)
+    stock_return: Mapped[float | None] = mapped_column(Float, nullable=True)
+    benchmark_return: Mapped[float | None] = mapped_column(Float, nullable=True)
+    excess_return: Mapped[float | None] = mapped_column(Float, nullable=True)
+    max_favorable_return: Mapped[float | None] = mapped_column(Float, nullable=True)
+    max_drawdown: Mapped[float | None] = mapped_column(Float, nullable=True)
+    validation_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+
+
 class SimulationSession(TimestampedMixin, LineageMixin, Base):
     __tablename__ = "simulation_sessions"
     __table_args__ = (UniqueConstraint("session_key", name="uq_simulation_session_key"),)

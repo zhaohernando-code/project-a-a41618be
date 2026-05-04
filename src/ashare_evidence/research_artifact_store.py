@@ -31,6 +31,7 @@ ARTIFACT_FOLDERS = {
     "phase5_holding_policy_study": "studies",
     "phase5_holding_policy_experiment": "studies",
     "phase5_producer_contract_study": "studies",
+    "shortpick_lab": "shortpick_lab",
 }
 
 ArtifactModel = TypeVar("ArtifactModel", bound=BaseModel)
@@ -83,6 +84,31 @@ def _read_model_if_exists(
         return None
     payload = json.loads(target.read_text(encoding="utf-8"))
     return model_type.model_validate(payload)
+
+
+def write_shortpick_lab_artifact(
+    *,
+    artifact_id: str,
+    payload: dict,
+    root: Path | None = None,
+) -> Path:
+    target = artifact_path("shortpick_lab", artifact_id, root=root)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    return target
+
+
+def read_shortpick_lab_artifact_if_exists(
+    artifact_id: str | None,
+    *,
+    root: Path | None = None,
+) -> dict | None:
+    if not artifact_id:
+        return None
+    target = artifact_path("shortpick_lab", artifact_id, root=root)
+    if not target.exists():
+        return None
+    return json.loads(target.read_text(encoding="utf-8"))
 
 
 def write_manifest(manifest: ResearchArtifactManifestView, *, root: Path | None = None) -> Path:

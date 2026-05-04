@@ -4,6 +4,7 @@ from .portfolio import *
 from .simulation import *
 from .runtime import *
 from .research import *
+from .shortpick import *
 from .operations import *
 
 # Resolve forward references across domain files. Stock and simulation models
