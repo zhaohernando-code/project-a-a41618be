@@ -166,6 +166,13 @@ export interface ImprovementSuggestionControlTask {
   project_id: string;
   plan_mode: boolean;
   api_base?: string | null;
+  raw_status?: string | null;
+  publish_status?: string | null;
+  publish_verified?: boolean;
+  status_source?: string | null;
+  status_stale?: boolean;
+  updated_at?: string | null;
+  workflow_gates?: Record<string, any> | null;
 }
 
 export interface ImprovementSuggestionView {

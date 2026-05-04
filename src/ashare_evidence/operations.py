@@ -1315,6 +1315,50 @@ def _lookup_gate_plan_status(session: Session, gate_name: str) -> dict[str, Any]
     return candidates[0]
 
 
+def _coverage_gate_projection(
+    coverage_plan: dict[str, Any] | None,
+    *,
+    replay_artifact_projection: dict[str, int],
+    portfolio_artifact_projection: dict[str, int],
+) -> dict[str, str]:
+    replay_bound = int(replay_artifact_projection.get("replay_artifact_bound_count", 0))
+    replay_nonverified = int(replay_artifact_projection.get("replay_artifact_nonverified_count", 0))
+    portfolio_pending = int(portfolio_artifact_projection.get("portfolio_backtest_pending_rebuild_count", 0))
+    formal_replay_ready = replay_bound > 0 and replay_nonverified == 0 and portfolio_pending == 0
+
+    if formal_replay_ready:
+        return {
+            "status": "pass",
+            "current_value": (
+                f"正式复盘证据已就绪：复盘记录 {replay_bound} 条，"
+                f"未验证复盘 {replay_nonverified} 条，待补样本组合 {portfolio_pending} 个。"
+            ),
+        }
+
+    if coverage_plan and coverage_plan.get("status") == "completed":
+        task_id = (coverage_plan.get("control_plane_task") or {}).get("id", "N/A")
+        return {
+            "status": "warn",
+            "current_value": (
+                f"治理计划已完成（{task_id}），但正式复盘口径仍待验证："
+                f"复盘记录 {replay_bound} 条，未验证复盘 {replay_nonverified} 条，"
+                f"待补样本组合 {portfolio_pending} 个。"
+            ),
+        }
+
+    if coverage_plan and coverage_plan.get("status") == "accepted_for_plan":
+        task_id = (coverage_plan.get("control_plane_task") or {}).get("id", "N/A")
+        return {
+            "status": "warn",
+            "current_value": f"改进计划已执行中（{task_id}），等待验收与正式复盘口径证据。",
+        }
+
+    return {
+        "status": "warn",
+        "current_value": "当前仍是演示口径，已从正式上线判定中降级。",
+    }
+
+
 def build_operations_summary(
     session: Session,
     sample_symbol: str = "600519.SH",
@@ -1700,19 +1744,10 @@ def build_operations_dashboard(
     auto_portfolio = next((item for item in portfolio_payloads if item["mode"] == "auto_model"), None)
     portfolio_artifact_projection = _portfolio_backtest_projection(portfolio_payloads)
     coverage_plan = _lookup_gate_plan_status(session, "建议命中复盘覆盖")
-    coverage_gate_status = (
-        "pass"
-        if coverage_plan and coverage_plan.get("status") == "completed"
-        else "warn"
-    )
-    coverage_gate_value = (
-        f"改进计划已完成（{coverage_plan.get('control_plane_task', {}).get('id', 'N/A')}）。"
-        if coverage_plan and coverage_plan.get("status") == "completed"
-        else (
-            f"改进计划已执行中（{coverage_plan.get('control_plane_task', {}).get('id', 'N/A')}），等待验收。"
-            if coverage_plan and coverage_plan.get("status") == "accepted_for_plan"
-            else "当前仍是演示口径，已从正式上线判定中降级。"
-        )
+    coverage_gate = _coverage_gate_projection(
+        coverage_plan,
+        replay_artifact_projection=replay_artifact_projection,
+        portfolio_artifact_projection=portfolio_artifact_projection,
     )
     launch_gates = [
         {
@@ -1766,8 +1801,8 @@ def build_operations_dashboard(
         {
             "gate": "建议命中复盘覆盖",
             "threshold": "真实 benchmark 与正式复盘口径完成重建后，才允许恢复该门槛。",
-            "current_value": coverage_gate_value,
-            "status": coverage_gate_status,
+            "current_value": coverage_gate["current_value"],
+            "status": coverage_gate["status"],
         },
         {
             "gate": "访问控制",

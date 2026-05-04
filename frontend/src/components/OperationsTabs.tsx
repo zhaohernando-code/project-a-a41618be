@@ -522,6 +522,11 @@ export function buildOperationsTabs(input: BuildOperationsTabsInput) {
                         {item.control_plane_task?.id ? (
                           <Space wrap className="inline-tags">
                             <Tag color="blue">{`中台任务 ${item.control_plane_task.id}`}</Tag>
+                            <Tag color={statusColor(item.control_plane_task.status ?? "pending")}>
+                              {`任务状态 ${item.control_plane_task.status ?? "unknown"}`}
+                            </Tag>
+                            {item.control_plane_task.status_stale ? <Tag color="gold">任务状态未实时同步</Tag> : null}
+                            {item.control_plane_task.publish_verified ? <Tag color="green">发布已验证</Tag> : null}
                             <Tag>{`模型 ${item.control_plane_task.model}`}</Tag>
                             <Tag>{item.control_plane_task.plan_mode ? "Plan 模式" : "直接执行"}</Tag>
                           </Space>

@@ -217,6 +217,77 @@ class ImprovementSuggestionTests(unittest.TestCase):
             ["data_quality/300750.SZ", "data_quality/600519.SH"],
         )
 
+    def test_suggestion_details_refreshes_control_plane_task_status(self) -> None:
+        root = artifact_root_from_database_url(self.database_url)
+        suggestions = [
+            {
+                "suggestion_id": "suggestion:control-task",
+                "source_type": "launch_gate",
+                "source_ref": "launch_gate/建议命中复盘覆盖",
+                "symbol": None,
+                "category": "operations_workflow",
+                "claim": "运营门禁 建议命中复盘覆盖 当前为 warn，需要形成改进计划。",
+                "proposed_change": "真实 benchmark 与正式复盘口径完成重建后，才允许恢复该门槛。",
+                "evidence_refs": ["launch_gate/建议命中复盘覆盖"],
+                "status": "completed",
+                "created_at": "2026-05-01T04:00:00+00:00",
+                "final_confidence": "moderate",
+                "control_plane_task": {
+                    "id": "task-live-status",
+                    "title": "旧任务标题",
+                    "status": "blocked",
+                    "model": "gpt-5.5",
+                    "project_id": "ashare-dashboard",
+                    "plan_mode": True,
+                    "api_base": "http://control.test",
+                },
+            }
+        ]
+        _write_snapshot(
+            root,
+            {
+                "artifact_type": "suggestion_review_snapshot",
+                "generated_at": "2026-05-01T04:02:00+00:00",
+                "status": "ok",
+                "window_days": 7,
+                "model_status": {"gpt": "ok", "deepseek": "ok", "overall": "ok"},
+                "summary": _snapshot_counts(suggestions),
+                "suggestions": suggestions,
+            },
+        )
+
+        def fake_urlopen(target, *, timeout: int, disable_proxies: bool = False):
+            self.assertEqual(str(target), "http://control.test/api/tasks/task-live-status")
+            self.assertEqual(timeout, 2)
+            self.assertTrue(disable_proxies)
+            return _FakeResponse(
+                json.dumps(
+                    {
+                        "task": {
+                            "id": "task-live-status",
+                            "status": "succeeded",
+                            "rawStatus": "succeeded",
+                            "publishStatus": "published",
+                            "publishVerified": True,
+                            "workflowGates": {"status": "satisfied", "missingEvidence": []},
+                            "updatedAt": "2026-05-04T12:00:00.000Z",
+                        }
+                    }
+                )
+            )
+
+        with session_scope(self.database_url) as session:
+            with patch("ashare_evidence.improvement_suggestions.urlopen", side_effect=fake_urlopen):
+                payload = suggestion_details(session, status="completed")
+
+        task = payload["suggestions"][0]["control_plane_task"]
+        self.assertEqual(task["status"], "succeeded")
+        self.assertEqual(task["publish_status"], "published")
+        self.assertTrue(task["publish_verified"])
+        self.assertEqual(task["workflow_gates"]["status"], "satisfied")
+        self.assertEqual(task["status_source"], "control_plane")
+        self.assertFalse(task["status_stale"])
+
     def test_review_summary_caps_missing_evidence_and_experiment_actions(self) -> None:
         suggestion = {
             "suggestion_id": "suggestion:test",

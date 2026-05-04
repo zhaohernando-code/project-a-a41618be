@@ -889,7 +889,7 @@ def suggestion_summary(session: Session) -> dict[str, Any]:
     root = _artifact_root(session)
     snapshot = latest_suggestion_review_snapshot(root=root) or empty_suggestion_review_snapshot()
     top_items = sorted(
-        snapshot.get("suggestions", []),
+        [_with_live_control_plane_task(item) for item in snapshot.get("suggestions", [])],
         key=lambda item: (
             {"high": 3, "moderate": 2, "low": 1, "reject": 0}.get(str(item.get("final_confidence")), 0),
             str(item.get("created_at", "")),
@@ -910,7 +910,7 @@ def suggestion_summary(session: Session) -> dict[str, Any]:
 def suggestion_details(session: Session, *, status: str | None = None, category: str | None = None) -> dict[str, Any]:
     root = _artifact_root(session)
     snapshot = latest_suggestion_review_snapshot(root=root) or empty_suggestion_review_snapshot()
-    items = list(snapshot.get("suggestions", []))
+    items = [_with_live_control_plane_task(item) for item in snapshot.get("suggestions", [])]
     if status:
         items = [item for item in items if item.get("status") == status]
     if category:
@@ -923,6 +923,49 @@ def suggestion_details(session: Session, *, status: str | None = None, category:
         "summary": snapshot.get("summary", _snapshot_counts([])),
         "suggestions": items,
     }
+
+
+def _fetch_control_plane_task(task_id: str, *, api_base: str | None = None) -> dict[str, Any] | None:
+    normalized_id = str(task_id or "").strip()
+    if not normalized_id:
+        return None
+    base = (api_base or _control_plane_api_base()).strip().rstrip("/")
+    if not base:
+        return None
+    endpoint = f"{base}/api/tasks/{request.pathname2url(normalized_id)}"
+    try:
+        with urlopen(endpoint, timeout=2, disable_proxies=True) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, OSError, json.JSONDecodeError):
+        return None
+    task = payload.get("task") if isinstance(payload, dict) else None
+    return task if isinstance(task, dict) else None
+
+
+def _with_live_control_plane_task(item: dict[str, Any]) -> dict[str, Any]:
+    task = item.get("control_plane_task")
+    if not isinstance(task, dict) or not task.get("id"):
+        return dict(item)
+    projected = dict(item)
+    projected_task = dict(task)
+    live_task = _fetch_control_plane_task(
+        str(projected_task.get("id") or ""),
+        api_base=str(projected_task.get("api_base") or ""),
+    )
+    if live_task is None:
+        projected_task["status_source"] = "snapshot"
+        projected_task["status_stale"] = True
+    else:
+        projected_task["status"] = str(live_task.get("status") or live_task.get("rawStatus") or projected_task.get("status") or "")
+        projected_task["raw_status"] = str(live_task.get("rawStatus") or "")
+        projected_task["publish_status"] = str(live_task.get("publishStatus") or "")
+        projected_task["publish_verified"] = bool(live_task.get("publishVerified"))
+        projected_task["workflow_gates"] = live_task.get("workflowGates")
+        projected_task["updated_at"] = live_task.get("updatedAt")
+        projected_task["status_source"] = "control_plane"
+        projected_task["status_stale"] = False
+    projected["control_plane_task"] = projected_task
+    return projected
 
 
 def _latest_suggestion_item(session: Session, suggestion_id: str) -> tuple[Path, dict[str, Any], dict[str, Any]]:
