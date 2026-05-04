@@ -1262,6 +1262,15 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                             message={dashboard.recommendation.claim_gate.headline}
                             description={sanitizeDisplayText(claimGateDescription(dashboard.recommendation.claim_gate))}
                           />
+                          {dashboard.recommendation.historical_validation.validation_conflict ? (
+                            <Alert
+                              className="sub-alert"
+                              type="warning"
+                              showIcon
+                              message="验证冲突"
+                              description={sanitizeDisplayText(dashboard.recommendation.historical_validation.validation_conflict)}
+                            />
+                          ) : null}
                           <Descriptions size="small" column={1}>
                             <Descriptions.Item label="对外表达">
                               {claimGateStatusLabel(dashboard.recommendation.claim_gate.status)}
@@ -1755,6 +1764,15 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                         {formatDate(dashboard.follow_up.research_packet.manual_review_generated_at)}
                       </Descriptions.Item>
                     </Descriptions>
+                    {dashboard.follow_up.research_packet.validation_conflict ? (
+                      <Alert
+                        className="section-alert"
+                        type="warning"
+                        showIcon
+                        message="验证冲突"
+                        description={sanitizeDisplayText(dashboard.follow_up.research_packet.validation_conflict)}
+                      />
+                    ) : null}
                     {dashboard.follow_up.research_packet.manual_review_status_note ? (
                       <Alert
                         className="section-alert"
@@ -2344,6 +2362,15 @@ function App({ themeMode, onToggleTheme }: { themeMode: ThemeMode; onToggleTheme
                         message={dashboard.recommendation.claim_gate.headline}
                         description={sanitizeDisplayText(claimGateDescription(dashboard.recommendation.claim_gate))}
                       />
+                      {dashboard.recommendation.historical_validation.validation_conflict ? (
+                        <Alert
+                          className="sub-alert"
+                          type="warning"
+                          showIcon
+                          message="验证冲突"
+                          description={sanitizeDisplayText(dashboard.recommendation.historical_validation.validation_conflict)}
+                        />
+                      ) : null}
                       {dashboard.recommendation.historical_validation.note ? (
                         <Alert
                           className="sub-alert"

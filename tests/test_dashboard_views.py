@@ -147,6 +147,47 @@ class DashboardViewTests(unittest.TestCase):
 
         self.assertEqual(fallback_risk, "基本面风险：盈利能力评分0.15，盈利水平极其孱弱。")
 
+    def test_validation_conflict_is_serialized_and_promoted_to_research_packet(self) -> None:
+        with session_scope(self.database_url) as session:
+            seed_watchlist_fixture(session)
+            recommendation = session.scalar(
+                select(Recommendation)
+                .join(Stock)
+                .where(Stock.symbol == "600519.SH")
+                .order_by(Recommendation.generated_at.desc())
+            )
+            assert recommendation is not None
+            payload = dict(recommendation.recommendation_payload or {})
+            payload["validation_metrics_artifact_id"] = "manual-conflict-metrics"
+            payload["historical_validation"] = {
+                "status": "verified",
+                "artifact_type": "rolling_validation",
+                "artifact_id": "manual-conflict-metrics",
+                "manifest_id": "manual-conflict-manifest",
+                "label_definition": "phase2_forward_excess_return",
+                "benchmark_definition": "watchlist_equal_weight_proxy",
+                "cost_definition": "12 bps",
+                "metrics": {
+                    "sample_count": 149,
+                    "rank_ic_mean": -0.147,
+                    "positive_excess_rate": 0.758,
+                    "coverage_ratio": 0.93,
+                },
+            }
+            recommendation.recommendation_payload = payload
+            session.flush()
+
+        with session_scope(self.database_url) as session:
+            dashboard = get_stock_dashboard(session, "600519.SH")
+            candidates = list_candidate_recommendations(session, limit=8)
+
+        conflict = dashboard["recommendation"]["historical_validation"]["validation_conflict"]
+        self.assertIn("验证冲突", conflict)
+        self.assertIn("排序能力尚未成立", conflict)
+        self.assertEqual(dashboard["follow_up"]["research_packet"]["validation_conflict"], conflict)
+        candidate = next(item for item in candidates["items"] if item["symbol"] == "600519.SH")
+        self.assertIn("验证冲突", candidate["primary_risk"])
+
     def test_dashboard_normalizes_legacy_placeholder_explanations(self) -> None:
         with session_scope(self.database_url) as session:
             seed_watchlist_fixture(session)
@@ -739,6 +780,20 @@ class DashboardViewTests(unittest.TestCase):
         self.assertIn("event_analyses: EventAnalysisView[];", type_source)
         self.assertIn('if (trigger === "weekly_review") return "周度例行复盘";', label_source)
         self.assertIn('if (direction === "disagree") return "独立判断不一致";', label_source)
+
+    def test_frontend_promotes_validation_conflict_before_generic_risk(self) -> None:
+        frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
+        app_source = (frontend_root / "App.tsx").read_text(encoding="utf-8")
+        compact_source = (frontend_root / "components" / "CompactAnalysisReport.tsx").read_text(encoding="utf-8")
+        mobile_source = (frontend_root / "components" / "mobile" / "MobileStockDetail.tsx").read_text(encoding="utf-8")
+        type_source = (frontend_root / "types" / "stock.ts").read_text(encoding="utf-8")
+
+        self.assertIn("validation_conflict?: string | null;", type_source)
+        self.assertIn('message="验证冲突"', app_source)
+        self.assertIn("dashboard.follow_up.research_packet.validation_conflict", app_source)
+        self.assertIn("const validationConflict", compact_source)
+        self.assertLess(compact_source.index("validationConflict"), compact_source.index("dashboard?.recommendation.risk.invalidators[0]"))
+        self.assertIn("...(validationConflict ? [validationConflict] : [])", mobile_source)
 
     def test_frontend_operations_exposes_improvement_suggestion_audit_without_auto_apply(self) -> None:
         frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"

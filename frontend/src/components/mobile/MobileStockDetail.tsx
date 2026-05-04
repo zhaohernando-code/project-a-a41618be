@@ -52,7 +52,9 @@ export function MobileStockDetail(props: MobileAppShellProps) {
   const dayChangeValue = latestPoint && previousPoint ? latestPoint.close_price - previousPoint.close_price : null;
   const todayPriceChart = dashboard.today_price_chart ?? [];
   const visibleDrivers = recommendation.evidence.primary_drivers.slice(0, 3);
+  const validationConflict = recommendation.historical_validation.validation_conflict;
   const visibleRisks = [
+    ...(validationConflict ? [validationConflict] : []),
     ...recommendation.risk.risk_flags,
     ...recommendation.risk.downgrade_conditions,
   ].slice(0, 4);

@@ -71,6 +71,7 @@ class RecommendationRiskView(BaseModel):
 class HistoricalValidationView(BaseModel):
     status: str = STATUS_PENDING_REBUILD
     note: str | None = None
+    validation_conflict: str | None = None
     artifact_type: str | None = None
     artifact_id: str | None = None
     manifest_id: str | None = None

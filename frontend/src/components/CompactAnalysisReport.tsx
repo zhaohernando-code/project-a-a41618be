@@ -45,6 +45,8 @@ export function CompactAnalysisReport({
 
   const candidate = row.candidate;
   const validationMetrics = dashboard?.recommendation.historical_validation.metrics ?? {};
+  const validationConflict = dashboard?.recommendation.historical_validation.validation_conflict
+    ?? (candidate?.primary_risk?.startsWith("验证冲突") ? candidate.primary_risk : null);
   const directionLabel = dashboard?.hero.direction_label ?? candidate?.display_direction_label ?? "等待分析";
   const confidenceLabel = dashboard?.recommendation.confidence_label ?? candidate?.confidence_label ?? "--";
   const claimGateStatus = dashboard?.recommendation.claim_gate.status ?? candidate?.claim_gate.status ?? "pending";
@@ -56,7 +58,8 @@ export function CompactAnalysisReport({
     ?? "暂无明确触发点。"
   );
   const primaryRisk = (
-    dashboard?.recommendation.risk.invalidators[0]
+    validationConflict
+    ?? dashboard?.recommendation.risk.invalidators[0]
     ?? dashboard?.recommendation.risk.risk_flags[0]
     ?? dashboard?.recommendation.risk.coverage_gaps[0]
     ?? candidate?.primary_risk

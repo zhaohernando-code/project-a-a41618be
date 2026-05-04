@@ -56,6 +56,7 @@ export interface RecommendationRiskView {
 export interface HistoricalValidationView {
   status: string;
   note?: string | null;
+  validation_conflict?: string | null;
   artifact_type?: string | null;
   artifact_id?: string | null;
   manifest_id?: string | null;
@@ -230,6 +231,7 @@ export interface EventAnalysisView {
 export interface FollowUpResearchPacketView {
   validation_status: string;
   validation_note?: string | null;
+  validation_conflict?: string | null;
   validation_artifact_id?: string | null;
   validation_manifest_id?: string | null;
   validation_sample_count?: number | null;

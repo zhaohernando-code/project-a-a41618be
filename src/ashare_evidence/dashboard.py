@@ -536,6 +536,7 @@ def _follow_up_payload(summary: dict[str, Any], change: dict[str, Any], evidence
         "research_packet": {
             "validation_status": historical_validation.get("status", "pending_rebuild"),
             "validation_note": historical_validation.get("note"),
+            "validation_conflict": historical_validation.get("validation_conflict"),
             "validation_artifact_id": historical_validation.get("artifact_id"),
             "validation_manifest_id": historical_validation.get("manifest_id"),
             "validation_sample_count": v_sc,
