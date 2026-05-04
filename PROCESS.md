@@ -9,6 +9,7 @@
 - **AntD 弹框必须走主题上下文，不用静态 confirm 兜底**：`Modal.confirm(...)` 这类静态 API 会绕开当前 React 树里的 `ConfigProvider + darkAlgorithm`，在夜间模式下容易让弹框、Select dropdown、按钮和说明文字落到不一致的 token 环境。桌面入口应统一使用 AntD `App` provider，并通过 `App.useApp()` 下发 `message` / `modal`；新增确认弹框禁止再写裸静态 `Modal.confirm(...)`。
 - **暗色主题优先收口到 AntD token 链路**：修组件可读性时不要用全局 `.ant-select-dropdown`、`.ant-modal-content`、`.ant-popover-inner` 这类选择器堆补丁替代主题系统。CSS 例外只保留业务布局、业务容器或非 AntD 原生结构；AntD 原生弹框、下拉和确认交互应由 `ConfigProvider` token 和上下文 modal 承担。
 - **流程回归根因必须追到 mainline containment**：本次“进入计划池”夜间弹窗修复曾经存在于任务分支 `task/stock_dashboard/20260504-dark-modal-theme`，但没有进入 `main/origin/main`，后续主线发布覆盖 runtime 后导致用户刷新仍复现。此类回归不是单纯样式问题，而是 closeout 允许 branch-local fix 被当成完成；后续必须依赖 hook/backend gate 检查任务 commit 已被 main 与 upstream 包含。
+- **暗色弹框回归最终收尾记录**：修复提交 `ec81aa819fe0200a41de2225ce5832b3a1932a73` 已进入 `main/origin/main`，发布 manifest 为 `output/releases/20260504T145606Z-ec81aa819fe0/manifest.json`，deploy verifier 为 `19 passed, 0 failed`。Safari 已验证 localhost `http://127.0.0.1:5173/` 夜间模式下“进入计划池”模型选择弹框标题、说明、Select 当前值、任务说明和操作按钮可读；canonical `https://hernando-zhao.cn/projects/ashare-dashboard/` 已加载同一 runtime 页面与暗色主题。
 
 ## 2026-05-03
 
