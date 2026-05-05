@@ -10,6 +10,7 @@
 - **短投试验田发布验收记录**：实现提交 `dc249b6b7bffa3f33ead2a80cd0c1afd3687426c` 已合入 `main` 并发布到 runtime，release manifest 为 `output/releases/20260504T200424Z-dc249b6b7bff/manifest.json`，deploy verifier 为 `19 passed, 0 failed`。`GET /shortpick-lab/runs?limit=1` 返回空列表属预期，因为本轮未触发真实 GPT/DeepSeek 实验；`GET /dashboard/candidates` 仍返回主候选池原数据，未被短投结果污染。
 - **短投试验田浏览器验收记录**：Safari 已验证 localhost `http://127.0.0.1:5173/` 与 canonical `https://hernando-zhao.cn/projects/ashare-dashboard/` 都显示一级入口 `试验田`，进入后可见 `短投推荐试验田`、独立研究课题/不作为交易建议/不进入主推荐评分边界文案、刷新/触发/补跑复盘控件和空批次状态。Playwright CLI 本轮因 daemon runtime 的 `GlobalRequest` 类型错误无法启动，改用 Safari 验收；结束后已运行 `scripts/cleanup-browser-automation.sh`。
 - **发布脚本刷新分支仍有历史缺口**：首次发布期间 post-deploy refresh 打印 `scripts/publish-local-runtime.sh: line 204: PYTHON_BIN: unbound variable`，但构建同步、backend/frontend health、canonical/local parity 和 deploy verifier 均已通过。后续若只需要同步 docs/status 提交，可用 `ASHARE_PUBLISH_REFRESH_MODE=skip` 避开刷新分支；单独修发布脚本时应补 `PYTHON_BIN` 初始化。
+- **短投实验不能长事务执行模型调用**：首次真实触发时，旧实现把 run/round 创建、GPT/DeepSeek 调用、聚合和验证放在同一个 SQLite 写事务里，导致 `/watchlist` 等普通读接口等待到前端超时，随后前端 fallback 到 Vite origin 并显示 HTML/404 类错误。修复提交 `dc27dfc871ce4bfea48c550049087b9ac7edd8ad` 改为 run 创建后立即 commit、每轮结束 commit，并让本地 preview 不再 fallback 到 `5173` origin 作为 API。发布 manifest 为 `output/releases/20260505T033059Z-dc27dfc871ce/manifest.json`，deploy verifier 为 `19 passed, 0 failed`；Safari 已确认 `http://127.0.0.1:5173/` 关注池和 `试验田` 页面恢复，`GET /watchlist` 为 200。
 
 ## 2026-05-04
 
