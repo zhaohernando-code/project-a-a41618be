@@ -19,6 +19,15 @@ class FrontendShortpickStaticTests(unittest.TestCase):
         self.assertNotIn("addWatchlist", component_source)
         self.assertNotIn("getStockDashboard", component_source)
 
+    def test_local_preview_does_not_fallback_to_vite_origin_for_api(self) -> None:
+        frontend_root = Path(__file__).resolve().parents[1] / "frontend" / "src"
+        core_source = (frontend_root / "api" / "core.ts").read_text(encoding="utf-8")
+
+        self.assertIn("function isLocalPreviewOrigin()", core_source)
+        self.assertIn("window.location.port !== \"8000\"", core_source)
+        self.assertIn("isLocalPreviewOrigin() ? [] : [inferOriginBase()]", core_source)
+        self.assertIn("!inferLocalBackendBase() && !basesToUse.includes(\"\")", core_source)
+
 
 if __name__ == "__main__":
     unittest.main()

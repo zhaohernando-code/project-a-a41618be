@@ -12,7 +12,7 @@ from sqlalchemy import select
 from ashare_evidence.api import create_app
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.lineage import compute_lineage_hash
-from ashare_evidence.models import MarketBar, Recommendation, ShortpickCandidate, Stock, WatchlistFollow
+from ashare_evidence.models import MarketBar, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
 from ashare_evidence.shortpick_lab import StaticShortpickExecutor, run_shortpick_experiment
 
 
@@ -147,6 +147,31 @@ class ShortpickLabTests(unittest.TestCase):
         assert candidate is not None
         self.assertEqual(candidate.parse_status, "parse_failed")
         self.assertEqual(candidate.symbol, "PARSE_FAILED")
+
+    def test_run_is_committed_before_long_executor_work(self) -> None:
+        observed_counts: list[int] = []
+
+        class InspectingExecutor:
+            provider_name = "openai"
+            model_name = "gpt-test"
+            executor_kind = "fake"
+
+            def complete(self, prompt: str) -> str:
+                with session_scope(self_database_url) as other_session:
+                    observed_counts.append(other_session.query(ShortpickExperimentRun).count())
+                return _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news")
+
+        self_database_url = self.database_url
+        with session_scope(self.database_url) as session:
+            run_shortpick_experiment(
+                session,
+                run_date=date(2026, 5, 5),
+                rounds_per_model=1,
+                triggered_by="root",
+                executors=[InspectingExecutor()],
+            )
+
+        self.assertEqual(observed_counts, [1])
 
     def test_api_redacts_raw_output_for_member_and_blocks_mutation(self) -> None:
         executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news"))]

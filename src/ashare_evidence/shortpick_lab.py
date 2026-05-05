@@ -269,11 +269,14 @@ def run_shortpick_experiment(
             for executor in active_executors
         ],
     }
+    session.commit()
+    session.refresh(run)
     if not active_executors:
         run.status = "failed"
         run.failed_at = utcnow()
         run.summary_payload = {"error": "No shortpick executor is available."}
-        session.flush()
+        session.commit()
+        session.refresh(run)
         return serialize_shortpick_run(session, run, include_raw=True)
 
     for executor in active_executors:
@@ -311,7 +314,8 @@ def run_shortpick_experiment(
         "consensus_priority": consensus.research_priority,
         "boundary": "independent_research_lab_no_main_pool_write",
     }
-    session.flush()
+    session.commit()
+    session.refresh(run)
     return serialize_shortpick_run(session, run, include_raw=True)
 
 
@@ -339,7 +343,8 @@ def _execute_shortpick_round(
         completed_at=None,
     )
     session.add(round_record)
-    session.flush()
+    session.commit()
+    session.refresh(run)
     prompt = build_shortpick_prompt(
         run_date=run.run_date,
         round_index=round_index,

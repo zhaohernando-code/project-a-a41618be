@@ -118,6 +118,15 @@ function inferLocalBackendBase(): string {
   return "";
 }
 
+function isLocalPreviewOrigin(): boolean {
+  const host = window.location.hostname.toLowerCase();
+  return (
+    (host === "localhost" || host === "127.0.0.1" || host === "::1")
+    && Boolean(window.location.port)
+    && window.location.port !== "8000"
+  );
+}
+
 function prefersPlainApiPath(base: string): boolean {
   try {
     const parsed = new URL(base, window.location.origin);
@@ -160,14 +169,15 @@ function getApiBases(): string[] {
   const mountedBase = inferAssetMountedBase();
   const locationBase = inferLocationBasedBase();
   const prefersMountedToolApi = Boolean(mountedBase) && mountedBase.startsWith("/tools/");
+  const localBackendBase = inferLocalBackendBase();
   return dedupe([
     inferApiBaseFromQuery(),
     ...(prefersMountedToolApi ? [mountedBase, locationBase] : []),
     envApiBase,
     readApiBaseFromStorage(),
     ...(prefersMountedToolApi ? [] : [mountedBase, locationBase]),
-    inferLocalBackendBase(),
-    inferOriginBase(),
+    localBackendBase,
+    ...(isLocalPreviewOrigin() ? [] : [inferOriginBase()]),
     inferSiblingPortBackendBase(),
   ]).filter(Boolean);
 }
@@ -186,7 +196,7 @@ function buildRequestUrls(path: string, explicitBase = hasExplicitApiBase()): st
   const bases = getApiBases();
   const urls: string[] = [];
   const basesToUse = [...bases];
-  if (!explicitBase && !basesToUse.includes("")) {
+  if (!explicitBase && !inferLocalBackendBase() && !basesToUse.includes("")) {
     basesToUse.push("");
   }
 
