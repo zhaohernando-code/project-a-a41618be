@@ -56,6 +56,13 @@
 - **运营复盘模拟盘首屏拉取修复已发布并复验**：本轮通过临时快照仓 `/tmp/ashare-ops-prefetch.3XGKN1` 发布，release manifest 为 `/private/tmp/ashare-ops-prefetch.3XGKN1/output/releases/20260502T153722Z-40b27f0f1984/manifest.json`。发布脚本完成 runtime 同步、localhost 健康检查、parity verifier 与 deploy verification（`19 passed, 0 failed`）。浏览器侧复验分两路完成：1) Safari 真实登录态下访问 `https://hernando-zhao.cn/projects/ashare-dashboard/`，进入 `复盘` 后直接看到用户轨道/模型轨道与复盘卡片；2) Playwright 桌面视口访问 `http://127.0.0.1:5173/`，切到 `运营复盘` 时默认 tab 仍是 `治理与验收`，但页面已同步出现 `双轨同步模拟台`、`焦点 K 线`、`用户轨道`、`模型轨道`，无需再点击 `模拟参数` 才能看到模拟盘信息。
 - **改进建议审计台的默认队列应排除已完成项**：`completed` 代表该建议已收口，不应继续占着“本周建议”默认队列造成“进入计划池”按钮灰掉但仍未出队的错觉。默认列表应只显示未完成项；若要追溯历史，需要单独提供 `已完成` 筛选，而不是把完成项继续混在待处理队列里。
 
+## 2026-05-05
+
+- **DeepSeek 官方 API 不能标记为原生联网短投 executor**：`/chat/completions` 路径没有 web-search 能力，`model_config.native_web_search=true` 不能只靠配置声明。短投实验的 DeepSeek 默认路径已改为 `deepseek_tool_search_lobechat_searxng_v1`：DeepSeek 先在隔离 prompt 中生成搜索计划，本机 LobeChat/SearXNG loopback 执行搜索，再把搜索证据喂回 DeepSeek 生成最终 JSON。旧的 OpenAI-compatible DeepSeek executor 在 shortpick 场景下直接 fail closed，避免无搜索能力时伪造来源。
+- **脏 shortpick run 必须删除后重跑**：旧批次 `shortpick:2026-05-05:20260505033458300263` 依赖无联网 DeepSeek API，已从独立 `shortpick_lab` 表和 artifact 目录删除，不触碰 `Recommendation / ModelResult / Watchlist / PaperPortfolio` 主链路。新批次 `shortpick:2026-05-05:20260505064830869501` 已完成 10/0 轮：GPT 走 `isolated_codex_cli`，DeepSeek 走 `deepseek_tool_search_lobechat_searxng_v1`，DeepSeek 每轮都有搜索 query trace 与 SearXNG result count。
+- **来源可信度当前只代表可达性与占位符拦截，不等于权威性**：新 run 的 sources integrity 结果为 `verified=41 / unreachable=4`，没有无来源 round；但是这还不是媒体/公告权威度评分。后续若提高研究质量，应在 URL 可达之后增加 domain/source authority 分层、公告/交易所/主流财经媒体优先级、以及低质量聚合站降权。
+- **试验田验收必须跑完整 live flow**：本轮已发布、删除脏数据、真实触发新 run、检查 API schema、检查 DeepSeek 搜索 trace、检查 shortpick symbols 未进入 recommendations/watchlist，然后用 Safari 验证 `http://127.0.0.1:5173/` 和 `https://hernando-zhao.cn/projects/ashare-dashboard/` 均可进入 `试验田`，显示 2026-05-05 批次 10/0 完成，且页面保留“独立研究课题 / 不进入主推荐评分 / 不代表交易建议 / 未验证不得显示 verified”的边界文案。
+
 ## 2026-04-30
 
 - **专业化改造先落证据链，再落视觉专业感**：P-1/P0 已按“可审计、可解释、受控内测 beta”方向落到代码。新增 `data_quality_snapshot`、`factor_ic_study`、`weight_sweep_study`、CSI benchmark context 和 operations summary/details，前端只消费真实后端字段；P1/P2/P3 中需要样本积累或人工批准的 horizon/权重/毕业 gate 不做运行时动态切换，也不把当前样本不足的 study 包装成结论。
