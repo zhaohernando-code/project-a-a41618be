@@ -5,6 +5,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -13,7 +14,7 @@ from ashare_evidence.api import create_app
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.lineage import compute_lineage_hash
 from ashare_evidence.models import MarketBar, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
-from ashare_evidence.shortpick_lab import StaticShortpickExecutor, run_shortpick_experiment
+from ashare_evidence.shortpick_lab import OpenAICompatibleShortpickExecutor, StaticShortpickExecutor, run_shortpick_experiment
 
 
 def _answer(symbol: str, name: str, theme: str, url: str) -> str:
@@ -147,6 +148,49 @@ class ShortpickLabTests(unittest.TestCase):
         assert candidate is not None
         self.assertEqual(candidate.parse_status, "parse_failed")
         self.assertEqual(candidate.symbol, "PARSE_FAILED")
+
+    def test_sources_are_credibility_marked(self) -> None:
+        executors = [
+            StaticShortpickExecutor(
+                "deepseek",
+                "deepseek-test",
+                "fake",
+                _answer("688981.SH", "中芯国际", "半导体国产替代", "https://finance.eastmoney.com/a/2026050523456789.html"),
+            )
+        ]
+
+        with session_scope(self.database_url) as session:
+            payload = run_shortpick_experiment(
+                session,
+                run_date=date(2026, 5, 5),
+                rounds_per_model=1,
+                triggered_by="root",
+                executors=executors,
+            )
+
+        source = payload["rounds"][0]["sources"][0]
+        self.assertEqual(source["credibility_status"], "suspicious")
+        self.assertIn("placeholder-like", source["credibility_reason"])
+
+    def test_openai_compatible_shortpick_executor_enables_search(self) -> None:
+        captured: dict[str, object] = {}
+
+        def fake_complete(self, **kwargs):
+            captured.update(kwargs)
+            return _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news")
+
+        executor = OpenAICompatibleShortpickExecutor(
+            key_id=1,
+            provider_name="deepseek",
+            model_name="deepseek-v4-pro",
+            base_url="https://api.deepseek.com",
+            api_key="secret",
+        )
+        with patch("ashare_evidence.shortpick_lab.OpenAICompatibleTransport.complete", new=fake_complete):
+            executor.complete("prompt")
+
+        self.assertEqual(captured["enable_search"], True)
+        self.assertEqual(executor.executor_kind, "configured_api_key_native_web_search")
 
     def test_run_is_committed_before_long_executor_work(self) -> None:
         observed_counts: list[int] = []

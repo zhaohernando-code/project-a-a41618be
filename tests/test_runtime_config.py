@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -199,6 +200,7 @@ class RuntimeConfigTests(unittest.TestCase):
         def fake_urlopen(target, *, timeout: int, disable_proxies: bool = False):
             captured["timeout"] = timeout
             captured["disable_proxies"] = disable_proxies
+            captured["payload"] = json.loads(target.data.decode("utf-8"))
             return _FakeResponse('{"choices":[{"message":{"content":"ok"}}]}')
 
         with patch("ashare_evidence.llm_service.urlopen", side_effect=fake_urlopen):
@@ -212,6 +214,25 @@ class RuntimeConfigTests(unittest.TestCase):
         self.assertEqual(answer, "ok")
         self.assertEqual(captured["timeout"], OPENAI_COMPATIBLE_TIMEOUT_SECONDS)
         self.assertTrue(bool(captured["disable_proxies"]))
+        self.assertNotIn("enable_search", captured["payload"])
+
+    def test_openai_compatible_transport_can_enable_search(self) -> None:
+        captured: dict[str, object] = {}
+
+        def fake_urlopen(target, *, timeout: int, disable_proxies: bool = False):
+            captured["payload"] = json.loads(target.data.decode("utf-8"))
+            return _FakeResponse('{"choices":[{"message":{"content":"ok"}}]}')
+
+        with patch("ashare_evidence.llm_service.urlopen", side_effect=fake_urlopen):
+            OpenAICompatibleTransport().complete(
+                base_url="https://api.deepseek.com",
+                api_key="secret",
+                model_name="deepseek-v4-pro",
+                prompt="请联网搜索。",
+                enable_search=True,
+            )
+
+        self.assertEqual(captured["payload"]["enable_search"], True)
 
 
 if __name__ == "__main__":

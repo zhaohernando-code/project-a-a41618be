@@ -74,6 +74,22 @@ function validationSummary(candidate: ShortpickCandidateView): string {
   return `${shortest.horizon_days}日 ${formatPercent(shortest.stock_return)}`;
 }
 
+function sourceCredibilityLabel(value?: string | null): string {
+  if (value === "verified") return "来源可达";
+  if (value === "reachable_restricted") return "来源受限";
+  if (value === "suspicious") return "疑似占位";
+  if (value === "unreachable") return "不可达";
+  if (value === "missing_url") return "缺 URL";
+  return "未校验";
+}
+
+function sourceCredibilityColor(value?: string | null): string {
+  if (value === "verified") return "green";
+  if (value === "reachable_restricted") return "gold";
+  if (value === "suspicious" || value === "unreachable" || value === "missing_url") return "red";
+  return "default";
+}
+
 export function ShortpickLabView({ canTrigger }: { canTrigger: boolean }) {
   const [runs, setRuns] = useState<ShortpickRunView[]>([]);
   const [selectedRun, setSelectedRun] = useState<ShortpickRunView | null>(null);
@@ -358,8 +374,15 @@ export function ShortpickLabView({ canTrigger }: { canTrigger: boolean }) {
                         renderItem={(source) => (
                           <List.Item>
                             <Space direction="vertical" size={0}>
-                              <a href={source.url || undefined} target="_blank" rel="noreferrer">{source.title || source.url || "未命名来源"}</a>
+                              <Space wrap>
+                                <a href={source.url || undefined} target="_blank" rel="noreferrer">{source.title || source.url || "未命名来源"}</a>
+                                <Tag color={sourceCredibilityColor(source.credibility_status)}>
+                                  {sourceCredibilityLabel(source.credibility_status)}
+                                  {source.http_status ? ` ${source.http_status}` : ""}
+                                </Tag>
+                              </Space>
                               <Text type="secondary">{source.published_at || "发布时间未声明"} · {source.why_it_matters || "未说明"}</Text>
+                              {source.credibility_reason ? <Text type="secondary">校验：{source.credibility_reason}</Text> : null}
                             </Space>
                           </List.Item>
                         )}

@@ -17,23 +17,42 @@ DEEPSEEK_V4_FLASH = "deepseek-v4-flash"
 
 
 class LLMTransport(Protocol):
-    def complete(self, *, base_url: str, api_key: str, model_name: str, prompt: str, system: str | None = None) -> str:
+    def complete(
+        self,
+        *,
+        base_url: str,
+        api_key: str,
+        model_name: str,
+        prompt: str,
+        system: str | None = None,
+        enable_search: bool = False,
+    ) -> str:
         ...
 
 
 class OpenAICompatibleTransport:
-    def complete(self, *, base_url: str, api_key: str, model_name: str, prompt: str, system: str | None = None) -> str:
+    def complete(
+        self,
+        *,
+        base_url: str,
+        api_key: str,
+        model_name: str,
+        prompt: str,
+        system: str | None = None,
+        enable_search: bool = False,
+    ) -> str:
         messages: list[dict[str, Any]] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
-        payload = json.dumps(
-            {
-                "model": model_name,
-                "messages": messages,
-                "temperature": 0.1,
-            }
-        ).encode("utf-8")
+        body: dict[str, Any] = {
+            "model": model_name,
+            "messages": messages,
+            "temperature": 0.1,
+        }
+        if enable_search:
+            body["enable_search"] = True
+        payload = json.dumps(body).encode("utf-8")
         endpoint = f"{base_url.rstrip('/')}/chat/completions"
         http_request = request.Request(
             endpoint,
@@ -73,7 +92,16 @@ class OpenAICompatibleTransport:
 
 
 class AnthropicCompatibleTransport:
-    def complete(self, *, base_url: str, api_key: str, model_name: str, prompt: str, system: str | None = None) -> str:
+    def complete(
+        self,
+        *,
+        base_url: str,
+        api_key: str,
+        model_name: str,
+        prompt: str,
+        system: str | None = None,
+        enable_search: bool = False,
+    ) -> str:
         messages: list[dict[str, Any]] = [{"role": "user", "content": prompt}]
         body: dict[str, Any] = {
             "model": model_name,

@@ -9,11 +9,15 @@ import re
 import subprocess
 import tempfile
 from typing import Any, Protocol
+from urllib import request
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ashare_evidence.db import utcnow
+from ashare_evidence.http_client import urlopen
 from ashare_evidence.llm_service import OpenAICompatibleTransport
 from ashare_evidence.models import (
     MarketBar,
@@ -35,6 +39,12 @@ SHORTPICK_PROMPT_VERSION = "native_web_open_discovery_v1"
 SHORTPICK_INFORMATION_MODE = "native_web_open_discovery"
 SHORTPICK_DEFAULT_HORIZONS = [1, 3, 5, 10, 20]
 SHORTPICK_CODEX_TIMEOUT_SECONDS = 240
+SHORTPICK_SOURCE_CHECK_TIMEOUT_SECONDS = 3
+SUSPICIOUS_SOURCE_PATTERNS = (
+    re.compile(r"(?:123456|234567|345678|456789|987654|876543)"),
+    re.compile(r"(.)\1{5,}"),
+    re.compile(r"(?:xxxx|abc123|example|placeholder|dummy)", re.IGNORECASE),
+)
 
 
 class ShortpickExecutor(Protocol):
@@ -106,7 +116,7 @@ class OpenAICompatibleShortpickExecutor:
     model_name: str
     base_url: str
     api_key: str
-    executor_kind: str = "configured_api_key_native_web"
+    executor_kind: str = "configured_api_key_native_web_search"
 
     def complete(self, prompt: str) -> str:
         transport = OpenAICompatibleTransport()
@@ -117,8 +127,9 @@ class OpenAICompatibleShortpickExecutor:
             prompt=prompt,
             system=(
                 "你正在执行一个独立的 A 股短线研究实验。不要读取本地项目、数据库、代码库或历史推荐。"
-                "可以自行使用你具备的公开网络信息能力。只输出 JSON。"
+                "必须使用联网搜索获取公开信息；如果无法联网搜索，必须返回 limitations 说明无法完成，而不要编造来源。只输出 JSON。"
             ),
+            enable_search=True,
         )
 
 
@@ -221,6 +232,7 @@ def _executor_from_key(key: ModelApiKey) -> OpenAICompatibleShortpickExecutor:
         model_name=key.model_name,
         base_url=key.base_url,
         api_key=key.api_key,
+        executor_kind="configured_api_key_native_web_search",
     )
 
 
@@ -437,7 +449,7 @@ def _candidate_from_round(
         catalysts=_coerce_string_list(pick.get("catalysts")),
         invalidation=_coerce_string_list(pick.get("invalidation")),
         risks=_coerce_string_list(pick.get("risks")),
-        sources_payload=_normalize_sources(parsed.get("sources_used")),
+        sources_payload=list(round_record.sources_payload or _normalize_sources(parsed.get("sources_used"))),
         novelty_note=_coerce_text(parsed.get("novelty_note")),
         limitations=_coerce_string_list(parsed.get("limitations")),
         convergence_group=None,
@@ -470,6 +482,7 @@ def build_shortpick_consensus(session: Session, run: ShortpickExperimentRun) -> 
     model_by_symbol: dict[str, set[str]] = {}
     source_hosts: set[str] = set()
     all_source_urls: set[str] = set()
+    source_status_counts: dict[str, int] = {}
     for candidate in parsed:
         symbol_counts[candidate.symbol] = symbol_counts.get(candidate.symbol, 0) + 1
         if candidate.normalized_theme:
@@ -478,6 +491,8 @@ def build_shortpick_consensus(session: Session, run: ShortpickExperimentRun) -> 
         if round_record is not None:
             model_by_symbol.setdefault(candidate.symbol, set()).add(round_record.provider_name)
         for source in candidate.sources_payload:
+            credibility = str(source.get("credibility_status") or "unchecked")
+            source_status_counts[credibility] = source_status_counts.get(credibility, 0) + 1
             url = str(source.get("url") or "").strip()
             if not url:
                 continue
@@ -535,6 +550,7 @@ def build_shortpick_consensus(session: Session, run: ShortpickExperimentRun) -> 
             "priority_score": round(priority_score, 4),
             "candidate_count": len(candidates),
             "parsed_candidate_count": len(parsed),
+            "source_credibility_counts": source_status_counts,
             "interpretation": "模型一致性只代表研究优先级，不代表交易建议。",
         },
     )
@@ -949,15 +965,104 @@ def _normalize_sources(value: Any) -> list[dict[str, Any]]:
     for item in value:
         if not isinstance(item, dict):
             continue
-        sources.append(
-            {
-                "title": _coerce_text(item.get("title")),
-                "url": _coerce_text(item.get("url")),
-                "published_at": _coerce_text(item.get("published_at")),
-                "why_it_matters": _coerce_text(item.get("why_it_matters") or item.get("relevance")),
-            }
-        )
+        source = {
+            "title": _coerce_text(item.get("title")),
+            "url": _coerce_text(item.get("url")),
+            "published_at": _coerce_text(item.get("published_at")),
+            "why_it_matters": _coerce_text(item.get("why_it_matters") or item.get("relevance")),
+        }
+        source.update(_source_credibility(source["url"]))
+        sources.append(source)
     return sources
+
+
+def _source_credibility(url: str | None) -> dict[str, Any]:
+    normalized = (url or "").strip()
+    checked_at = utcnow().isoformat()
+    if not normalized:
+        return {
+            "credibility_status": "missing_url",
+            "credibility_reason": "source omitted url",
+            "checked_at": checked_at,
+        }
+    parsed = urlparse(normalized)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return {
+            "credibility_status": "suspicious",
+            "credibility_reason": "invalid url format",
+            "checked_at": checked_at,
+        }
+    if _looks_like_placeholder_url(normalized):
+        return {
+            "credibility_status": "suspicious",
+            "credibility_reason": "placeholder-like url pattern",
+            "checked_at": checked_at,
+        }
+    if parsed.hostname and parsed.hostname.endswith(".example"):
+        return {
+            "credibility_status": "suspicious",
+            "credibility_reason": "reserved example domain",
+            "checked_at": checked_at,
+        }
+    return _probe_source_url(normalized, checked_at=checked_at)
+
+
+def _looks_like_placeholder_url(url: str) -> bool:
+    return any(pattern.search(url) for pattern in SUSPICIOUS_SOURCE_PATTERNS)
+
+
+def _probe_source_url(url: str, *, checked_at: str) -> dict[str, Any]:
+    for method in ("HEAD", "GET"):
+        http_request = request.Request(
+            url,
+            headers={
+                "User-Agent": "ashare-shortpick-lab-source-check/1.0",
+                **({"Range": "bytes=0-0"} if method == "GET" else {}),
+            },
+            method=method,
+        )
+        try:
+            with urlopen(
+                http_request,
+                timeout=SHORTPICK_SOURCE_CHECK_TIMEOUT_SECONDS,
+                disable_proxies=True,
+            ) as response:
+                status = int(getattr(response, "status", 200) or 200)
+            return {
+                "credibility_status": "verified" if status < 400 else "unreachable",
+                "credibility_reason": f"{method} HTTP {status}",
+                "http_status": status,
+                "checked_at": checked_at,
+            }
+        except HTTPError as exc:
+            if method == "HEAD" and exc.code in {403, 405}:
+                continue
+            if exc.code in {401, 403}:
+                return {
+                    "credibility_status": "reachable_restricted",
+                    "credibility_reason": f"{method} HTTP {exc.code}",
+                    "http_status": exc.code,
+                    "checked_at": checked_at,
+                }
+            return {
+                "credibility_status": "unreachable",
+                "credibility_reason": f"{method} HTTP {exc.code}",
+                "http_status": exc.code,
+                "checked_at": checked_at,
+            }
+        except (TimeoutError, URLError, OSError) as exc:
+            if method == "HEAD":
+                continue
+            return {
+                "credibility_status": "unreachable",
+                "credibility_reason": str(getattr(exc, "reason", exc))[:160],
+                "checked_at": checked_at,
+            }
+    return {
+        "credibility_status": "unchecked",
+        "credibility_reason": "source check skipped",
+        "checked_at": checked_at,
+    }
 
 
 def _infer_theme(pick: dict[str, Any]) -> str | None:

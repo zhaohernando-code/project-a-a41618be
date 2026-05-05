@@ -20,6 +20,10 @@ class ShortpickSourceView(BaseModel):
     url: str | None = None
     published_at: str | None = None
     why_it_matters: str | None = None
+    credibility_status: str | None = None
+    credibility_reason: str | None = None
+    http_status: int | None = None
+    checked_at: str | None = None
 
 
 class ShortpickRoundView(BaseModel):

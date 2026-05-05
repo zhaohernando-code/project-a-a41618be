@@ -12,6 +12,10 @@ export interface ShortpickSourceView {
   url?: string | null;
   published_at?: string | null;
   why_it_matters?: string | null;
+  credibility_status?: string | null;
+  credibility_reason?: string | null;
+  http_status?: number | null;
+  checked_at?: string | null;
 }
 
 export interface ShortpickRoundView {
