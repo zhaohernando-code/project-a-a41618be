@@ -12,6 +12,7 @@
 - **发布脚本刷新分支仍有历史缺口**：首次发布期间 post-deploy refresh 打印 `scripts/publish-local-runtime.sh: line 204: PYTHON_BIN: unbound variable`，但构建同步、backend/frontend health、canonical/local parity 和 deploy verifier 均已通过。后续若只需要同步 docs/status 提交，可用 `ASHARE_PUBLISH_REFRESH_MODE=skip` 避开刷新分支；单独修发布脚本时应补 `PYTHON_BIN` 初始化。
 - **短投实验不能长事务执行模型调用**：首次真实触发时，旧实现把 run/round 创建、GPT/DeepSeek 调用、聚合和验证放在同一个 SQLite 写事务里，导致 `/watchlist` 等普通读接口等待到前端超时，随后前端 fallback 到 Vite origin 并显示 HTML/404 类错误。修复提交 `dc27dfc871ce4bfea48c550049087b9ac7edd8ad` 改为 run 创建后立即 commit、每轮结束 commit，并让本地 preview 不再 fallback 到 `5173` origin 作为 API。发布 manifest 为 `output/releases/20260505T033059Z-dc27dfc871ce/manifest.json`，deploy verifier 为 `19 passed, 0 failed`；Safari 已确认 `http://127.0.0.1:5173/` 关注池和 `试验田` 页面恢复，`GET /watchlist` 为 200。
 - **真实流程跑完才算新功能验收**：以后这类会产生真实 runtime 行为的新功能，不能只靠单测、构建、发布和页面可见判定完成；必须按约定流程至少真实执行一次，并看护到最终状态、关键副作用边界和前端展示都通过。短投试验田本次真实验收 run `shortpick:2026-05-05:20260505033458300263` 已完成：GPT/Codex 与 DeepSeek 各 5 轮共 `10/0` 成功/失败，`parse_failed=0`，生成 10 个研究候选、1 个 consensus、50 个待行情验证快照；Safari 显示 `试验田` 最近批次完成、综合优先级 `发散新颖`、候选均为 `待验证`；主 `recommendations`、`watchlist_follows`、`watchlist_entries` 对这些短投标的均未新增记录。
+- **DeepSeek 官方 API 不能标记为原生联网**：真实探针已证明当前 `api.deepseek.com` 标准 API 即使带 `enable_search` 也不会提供 Web Search，旧 run `shortpick:2026-05-05:20260505033458300263` 中 DeepSeek 5 轮属于脏数据。短投默认 DeepSeek executor 改为 `deepseek_tool_search_lobechat_searxng_v1`：DeepSeek 先自主生成搜索查询，系统只用 LobeChat 的本机 SearXNG 执行查询，再把公开搜索结果喂回 DeepSeek 生成最终 JSON；若无可达来源或模型声称无法搜索，轮次必须失败并留 artifact，不能进入正常候选。
 
 ## 2026-05-04
 

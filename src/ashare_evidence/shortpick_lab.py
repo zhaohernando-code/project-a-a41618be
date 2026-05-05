@@ -11,7 +11,7 @@ import tempfile
 from typing import Any, Protocol
 from urllib import request
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -40,6 +40,10 @@ SHORTPICK_INFORMATION_MODE = "native_web_open_discovery"
 SHORTPICK_DEFAULT_HORIZONS = [1, 3, 5, 10, 20]
 SHORTPICK_CODEX_TIMEOUT_SECONDS = 240
 SHORTPICK_SOURCE_CHECK_TIMEOUT_SECONDS = 3
+SHORTPICK_SEARXNG_TIMEOUT_SECONDS = 12
+SHORTPICK_DEEPSEEK_SEARCH_TIMEOUT_SECONDS = 180
+SHORTPICK_LOBECHAT_SEARXNG_URL_ENV = "SHORTPICK_LOBECHAT_SEARXNG_URL"
+SHORTPICK_LOBECHAT_SEARXNG_DEFAULT_URL = "http://127.0.0.1:18080"
 SUSPICIOUS_SOURCE_PATTERNS = (
     re.compile(r"(?:123456|234567|345678|456789|987654|876543)"),
     re.compile(r"(.)\1{5,}"),
@@ -110,6 +114,105 @@ class CodexCliShortpickExecutor:
 
 
 @dataclass(frozen=True)
+class SearxngSearchClient:
+    base_url: str
+    timeout_seconds: int = SHORTPICK_SEARXNG_TIMEOUT_SECONDS
+    result_limit: int = 5
+
+    def search(self, query: str) -> list[dict[str, Any]]:
+        trimmed = query.strip()
+        if not trimmed:
+            return []
+        params = urlencode({"q": trimmed, "format": "json", "language": "zh-CN"})
+        http_request = request.Request(
+            f"{self.base_url.rstrip('/')}/search?{params}",
+            headers={"User-Agent": "ashare-shortpick-lab-lobechat-searxng/1.0"},
+        )
+        with urlopen(http_request, timeout=self.timeout_seconds, disable_proxies=True) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        results: list[dict[str, Any]] = []
+        for item in payload.get("results") or []:
+            if not isinstance(item, dict):
+                continue
+            url = _coerce_text(item.get("url"))
+            if not url:
+                continue
+            results.append(
+                {
+                    "title": _coerce_text(item.get("title")) or url,
+                    "url": url,
+                    "published_at": _coerce_text(item.get("publishedDate") or item.get("pubdate") or item.get("published_at")),
+                    "why_it_matters": _coerce_text(item.get("content") or item.get("metadata") or ""),
+                    "search_query": trimmed,
+                    "search_engine": _coerce_text(item.get("engine") or ""),
+                    "search_score": item.get("score"),
+                }
+            )
+            if len(results) >= self.result_limit:
+                break
+        return results
+
+
+@dataclass(frozen=True)
+class DeepseekLobeChatSearchShortpickExecutor:
+    key_id: int | None
+    provider_name: str
+    model_name: str
+    base_url: str
+    api_key: str
+    searxng_url: str | None = None
+    executor_kind: str = "deepseek_tool_search_lobechat_searxng_v1"
+    search_client: SearxngSearchClient | None = None
+
+    def complete(self, prompt: str) -> str:
+        transport = OpenAICompatibleTransport()
+        search_client = self.search_client or SearxngSearchClient(
+            self.searxng_url
+            or os.environ.get(SHORTPICK_LOBECHAT_SEARXNG_URL_ENV)
+            or SHORTPICK_LOBECHAT_SEARXNG_DEFAULT_URL
+        )
+        plan_raw = transport.complete(
+            base_url=self.base_url,
+            api_key=self.api_key,
+            model_name=self.model_name,
+            prompt=_build_deepseek_search_plan_prompt(prompt),
+            system=(
+                "你正在执行独立 A 股短线研究实验。你当前不能直接联网。"
+                "你的任务是先自主决定需要搜索哪些公开信息，不要输出股票推荐，只输出 JSON。"
+            ),
+        )
+        plan = extract_shortpick_json(plan_raw)
+        queries = _coerce_search_queries(plan.get("search_queries") or plan.get("queries"))
+        if not queries:
+            raise RuntimeError("deepseek search planning produced no search queries.")
+
+        search_results: list[dict[str, Any]] = []
+        seen_urls: set[str] = set()
+        for query in queries:
+            for result in search_client.search(query):
+                url = str(result.get("url") or "").strip()
+                if not url or url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                search_results.append(result)
+
+        if not search_results:
+            raise RuntimeError("LobeChat/SearXNG returned no usable search results for DeepSeek search plan.")
+
+        final_raw = transport.complete(
+            base_url=self.base_url,
+            api_key=self.api_key,
+            model_name=self.model_name,
+            prompt=_build_deepseek_final_prompt(prompt=prompt, plan=plan, search_results=search_results),
+            system=(
+                "你正在执行独立 A 股短线研究实验。不要读取本地项目、数据库、代码库或历史推荐。"
+                "你只能基于用户问题和系统提供的公开搜索结果进行分析；sources_used 必须来自这些搜索结果，不能编造 URL。只输出 JSON。"
+            ),
+        )
+        return _attach_deepseek_search_trace(final_raw, plan=plan, search_results=search_results, executor_kind=self.executor_kind)
+
+
+@dataclass(frozen=True)
 class OpenAICompatibleShortpickExecutor:
     key_id: int | None
     provider_name: str
@@ -119,17 +222,9 @@ class OpenAICompatibleShortpickExecutor:
     executor_kind: str = "configured_api_key_native_web_search"
 
     def complete(self, prompt: str) -> str:
-        transport = OpenAICompatibleTransport()
-        return transport.complete(
-            base_url=self.base_url,
-            api_key=self.api_key,
-            model_name=self.model_name,
-            prompt=prompt,
-            system=(
-                "你正在执行一个独立的 A 股短线研究实验。不要读取本地项目、数据库、代码库或历史推荐。"
-                "必须使用联网搜索获取公开信息；如果无法联网搜索，必须返回 limitations 说明无法完成，而不要编造来源。只输出 JSON。"
-            ),
-            enable_search=True,
+        raise RuntimeError(
+            "configured OpenAI-compatible DeepSeek API is not a valid shortpick native-web executor; "
+            "DeepSeek official API does not provide web search. Use deepseek_tool_search_lobechat_searxng_v1."
         )
 
 
@@ -194,6 +289,78 @@ def build_shortpick_prompt(*, run_date: date, round_index: int, provider_name: s
 """.strip()
 
 
+def _build_deepseek_search_plan_prompt(prompt: str) -> str:
+    return f"""
+你将参与一个短投推荐研究实验，但你不能直接联网，也不能读取本地项目或数据库。
+
+请仅基于下面的研究任务，决定你为了完成任务会自主搜索哪些公开网络信息。不要推荐股票，不要编造搜索结果。
+
+输出 JSON，不要加代码块：
+{{
+  "search_queries": [
+    "A股 今日 短线 热点 题材 公开新闻",
+    "..."
+  ],
+  "search_intent": "你为什么选择这些搜索方向",
+  "limitations": ["当前回答只生成搜索计划，不代表最终结论"]
+}}
+
+研究任务：
+{prompt}
+""".strip()
+
+
+def _build_deepseek_final_prompt(*, prompt: str, plan: dict[str, Any], search_results: list[dict[str, Any]]) -> str:
+    evidence = {
+        "search_plan": plan,
+        "search_backend": "lobechat_searxng",
+        "source_policy": "sources_used must be selected only from search_results urls; do not invent urls",
+        "search_results": search_results[:20],
+    }
+    return f"""
+请继续完成下面的短投推荐研究任务。
+
+你不能直接联网。以下公开搜索结果来自你上一轮自主规划的搜索查询，由系统通过 LobeChat/SearXNG 执行。你可以自由判断哪些结果有用，也可以在 limitations 中说明搜索结果不足，但最终 sources_used 只能引用 search_results 中真实出现的 URL，不能编造 URL。
+
+搜索证据 JSON：
+{json.dumps(evidence, ensure_ascii=False, indent=2)}
+
+研究任务：
+{prompt}
+""".strip()
+
+
+def _coerce_search_queries(value: Any) -> list[str]:
+    items = value if isinstance(value, list) else []
+    queries: list[str] = []
+    for item in items:
+        text = _coerce_text(item)
+        if not text or text in queries:
+            continue
+        queries.append(text[:180])
+        if len(queries) >= 5:
+            break
+    return queries
+
+
+def _attach_deepseek_search_trace(
+    raw_answer: str,
+    *,
+    plan: dict[str, Any],
+    search_results: list[dict[str, Any]],
+    executor_kind: str,
+) -> str:
+    parsed = extract_shortpick_json(raw_answer)
+    parsed["_executor_trace"] = {
+        "executor_kind": executor_kind,
+        "search_backend": "lobechat_searxng",
+        "search_queries": _coerce_search_queries(plan.get("search_queries") or plan.get("queries")),
+        "search_result_count": len(search_results),
+        "search_result_urls": [str(item.get("url") or "") for item in search_results[:20] if item.get("url")],
+    }
+    return json.dumps(parsed, ensure_ascii=False, indent=2)
+
+
 def default_shortpick_executors(session: Session) -> list[ShortpickExecutor]:
     executors: list[ShortpickExecutor] = []
     builtin = get_builtin_llm_executor_config()
@@ -225,14 +392,13 @@ def default_shortpick_executors(session: Session) -> list[ShortpickExecutor]:
     return executors
 
 
-def _executor_from_key(key: ModelApiKey) -> OpenAICompatibleShortpickExecutor:
-    return OpenAICompatibleShortpickExecutor(
+def _executor_from_key(key: ModelApiKey) -> DeepseekLobeChatSearchShortpickExecutor:
+    return DeepseekLobeChatSearchShortpickExecutor(
         key_id=key.id,
         provider_name=key.provider_name,
         model_name=key.model_name,
         base_url=key.base_url,
         api_key=key.api_key,
-        executor_kind="configured_api_key_native_web_search",
     )
 
 
@@ -368,6 +534,9 @@ def _execute_shortpick_round(
         round_record.raw_answer = raw_answer
         parsed = extract_shortpick_json(raw_answer)
         sources = _normalize_sources(parsed.get("sources_used"))
+        source_failure = _web_source_integrity_failure(executor=executor, parsed=parsed, sources=sources)
+        if source_failure:
+            raise RuntimeError(source_failure)
         round_record.parsed_payload = parsed
         round_record.sources_payload = sources
         round_record.status = "completed"
@@ -422,6 +591,27 @@ def extract_shortpick_json(raw_answer: str) -> dict[str, Any]:
         if isinstance(parsed, dict):
             return parsed
     raise ValueError("shortpick answer did not contain a JSON object")
+
+
+def _web_source_integrity_failure(*, executor: ShortpickExecutor, parsed: dict[str, Any], sources: list[dict[str, Any]]) -> str | None:
+    if executor.executor_kind not in {
+        "isolated_codex_cli",
+        "deepseek_tool_search_lobechat_searxng_v1",
+        "configured_api_key_native_web_search",
+        "builtin_openai_api_native_web",
+    }:
+        return None
+    if parsed.get("unable_to_search") is True:
+        return f"{executor.provider_name} reported it was unable to search."
+    if not sources:
+        return f"{executor.provider_name} web executor returned no sources."
+    status_counts: dict[str, int] = {}
+    for source in sources:
+        status = str(source.get("credibility_status") or "unchecked")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    if not any(status in {"verified", "reachable_restricted"} for status in status_counts):
+        return f"{executor.provider_name} web executor returned no reachable sources: {status_counts}."
+    return None
 
 
 def _candidate_from_round(

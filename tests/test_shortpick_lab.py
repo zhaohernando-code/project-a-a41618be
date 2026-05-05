@@ -13,8 +13,14 @@ from sqlalchemy import select
 from ashare_evidence.api import create_app
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.lineage import compute_lineage_hash
-from ashare_evidence.models import MarketBar, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
-from ashare_evidence.shortpick_lab import OpenAICompatibleShortpickExecutor, StaticShortpickExecutor, run_shortpick_experiment
+from ashare_evidence.models import MarketBar, ModelApiKey, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
+from ashare_evidence.shortpick_lab import (
+    DeepseekLobeChatSearchShortpickExecutor,
+    OpenAICompatibleShortpickExecutor,
+    StaticShortpickExecutor,
+    default_shortpick_executors,
+    run_shortpick_experiment,
+)
 
 
 def _answer(symbol: str, name: str, theme: str, url: str) -> str:
@@ -172,13 +178,7 @@ class ShortpickLabTests(unittest.TestCase):
         self.assertEqual(source["credibility_status"], "suspicious")
         self.assertIn("placeholder-like", source["credibility_reason"])
 
-    def test_openai_compatible_shortpick_executor_enables_search(self) -> None:
-        captured: dict[str, object] = {}
-
-        def fake_complete(self, **kwargs):
-            captured.update(kwargs)
-            return _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news")
-
+    def test_openai_compatible_shortpick_executor_is_blocked_for_shortpick_web_search(self) -> None:
         executor = OpenAICompatibleShortpickExecutor(
             key_id=1,
             provider_name="deepseek",
@@ -186,11 +186,75 @@ class ShortpickLabTests(unittest.TestCase):
             base_url="https://api.deepseek.com",
             api_key="secret",
         )
-        with patch("ashare_evidence.shortpick_lab.OpenAICompatibleTransport.complete", new=fake_complete):
+
+        with self.assertRaisesRegex(RuntimeError, "does not provide web search"):
             executor.complete("prompt")
 
-        self.assertEqual(captured["enable_search"], True)
-        self.assertEqual(executor.executor_kind, "configured_api_key_native_web_search")
+    def test_deepseek_executor_uses_lobechat_searxng_search_results(self) -> None:
+        calls: list[dict[str, object]] = []
+
+        def fake_complete(self, **kwargs):
+            calls.append(kwargs)
+            prompt = str(kwargs["prompt"])
+            if "只生成搜索计划" in prompt:
+                return json.dumps(
+                    {
+                        "search_queries": ["A股 半导体 国产替代 短线 新闻"],
+                        "search_intent": "寻找公开热点和催化。",
+                    },
+                    ensure_ascii=False,
+                )
+            return _answer("688981.SH", "中芯国际", "半导体国产替代", "https://news.cn/finance/test")
+
+        class FakeSearchClient:
+            def search(self, query: str):
+                return [
+                    {
+                        "title": "半导体公开新闻",
+                        "url": "https://news.cn/finance/test",
+                        "published_at": "2026-05-05",
+                        "why_it_matters": query,
+                    }
+                ]
+
+        executor = DeepseekLobeChatSearchShortpickExecutor(
+            key_id=1,
+            provider_name="deepseek",
+            model_name="deepseek-v4-pro",
+            base_url="https://api.deepseek.com",
+            api_key="secret",
+            search_client=FakeSearchClient(),
+        )
+        with patch("ashare_evidence.shortpick_lab.OpenAICompatibleTransport.complete", new=fake_complete):
+            with patch("ashare_evidence.shortpick_lab._source_credibility", return_value={"credibility_status": "verified", "credibility_reason": "test"}):
+                raw = executor.complete("prompt")
+
+        parsed = json.loads(raw)
+        self.assertEqual(parsed["_executor_trace"]["search_backend"], "lobechat_searxng")
+        self.assertEqual(parsed["_executor_trace"]["search_queries"], ["A股 半导体 国产替代 短线 新闻"])
+        self.assertEqual(parsed["sources_used"][0]["url"], "https://news.cn/finance/test")
+        self.assertEqual([item.get("enable_search") for item in calls], [None, None])
+        self.assertEqual(executor.executor_kind, "deepseek_tool_search_lobechat_searxng_v1")
+
+    def test_default_deepseek_executor_uses_lobechat_search_not_official_native_api(self) -> None:
+        with session_scope(self.database_url) as session:
+            session.add(
+                ModelApiKey(
+                    name="deepseek",
+                    provider_name="deepseek",
+                    model_name="deepseek-v4-pro",
+                    base_url="https://api.deepseek.com",
+                    api_key="secret",
+                    enabled=True,
+                    is_default=True,
+                    priority=1,
+                )
+            )
+            session.flush()
+            executors = default_shortpick_executors(session)
+
+        deepseek_executor = next(item for item in executors if item.provider_name == "deepseek")
+        self.assertEqual(deepseek_executor.executor_kind, "deepseek_tool_search_lobechat_searxng_v1")
 
     def test_run_is_committed_before_long_executor_work(self) -> None:
         observed_counts: list[int] = []
