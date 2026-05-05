@@ -16,8 +16,11 @@ from urllib.parse import urlencode, urlparse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from ashare_evidence.analysis_pipeline import _fetch_daily_bars_akshare, _fetch_daily_bars_tushare
+from ashare_evidence.benchmark import CSI_BENCHMARKS, benchmark_close_maps, sync_benchmark_index_bars
 from ashare_evidence.db import utcnow
 from ashare_evidence.http_client import urlopen
+from ashare_evidence.lineage import build_lineage
 from ashare_evidence.llm_service import OpenAICompatibleTransport
 from ashare_evidence.models import (
     MarketBar,
@@ -34,10 +37,13 @@ from ashare_evidence.models import (
 from ashare_evidence.recommendation_selection import recommendation_recency_ordering
 from ashare_evidence.research_artifact_store import artifact_root_from_database_url, write_shortpick_lab_artifact
 from ashare_evidence.runtime_config import get_builtin_llm_executor_config, resolve_llm_key_candidates
+from ashare_evidence.stock_master import resolve_stock_profile
 
 SHORTPICK_PROMPT_VERSION = "native_web_open_discovery_v1"
 SHORTPICK_INFORMATION_MODE = "native_web_open_discovery"
 SHORTPICK_DEFAULT_HORIZONS = [1, 3, 5, 10, 20]
+SHORTPICK_PRIMARY_BENCHMARK_ID = "CSI300"
+SHORTPICK_RESEARCH_BENCHMARK_IDS = ["CSI1000"]
 SHORTPICK_CODEX_TIMEOUT_SECONDS = 240
 SHORTPICK_SOURCE_CHECK_TIMEOUT_SECONDS = 3
 SHORTPICK_SEARXNG_TIMEOUT_SECONDS = 12
@@ -462,7 +468,7 @@ def run_shortpick_experiment(
             _execute_shortpick_round(session, run, executor, round_index)
 
     consensus = build_shortpick_consensus(session, run)
-    validate_shortpick_run(session, run.id, horizons=SHORTPICK_DEFAULT_HORIZONS)
+    validation_result = validate_shortpick_run(session, run.id, horizons=SHORTPICK_DEFAULT_HORIZONS)
     completed_count = session.scalar(
         select(func.count(ShortpickModelRound.id)).where(
             ShortpickModelRound.run_id == run.id,
@@ -491,6 +497,7 @@ def run_shortpick_experiment(
         "candidate_count": session.scalar(select(func.count(ShortpickCandidate.id)).where(ShortpickCandidate.run_id == run.id)) or 0,
         "consensus_priority": consensus.research_priority,
         "boundary": "independent_research_lab_no_main_pool_write",
+        **dict(validation_result.get("summary") or {}),
     }
     session.commit()
     session.refresh(run)
@@ -763,15 +770,34 @@ def validate_shortpick_run(
     candidates = session.scalars(
         select(ShortpickCandidate).where(ShortpickCandidate.run_id == run_id).order_by(ShortpickCandidate.id.asc())
     ).all()
+    parsed_candidates = [
+        candidate
+        for candidate in candidates
+        if candidate.parse_status == "parsed" and candidate.symbol != "PARSE_FAILED"
+    ]
+    benchmark_sync = _sync_shortpick_benchmarks(session) if parsed_candidates else {"status": "skipped", "reason": "no_parsed_candidates"}
     updated = 0
-    for candidate in candidates:
-        if candidate.parse_status != "parsed" or candidate.symbol == "PARSE_FAILED":
-            continue
+    for candidate in parsed_candidates:
+        market_sync = _sync_shortpick_candidate_market_data(session, candidate)
+        benchmark_maps = benchmark_close_maps(session)
         for horizon in target_horizons:
-            _upsert_validation_snapshot(session, run, candidate, int(horizon))
+            _upsert_validation_snapshot(
+                session,
+                run,
+                candidate,
+                int(horizon),
+                benchmark_maps=benchmark_maps,
+                market_sync=market_sync,
+            )
             updated += 1
+    summary = _shortpick_validation_summary(session, run_id=run_id)
+    run.summary_payload = {
+        **dict(run.summary_payload or {}),
+        **summary,
+        "benchmark_sync": benchmark_sync,
+    }
     session.flush()
-    return {"run_id": run_id, "updated_validation_count": updated, "horizons": target_horizons}
+    return {"run_id": run_id, "updated_validation_count": updated, "horizons": target_horizons, "summary": summary}
 
 
 def _upsert_validation_snapshot(
@@ -779,6 +805,9 @@ def _upsert_validation_snapshot(
     run: ShortpickExperimentRun,
     candidate: ShortpickCandidate,
     horizon: int,
+    *,
+    benchmark_maps: dict[str, dict[Any, float]] | None = None,
+    market_sync: dict[str, Any] | None = None,
 ) -> ShortpickValidationSnapshot:
     existing = session.scalar(
         select(ShortpickValidationSnapshot).where(
@@ -798,37 +827,68 @@ def _upsert_validation_snapshot(
     bars = _daily_bars_for_symbol(session, candidate.symbol)
     if not bars:
         existing.status = "pending_market_data"
-        existing.validation_payload = {"reason": "No daily bars found for candidate symbol."}
+        _clear_validation_metrics(existing)
+        existing.validation_payload = {
+            "reason": "No daily bars found for candidate symbol.",
+            "market_data_sync": market_sync or {},
+        }
         return existing
     entry_index = next((idx for idx, bar in enumerate(bars) if bar.observed_at.date() >= run.run_date), None)
     if entry_index is None:
         existing.status = "pending_entry_bar"
-        existing.validation_payload = {"reason": "No entry bar at or after run_date."}
+        _clear_validation_metrics(existing)
+        existing.validation_payload = {
+            "reason": "No entry bar at or after run_date.",
+            "market_data_sync": market_sync or {},
+        }
         return existing
     exit_index = entry_index + horizon
     if exit_index >= len(bars):
         existing.status = "pending_forward_window"
         existing.entry_at = bars[entry_index].observed_at
         existing.entry_close = bars[entry_index].close_price
-        existing.validation_payload = {"available_forward_bars": max(len(bars) - entry_index - 1, 0)}
+        existing.exit_at = None
+        existing.exit_close = None
+        existing.stock_return = None
+        existing.benchmark_return = None
+        existing.excess_return = None
+        existing.max_favorable_return = None
+        existing.max_drawdown = None
+        existing.validation_payload = {
+            "available_forward_bars": max(len(bars) - entry_index - 1, 0),
+            "market_data_sync": market_sync or {},
+        }
         return existing
     window = bars[entry_index : exit_index + 1]
     entry = window[0]
     exit_bar = window[-1]
     returns = [(bar.close_price / entry.close_price) - 1 for bar in window if entry.close_price]
     stock_return = (exit_bar.close_price / entry.close_price) - 1 if entry.close_price else None
-    existing.status = "completed"
+    benchmark_maps = benchmark_maps or benchmark_close_maps(session)
+    benchmark_returns = _shortpick_benchmark_returns(
+        benchmark_maps=benchmark_maps,
+        entry_day=entry.observed_at.date(),
+        exit_day=exit_bar.observed_at.date(),
+    )
+    primary = _shortpick_primary_benchmark()
+    primary_return = benchmark_returns.get(primary["symbol"], {}).get("return")
+    if primary_return is None:
+        existing.status = "pending_benchmark_data"
+    else:
+        existing.status = "completed"
     existing.entry_at = entry.observed_at
     existing.exit_at = exit_bar.observed_at
     existing.entry_close = entry.close_price
     existing.exit_close = exit_bar.close_price
     existing.stock_return = stock_return
-    existing.benchmark_return = None
-    existing.excess_return = stock_return
+    existing.benchmark_return = primary_return
+    existing.excess_return = None if stock_return is None or primary_return is None else stock_return - primary_return
     existing.max_favorable_return = max(returns) if returns else None
     existing.max_drawdown = min(returns) if returns else None
     existing.validation_payload = {
-        "benchmark": "unavailable_in_v1_fallback_to_absolute_return",
+        "benchmark": primary,
+        "benchmark_returns": benchmark_returns,
+        "market_data_sync": market_sync or {},
         "note": "后验验证只读取行情，不回写主量化推荐或模拟盘。",
     }
     return existing
@@ -843,6 +903,276 @@ def _daily_bars_for_symbol(session: Session, symbol: str) -> list[MarketBar]:
         .where(MarketBar.stock_id == stock.id, MarketBar.timeframe == "1d")
         .order_by(MarketBar.observed_at.asc(), MarketBar.id.asc())
     ).all()
+
+
+def _sync_shortpick_benchmarks(session: Session) -> dict[str, Any]:
+    existing = benchmark_close_maps(session)
+    today = datetime.now(UTC).date()
+    current = {
+        definition["symbol"]: max(existing.get(definition["symbol"], {}) or {}, default=None)
+        for definition in _shortpick_benchmark_definitions()
+    }
+    if current and all(day is not None and day >= today for day in current.values()):
+        return {
+            "status": "existing_current",
+            "latest_trade_days": {symbol: day.isoformat() for symbol, day in current.items() if day is not None},
+        }
+    try:
+        return sync_benchmark_index_bars(session)
+    except Exception as exc:
+        return {"status": "error", "reason": str(exc)}
+
+
+def _sync_shortpick_candidate_market_data(session: Session, candidate: ShortpickCandidate) -> dict[str, Any]:
+    existing_bars = _daily_bars_for_symbol(session, candidate.symbol)
+    latest_day = existing_bars[-1].observed_at.date() if existing_bars else None
+    if latest_day is not None and latest_day >= datetime.now(UTC).date():
+        return {"status": "existing_current", "bars": len(existing_bars), "latest_trade_day": latest_day.isoformat()}
+    try:
+        stock = _ensure_shortpick_stock(session, candidate)
+        fetch = _fetch_shortpick_daily_market_data(session, candidate.symbol)
+        upserted = _upsert_shortpick_market_bars(session, stock=stock, bars=fetch.bars)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "reason": str(exc),
+            "existing_bars": len(existing_bars),
+            "latest_trade_day": latest_day.isoformat() if latest_day else None,
+        }
+    refreshed_bars = _daily_bars_for_symbol(session, candidate.symbol)
+    refreshed_latest_day = refreshed_bars[-1].observed_at.date() if refreshed_bars else None
+    return {
+        "status": "ok",
+        "provider_name": fetch.provider_name,
+        "upserted_bars": upserted,
+        "bars": len(refreshed_bars),
+        "latest_trade_day": refreshed_latest_day.isoformat() if refreshed_latest_day else None,
+    }
+
+
+def _ensure_shortpick_stock(session: Session, candidate: ShortpickCandidate) -> Stock:
+    existing = session.scalar(select(Stock).where(Stock.symbol == candidate.symbol))
+    profile = resolve_stock_profile(session, symbol=candidate.symbol, preferred_name=candidate.name)
+    ticker, _, market = candidate.symbol.partition(".")
+    exchange = market.upper() if market else ("SH" if ticker.startswith(("5", "6", "9")) else "SZ")
+    if existing is not None:
+        existing.name = profile.name or candidate.name or existing.name
+        existing.provider_symbol = existing.provider_symbol or candidate.symbol
+        existing.listed_date = existing.listed_date or profile.listed_date
+        profile_payload = dict(existing.profile_payload or {})
+        profile_payload.update(
+            {
+                "shortpick_profile_source": profile.source,
+                "industry": profile.industry or profile_payload.get("industry"),
+                "template_key": profile.template_key or profile_payload.get("template_key"),
+            }
+        )
+        existing.profile_payload = profile_payload
+        session.flush()
+        return existing
+    stock_payload = {
+        "symbol": candidate.symbol,
+        "name": profile.name or candidate.name or candidate.symbol,
+        "listed_date": profile.listed_date,
+        "profile_source": profile.source,
+    }
+    lineage = build_lineage(
+        stock_payload,
+        source_uri=f"shortpick://stock/{candidate.symbol}",
+        license_tag="internal-derived",
+        usage_scope="internal_research",
+        redistribution_scope="none",
+    )
+    stock = Stock(
+        symbol=candidate.symbol,
+        ticker=ticker,
+        exchange=exchange,
+        name=str(stock_payload["name"]),
+        provider_symbol=candidate.symbol,
+        listed_date=profile.listed_date,
+        delisted_date=None,
+        status="active",
+        profile_payload={
+            "industry": profile.industry,
+            "template_key": profile.template_key,
+            "profile_source": profile.source,
+            "shortpick_lab_only": True,
+        },
+        **lineage,
+    )
+    session.add(stock)
+    session.flush()
+    return stock
+
+
+def _fetch_shortpick_daily_market_data(session: Session, symbol: str) -> Any:
+    for fetcher in (_fetch_daily_bars_tushare, lambda active_session, active_symbol: _fetch_daily_bars_akshare(active_symbol)):
+        try:
+            result = fetcher(session, symbol)
+        except Exception:
+            result = None
+        if result is not None and result.bars:
+            return result
+    raise RuntimeError(f"{symbol} shortpick market sync returned no daily bars.")
+
+
+def _upsert_shortpick_market_bars(session: Session, *, stock: Stock, bars: list[dict[str, Any]]) -> int:
+    upserted = 0
+    for bar_record in bars:
+        bar_key = str(bar_record["bar_key"])
+        existing = session.scalar(select(MarketBar).where(MarketBar.bar_key == bar_key))
+        values = {
+            "stock_id": stock.id,
+            "timeframe": bar_record["timeframe"],
+            "observed_at": bar_record["observed_at"],
+            "open_price": bar_record["open_price"],
+            "high_price": bar_record["high_price"],
+            "low_price": bar_record["low_price"],
+            "close_price": bar_record["close_price"],
+            "volume": bar_record["volume"],
+            "amount": bar_record["amount"],
+            "turnover_rate": bar_record.get("turnover_rate"),
+            "adj_factor": bar_record.get("adj_factor"),
+            "total_mv": bar_record.get("total_mv"),
+            "circ_mv": bar_record.get("circ_mv"),
+            "pe_ttm": bar_record.get("pe_ttm"),
+            "pb": bar_record.get("pb"),
+            "raw_payload": {
+                **dict(bar_record.get("raw_payload") or {}),
+                "shortpick_lab_only": True,
+            },
+            "source_uri": bar_record["source_uri"],
+            "license_tag": bar_record["license_tag"],
+            "usage_scope": bar_record["usage_scope"],
+            "redistribution_scope": bar_record["redistribution_scope"],
+            "lineage_hash": bar_record["lineage_hash"],
+        }
+        if existing is None:
+            session.add(MarketBar(bar_key=bar_key, **values))
+        else:
+            for key, value in values.items():
+                setattr(existing, key, value)
+        upserted += 1
+    session.flush()
+    return upserted
+
+
+def _shortpick_primary_benchmark() -> dict[str, str]:
+    definition = CSI_BENCHMARKS[SHORTPICK_PRIMARY_BENCHMARK_ID]
+    return {
+        "benchmark_id": SHORTPICK_PRIMARY_BENCHMARK_ID,
+        "symbol": definition["symbol"],
+        "label": definition["label"],
+    }
+
+
+def _shortpick_benchmark_definitions() -> list[dict[str, str]]:
+    definitions = [_shortpick_primary_benchmark()]
+    seen = {definitions[0]["symbol"]}
+    for benchmark_id in SHORTPICK_RESEARCH_BENCHMARK_IDS:
+        definition = CSI_BENCHMARKS.get(benchmark_id)
+        if definition is None or definition["symbol"] in seen:
+            continue
+        seen.add(definition["symbol"])
+        definitions.append(
+            {
+                "benchmark_id": benchmark_id,
+                "symbol": definition["symbol"],
+                "label": definition["label"],
+            }
+        )
+    return definitions
+
+
+def _shortpick_benchmark_returns(
+    *,
+    benchmark_maps: dict[str, dict[Any, float]],
+    entry_day: date,
+    exit_day: date,
+) -> dict[str, dict[str, Any]]:
+    returns: dict[str, dict[str, Any]] = {}
+    for definition in _shortpick_benchmark_definitions():
+        close_map = benchmark_maps.get(definition["symbol"], {})
+        benchmark_return = _return_between_close_map(close_map, entry_day=entry_day, exit_day=exit_day)
+        returns[definition["symbol"]] = {
+            **definition,
+            "return": benchmark_return,
+            "status": "available" if benchmark_return is not None else "missing_window",
+        }
+    return returns
+
+
+def _return_between_close_map(close_map: dict[Any, float], *, entry_day: date, exit_day: date) -> float | None:
+    if not close_map:
+        return None
+    entry_close = _close_on_or_after(close_map, entry_day)
+    exit_close = _close_on_or_after(close_map, exit_day)
+    if entry_close in {None, 0} or exit_close is None:
+        return None
+    return float(exit_close) / float(entry_close) - 1
+
+
+def _close_on_or_after(close_map: dict[Any, float], target_day: date) -> float | None:
+    for trade_day in sorted(close_map):
+        if trade_day >= target_day:
+            return close_map[trade_day]
+    return None
+
+
+def _clear_validation_metrics(snapshot: ShortpickValidationSnapshot) -> None:
+    snapshot.entry_at = None
+    snapshot.exit_at = None
+    snapshot.entry_close = None
+    snapshot.exit_close = None
+    snapshot.stock_return = None
+    snapshot.benchmark_return = None
+    snapshot.excess_return = None
+    snapshot.max_favorable_return = None
+    snapshot.max_drawdown = None
+
+
+def _shortpick_validation_summary(session: Session, *, run_id: int) -> dict[str, Any]:
+    validations = session.scalars(
+        select(ShortpickValidationSnapshot)
+        .join(ShortpickCandidate, ShortpickValidationSnapshot.candidate_id == ShortpickCandidate.id)
+        .where(ShortpickCandidate.run_id == run_id)
+        .order_by(ShortpickValidationSnapshot.horizon_days.asc(), ShortpickValidationSnapshot.id.asc())
+    ).all()
+    status_counts: dict[str, int] = {}
+    by_horizon: dict[int, list[ShortpickValidationSnapshot]] = {}
+    completed: list[ShortpickValidationSnapshot] = []
+    for validation in validations:
+        status_counts[validation.status] = status_counts.get(validation.status, 0) + 1
+        by_horizon.setdefault(validation.horizon_days, []).append(validation)
+        if validation.status == "completed":
+            completed.append(validation)
+    horizon_summary: dict[str, dict[str, Any]] = {}
+    for horizon, items in sorted(by_horizon.items()):
+        completed_items = [item for item in items if item.status == "completed"]
+        stock_returns = [float(item.stock_return) for item in completed_items if item.stock_return is not None]
+        excess_returns = [float(item.excess_return) for item in completed_items if item.excess_return is not None]
+        horizon_summary[str(horizon)] = {
+            "validation_count": len(items),
+            "completed_count": len(completed_items),
+            "mean_stock_return": _mean_or_none(stock_returns),
+            "mean_excess_return": _mean_or_none(excess_returns),
+            "positive_excess_rate": (
+                round(sum(1 for item in excess_returns if item > 0) / len(excess_returns), 6)
+                if excess_returns
+                else None
+            ),
+        }
+    return {
+        "validation_status_counts": status_counts,
+        "completed_validation_count": len(completed),
+        "measured_candidate_count": len({item.candidate_id for item in completed}),
+        "validation_by_horizon": horizon_summary,
+        "primary_benchmark": _shortpick_primary_benchmark(),
+    }
+
+
+def _mean_or_none(values: list[float]) -> float | None:
+    return round(sum(values) / len(values), 6) if values else None
 
 
 def serialize_shortpick_run(session: Session, run: ShortpickExperimentRun, *, include_raw: bool) -> dict[str, Any]:
@@ -1020,6 +1350,9 @@ def _serialize_consensus(snapshot: ShortpickConsensusSnapshot | None) -> dict[st
 
 
 def _serialize_validation(snapshot: ShortpickValidationSnapshot) -> dict[str, Any]:
+    payload = dict(snapshot.validation_payload or {})
+    benchmark = payload.get("benchmark") if isinstance(payload.get("benchmark"), dict) else _shortpick_primary_benchmark()
+    benchmark_returns = payload.get("benchmark_returns") if isinstance(payload.get("benchmark_returns"), dict) else {}
     return {
         "id": snapshot.id,
         "horizon_days": snapshot.horizon_days,
@@ -1033,6 +1366,9 @@ def _serialize_validation(snapshot: ShortpickValidationSnapshot) -> dict[str, An
         "excess_return": snapshot.excess_return,
         "max_favorable_return": snapshot.max_favorable_return,
         "max_drawdown": snapshot.max_drawdown,
+        "benchmark_symbol": benchmark.get("symbol"),
+        "benchmark_label": benchmark.get("label"),
+        "benchmark_returns": benchmark_returns,
     }
 
 

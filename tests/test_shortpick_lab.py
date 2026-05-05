@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 import json
 import tempfile
+from types import SimpleNamespace
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -13,7 +14,7 @@ from sqlalchemy import select
 from ashare_evidence.api import create_app
 from ashare_evidence.db import init_database, session_scope
 from ashare_evidence.lineage import compute_lineage_hash
-from ashare_evidence.models import MarketBar, ModelApiKey, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
+from ashare_evidence.models import MarketBar, ModelApiKey, ModelResult, Recommendation, ShortpickCandidate, ShortpickExperimentRun, Stock, WatchlistFollow
 from ashare_evidence.shortpick_lab import (
     DeepseekLobeChatSearchShortpickExecutor,
     OpenAICompatibleShortpickExecutor,
@@ -65,31 +66,31 @@ class ShortpickLabTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
 
-    def _seed_daily_bars(self) -> None:
+    def _seed_stock_bars(self, symbol: str, name: str, prices: list[float]) -> None:
         with session_scope(self.database_url) as session:
+            ticker, _, market = symbol.partition(".")
             stock = Stock(
-                symbol="688981.SH",
-                ticker="688981",
-                exchange="SH",
-                name="中芯国际",
-                provider_symbol="688981",
+                symbol=symbol,
+                ticker=ticker,
+                exchange=market or "SH",
+                name=name,
+                provider_symbol=symbol,
                 listed_date=date(2020, 7, 16),
                 status="active",
                 profile_payload={},
                 license_tag="test",
                 usage_scope="internal-test",
                 redistribution_scope="none",
-                source_uri="test://stock/688981",
-                lineage_hash=compute_lineage_hash({"symbol": "688981.SH"}),
+                source_uri=f"test://stock/{symbol}",
+                lineage_hash=compute_lineage_hash({"symbol": symbol}),
             )
             session.add(stock)
             session.flush()
             start = datetime(2026, 5, 5, 7, 0, tzinfo=timezone.utc)
-            for index in range(8):
-                price = 100 + index * 2
+            for index, price in enumerate(prices):
                 session.add(
                     MarketBar(
-                        bar_key=f"bar-688981-{index}",
+                        bar_key=f"bar-{symbol.lower().replace('.', '-')}-{index}",
                         stock_id=stock.id,
                         timeframe="1d",
                         observed_at=start + timedelta(days=index),
@@ -103,10 +104,46 @@ class ShortpickLabTests(unittest.TestCase):
                         license_tag="test",
                         usage_scope="internal-test",
                         redistribution_scope="none",
-                        source_uri=f"test://bar/688981/{index}",
-                        lineage_hash=compute_lineage_hash({"symbol": "688981.SH", "index": index}),
+                        source_uri=f"test://bar/{symbol}/{index}",
+                        lineage_hash=compute_lineage_hash({"symbol": symbol, "index": index}),
                     )
                 )
+
+    def _seed_daily_bars(self) -> None:
+        self._seed_stock_bars("688981.SH", "中芯国际", [100 + index * 2 for index in range(8)])
+        self._seed_stock_bars("000300.SH", "沪深300", [200 + index for index in range(8)])
+        self._seed_stock_bars("000852.SH", "中证1000", [300 + index * 1.5 for index in range(8)])
+
+    def _fake_daily_fetch(self, symbol: str, prices: list[float]) -> SimpleNamespace:
+        start = datetime(2026, 5, 5, 7, 0, tzinfo=timezone.utc)
+        bars = []
+        for index, price in enumerate(prices):
+            bars.append(
+                {
+                    "bar_key": f"bar-{symbol.lower().replace('.', '-')}-shortpick-{index}",
+                    "timeframe": "1d",
+                    "observed_at": start + timedelta(days=index),
+                    "open_price": price - 1,
+                    "high_price": price + 1,
+                    "low_price": price - 2,
+                    "close_price": price,
+                    "volume": 1000,
+                    "amount": price * 1000,
+                    "turnover_rate": None,
+                    "adj_factor": None,
+                    "total_mv": None,
+                    "circ_mv": None,
+                    "pe_ttm": None,
+                    "pb": None,
+                    "raw_payload": {"provider_name": "test"},
+                    "source_uri": f"test://shortpick-bar/{symbol}/{index}",
+                    "license_tag": "test",
+                    "usage_scope": "internal-test",
+                    "redistribution_scope": "none",
+                    "lineage_hash": compute_lineage_hash({"symbol": symbol, "index": index}),
+                }
+            )
+        return SimpleNamespace(provider_name="test_daily", bars=bars)
 
     def test_run_builds_consensus_and_validation_without_polluting_main_pools(self) -> None:
         self._seed_daily_bars()
@@ -115,14 +152,16 @@ class ShortpickLabTests(unittest.TestCase):
             StaticShortpickExecutor("deepseek", "deepseek-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://b.example/news")),
         ]
 
-        with session_scope(self.database_url) as session:
-            payload = run_shortpick_experiment(
-                session,
-                run_date=date(2026, 5, 5),
-                rounds_per_model=1,
-                triggered_by="root",
-                executors=executors,
-            )
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    payload = run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
 
         self.assertEqual(payload["status"], "completed")
         self.assertEqual(payload["summary"]["completed_round_count"], 2)
@@ -165,14 +204,16 @@ class ShortpickLabTests(unittest.TestCase):
             )
         ]
 
-        with session_scope(self.database_url) as session:
-            payload = run_shortpick_experiment(
-                session,
-                run_date=date(2026, 5, 5),
-                rounds_per_model=1,
-                triggered_by="root",
-                executors=executors,
-            )
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    payload = run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
 
         source = payload["rounds"][0]["sources"][0]
         self.assertEqual(source["credibility_status"], "suspicious")
@@ -270,27 +311,129 @@ class ShortpickLabTests(unittest.TestCase):
                 return _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news")
 
         self_database_url = self.database_url
-        with session_scope(self.database_url) as session:
-            run_shortpick_experiment(
-                session,
-                run_date=date(2026, 5, 5),
-                rounds_per_model=1,
-                triggered_by="root",
-                executors=[InspectingExecutor()],
-            )
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=[InspectingExecutor()],
+                    )
 
         self.assertEqual(observed_counts, [1])
 
+    def test_validation_uses_hs300_excess_return_and_updates_summary(self) -> None:
+        self._seed_daily_bars()
+        executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news"))]
+
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    payload = run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
+
+        first_validation = payload["candidates"][0]["validations"][0]
+        self.assertEqual(first_validation["status"], "completed")
+        self.assertEqual(first_validation["benchmark_symbol"], "000300.SH")
+        self.assertEqual(first_validation["benchmark_label"], "沪深300")
+        self.assertAlmostEqual(first_validation["stock_return"], 0.02)
+        self.assertAlmostEqual(first_validation["benchmark_return"], 0.005)
+        self.assertAlmostEqual(first_validation["excess_return"], 0.015)
+        self.assertIn("000852.SH", first_validation["benchmark_returns"])
+        self.assertGreater(payload["summary"]["completed_validation_count"], 0)
+        self.assertEqual(payload["summary"]["measured_candidate_count"], 1)
+        self.assertIn("1", payload["summary"]["validation_by_horizon"])
+
+    def test_candidate_market_sync_creates_only_stock_and_market_bars(self) -> None:
+        self._seed_stock_bars("000300.SH", "沪深300", [200 + index for index in range(8)])
+        self._seed_stock_bars("000852.SH", "中证1000", [300 + index for index in range(8)])
+        symbol = "001234.SZ"
+        executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer(symbol, "测试股份", "短投题材", "https://a.example/news"))]
+        profile = SimpleNamespace(name="测试股份", industry="测试行业", listed_date=date(2020, 1, 1), template_key=None, source="test")
+
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab.resolve_stock_profile", return_value=profile):
+                with patch("ashare_evidence.shortpick_lab._fetch_shortpick_daily_market_data", return_value=self._fake_daily_fetch(symbol, [10 + index for index in range(8)])):
+                    with session_scope(self.database_url) as session:
+                        payload = run_shortpick_experiment(
+                            session,
+                            run_date=date(2026, 5, 5),
+                            rounds_per_model=1,
+                            triggered_by="root",
+                            executors=executors,
+                        )
+
+        self.assertEqual(payload["candidates"][0]["validations"][0]["status"], "completed")
+        with session_scope(self.database_url) as session:
+            stock = session.scalar(select(Stock).where(Stock.symbol == symbol))
+            self.assertIsNotNone(stock)
+            assert stock is not None
+            self.assertEqual(
+                session.scalar(select(MarketBar).where(MarketBar.stock_id == stock.id).limit(1)).raw_payload["shortpick_lab_only"],
+                True,
+            )
+            self.assertEqual(session.scalar(select(Recommendation).limit(1)), None)
+            self.assertEqual(session.scalar(select(ModelResult).limit(1)), None)
+            self.assertEqual(session.scalar(select(WatchlistFollow).where(WatchlistFollow.symbol == symbol)), None)
+
+    def test_validation_pending_forward_window_records_entry(self) -> None:
+        self._seed_stock_bars("688981.SH", "中芯国际", [100])
+        self._seed_stock_bars("000300.SH", "沪深300", [200])
+        self._seed_stock_bars("000852.SH", "中证1000", [300])
+        executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news"))]
+
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    payload = run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
+
+        first_validation = payload["candidates"][0]["validations"][0]
+        self.assertEqual(first_validation["status"], "pending_forward_window")
+        self.assertEqual(first_validation["entry_close"], 100)
+
+    def test_validation_pending_benchmark_when_primary_window_missing(self) -> None:
+        self._seed_stock_bars("688981.SH", "中芯国际", [100 + index * 2 for index in range(8)])
+        executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news"))]
+
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    payload = run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
+
+        statuses = {item["status"] for item in payload["candidates"][0]["validations"]}
+        self.assertIn("pending_benchmark_data", statuses)
+
     def test_api_redacts_raw_output_for_member_and_blocks_mutation(self) -> None:
         executors = [StaticShortpickExecutor("openai", "gpt-test", "fake", _answer("688981.SH", "中芯国际", "半导体国产替代", "https://a.example/news"))]
-        with session_scope(self.database_url) as session:
-            run_shortpick_experiment(
-                session,
-                run_date=date(2026, 5, 5),
-                rounds_per_model=1,
-                triggered_by="root",
-                executors=executors,
-            )
+        with patch("ashare_evidence.shortpick_lab._sync_shortpick_benchmarks", return_value={"status": "skipped"}):
+            with patch("ashare_evidence.shortpick_lab._sync_shortpick_candidate_market_data", return_value={"status": "skipped"}):
+                with session_scope(self.database_url) as session:
+                    run_shortpick_experiment(
+                        session,
+                        run_date=date(2026, 5, 5),
+                        rounds_per_model=1,
+                        triggered_by="root",
+                        executors=executors,
+                    )
 
         client = TestClient(create_app(self.database_url, enable_background_ops_tick=False))
         member_headers = {"X-HZ-User-Login": "member-a", "X-HZ-User-Role": "member"}

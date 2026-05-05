@@ -52,6 +52,9 @@ export interface ShortpickValidationView {
   excess_return?: number | null;
   max_favorable_return?: number | null;
   max_drawdown?: number | null;
+  benchmark_symbol?: string | null;
+  benchmark_label?: string | null;
+  benchmark_returns?: Record<string, unknown>;
 }
 
 export interface ShortpickCandidateView {

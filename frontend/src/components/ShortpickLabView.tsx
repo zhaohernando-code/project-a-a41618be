@@ -57,6 +57,7 @@ function statusLabel(value: string): string {
     pending_market_data: "待行情",
     pending_forward_window: "待窗口",
     pending_entry_bar: "待入场价",
+    pending_benchmark_data: "待基准",
   };
   return labels[value] ?? value;
 }
@@ -68,10 +69,27 @@ function roundModelLabel(round: ShortpickRoundView): string {
 function validationSummary(candidate: ShortpickCandidateView): string {
   const completed = candidate.validations.filter((item) => item.status === "completed");
   if (!completed.length) {
-    return "待验证";
+    const pending = candidate.validations[0];
+    return pending ? statusLabel(pending.status) : "待验证";
   }
   const shortest = completed[0];
-  return `${shortest.horizon_days}日 ${formatPercent(shortest.stock_return)}`;
+  return `${shortest.horizon_days}日 个股 ${formatPercent(shortest.stock_return)} / 沪深300超额 ${formatPercent(shortest.excess_return)}`;
+}
+
+function recordValue<T>(record: Record<string, unknown> | undefined, key: string): T | undefined {
+  return record?.[key] as T | undefined;
+}
+
+function validationCoverage(run: ShortpickRunView): string {
+  const completed = Number(run.summary.completed_validation_count ?? 0);
+  const counts = recordValue<Record<string, number>>(run.summary, "validation_status_counts") ?? {};
+  const total = Object.values(counts).reduce((sum, value) => sum + Number(value || 0), 0);
+  return `${completed} / ${total}`;
+}
+
+function primaryBenchmarkLabel(run: ShortpickRunView): string {
+  const primary = recordValue<Record<string, string>>(run.summary, "primary_benchmark");
+  return primary?.label || "沪深300";
 }
 
 function sourceCredibilityLabel(value?: string | null): string {
@@ -298,9 +316,9 @@ export function ShortpickLabView({ canTrigger }: { canTrigger: boolean }) {
             </Col>
             <Col xs={24} md={6}>
               <div className="shortpick-metric">
-                <span>研究边界</span>
-                <strong>旁路</strong>
-                <Text type="secondary">不污染量化池</Text>
+                <span>验证覆盖</span>
+                <strong>{validationCoverage(latestRun)}</strong>
+                <Text type="secondary">主基准：{primaryBenchmarkLabel(latestRun)}</Text>
               </div>
             </Col>
           </Row>
@@ -440,7 +458,9 @@ function ValidationList({ items }: { items: ShortpickValidationView[] }) {
         <List.Item>
           <Space wrap>
             <Tag color={statusColor(item.status)}>{item.horizon_days}日 · {statusLabel(item.status)}</Tag>
-            <Text className={`value-${valueTone(item.stock_return)}`}>{formatPercent(item.stock_return)}</Text>
+            <Text className={`value-${valueTone(item.stock_return)}`}>个股收益 {formatPercent(item.stock_return)}</Text>
+            <Text className={`value-${valueTone(item.excess_return)}`}>超额收益 {formatPercent(item.excess_return)}</Text>
+            <Text type="secondary">{item.benchmark_label || "沪深300"} {formatPercent(item.benchmark_return)}</Text>
             <Text type="secondary">{item.exit_at ? formatDate(item.exit_at) : "等待窗口"}</Text>
             <Text type="secondary">浮盈 {formatPercent(item.max_favorable_return)} / 回撤 {formatPercent(item.max_drawdown)}</Text>
           </Space>

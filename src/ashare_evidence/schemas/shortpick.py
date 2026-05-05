@@ -60,6 +60,9 @@ class ShortpickValidationView(BaseModel):
     excess_return: float | None = None
     max_favorable_return: float | None = None
     max_drawdown: float | None = None
+    benchmark_symbol: str | None = None
+    benchmark_label: str | None = None
+    benchmark_returns: dict[str, Any] = Field(default_factory=dict)
 
 
 class ShortpickCandidateView(BaseModel):
